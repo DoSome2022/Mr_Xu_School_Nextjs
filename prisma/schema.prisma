@@ -1,0 +1,543 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String         @id @default(cuid())
+  username               String?        @unique
+  nickname               String
+  email                  String
+  phone                  String
+  password               String
+  role                   UserRole       @default(PARENT)
+  account                Account[]
+  parent_message_id      String?
+  parent_price_record_id String?
+  done                   Boolean        @default(false)
+  ISNEW                  Boolean        @default(false)
+  Student                Student[]
+  Message                Message[]
+  Price_record           Price_record[]
+  
+}
+
+model StaffUser {
+  id                     String                @id @default(cuid())
+  username               String?               @unique
+  nickname               String
+  email                  String
+  phone                  String
+  password               String
+  Staff                  Boolean               @default(true)
+  ISADMIN                Boolean               @default(false)
+  role                   UserRole
+  account                Account[]
+  // admin_data
+  cram                   String?
+  // teacher_data
+  subject                String[]
+  teacher_time_work_id   String?
+  teacher_upload_node_id String?
+  teacher_node_id        String?
+  Student                Student[]
+  teacher_time_work      Teacher_time_work[]
+  teacher_upload_node    Teacher_upload_node[] @relation("TeacherDataToUploadNodes")
+  Course                 Course[]
+  teacher_node           Node[]                @relation("TeacherNode")
+  dailyreviews           dailyreviews[]
+}
+
+model Account {
+  id                String    @id @default(cuid())
+  userId            String
+  staffuserId       String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User      @relation(fields: [userId], references: [id])
+  staffUser         StaffUser @relation(fields: [staffuserId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Price_record {
+  id          String  @id @default(cuid())
+  price       Float
+  parent_name String  @unique
+  product_id  String
+  product     Product @relation(fields: [product_id], references: [id])
+  Parent_data User[]
+}
+
+model Product {
+  id                      String         @id @default(cuid())
+  name                    String         @unique
+  description             String
+  price                   Float
+  stock                    Int
+  product_price_record_id String
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  product_price_record    Price_record[]
+  
+}
+
+
+
+model Message {
+  id              String @id @default(cuid())
+  message_content String
+  receiver        String @unique
+  sender          String @unique
+  Parent_data     User[]
+}
+
+model Student {
+  id                      String                     @id @default(cuid())
+  name                    String                     @unique
+  school                  String
+  grade                   Int
+  student_id              String?
+  teachers                String?
+  chine_ex_day                String?
+  math_ex_day                 String?
+  eng_ex_day                  String?
+  pay                     Boolean
+  student_parent_data_id  String?
+  student_teacher_data_id String?
+  chine_ex                String?
+  math_ex                 String?
+  eng_ex                  String?
+  addCourse               AddClass[]
+  apply                   Apply[]
+  comment                 Comment?
+  attendances             AttenDance[] // 學生的點名記錄
+  student_class           Class[]                    
+  Parent_data             User?                      @relation(fields: [student_parent_data_id], references: [id])
+  Teacher_data            StaffUser?                 @relation(fields: [student_teacher_data_id], references: [id])
+  BookList                student_booklist[]
+  EX_Paper                student_ex_paper[]
+  EX_scope                student_ex_scope[]
+  EX_Time                 student_ex_timetable[]
+  SC_Timetable            student_school_timetable[]
+  Score                   student_score[]
+  course                  Course[]                   @relation("CourseToStudent")
+  dailyreview             dailyreviews[]
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  content    String
+  author     String   @unique
+  createAt   DateTime @default(now())
+  student_id String   @unique
+  student    Student  @relation(fields: [student_id], references: [id])
+}
+
+model Apply {
+  id               String  @id @default(cuid())
+  title            String  
+  subject          String
+  content          String
+  apply            Boolean
+  isapply          Boolean @default(false)
+  product_id       String
+  username         String
+  apply_student_id String  
+  createdata             DateTime @default(now())
+  student          Student @relation(fields: [apply_student_id], references: [id])
+}
+
+model Course {
+  id                     String       @id @default(cuid())
+  day_start              String
+  day_end                String
+  start_time             String
+  end_time               String
+  days                   Json
+  weekdays               Json
+  publicholiday_model    String[]
+  course_name            String       @unique
+  course_subject         String
+  persons                Int
+  teacher                String
+  course_teacher_data_id String[]
+  grade                  Int
+  class                  Class[]
+  student                Student[]    @relation("CourseToStudent")
+  Teacher_data           StaffUser[]
+  TimeTemplateID         String // 外键字段
+  TimeTemplate           timetemplate @relation("TimeTemplateToCourses", fields: [TimeTemplateID], references: [id]) // 关系字段
+}
+
+model Class {
+  id               String          @id @default(cuid())
+  class_time_h     Int
+  cram             String
+  classroom        String
+  class_course_id  String
+  class_lesson     String
+  class_start_time String
+  class_end_time   String
+  class_subject    String
+  teacher          String
+  grade            Int
+  node             Int
+  attend_number    Int
+  attend_name     String[]
+  isSubmittedform  Boolean @default(false)
+  class_date       String
+  persons          Int
+  freq             String?
+  title            String?
+  allDay           Boolean?        @default(false)
+  Teacher_time_work   Teacher_time_work[]
+  addClass         AddClass[]
+  attendance        AttenDance[]
+  class_course     Course          @relation(fields: [class_course_id], references: [id])
+  student          Student[]
+  change_class     ChangeClass[]
+}
+
+model ChangeClass {
+  id                  String @id @default(cuid())
+  targetclassId       String
+  currentclassId      String
+  name                String
+  date                String
+  class_date          String
+  createData           DateTime @default(now())
+  class              Class@relation(fields: [targetclassId], references: [id])
+}
+
+model AttenDance {
+  id                      String @id @default(cuid())
+  classroom   Class @relation(fields: [classroomId], references: [id])
+  classroomId String
+  student     Student      @relation(fields: [studentId], references: [id])
+  studentId   String
+  date        DateTime  @default(now())
+  isPresent   Boolean   @default(false) // 是否出席
+  isLate      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Node {
+  id           String      @id @default(cuid())
+  name         String      @unique
+  title        String      @unique
+  author       String      @unique
+  img          String?
+  answer       Boolean
+  node_lesson  String      @unique
+  grade        Int
+  language     String      @unique
+  teacher      String[]    @unique
+  subject      String      @unique
+  teacher_data StaffUser[] @relation("TeacherNode")
+}
+
+model AddClass {
+  id        String  @id @default(cuid())
+  studentId String  
+  name      String
+  targetclassId   String
+  currentclassId String
+  date      String
+  class     Class   @relation(fields: [targetclassId], references: [id])
+  student   Student @relation(fields: [studentId], references: [id])
+}
+
+model Teacher_time_work {
+  id                   String    @id @default(cuid())
+  year                 String
+  month                String    
+  P_HR                 Int
+  JHS_HR               Int
+  HS_HR                Int
+  P_number             Int
+  JHS_number           Int
+  HS_number            Int
+  class_time_work_id   String
+  class_time_work      Class @relation(fields: [class_time_work_id], references: [id])
+  teacher_time_work_id String
+  teacher_data         StaffUser @relation(fields: [teacher_time_work_id], references: [id])
+}
+
+model Teacher_upload_node {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  author          String    @unique
+  img             String?
+  lesson          String
+  grade           Int
+  language        String
+  teacher         String    @unique
+  subject         String    @unique
+  answer          Boolean
+  title           String    @unique
+  teacher_data_id String
+  teacher_data    StaffUser @relation("TeacherDataToUploadNodes", fields: [teacher_data_id], references: [id])
+}
+
+model News {
+  id       String   @id @default(cuid())
+  title    String   @unique
+  content  String
+  createAt DateTime @default(now())
+  date     String
+}
+
+model School {
+  id                  String             @id @unique @default(cuid())
+  school_name         String             @unique
+  school_booklist     Booklist[]
+  school_ex_pager     Ex_pager[]
+  school_ex_scope     Ex_scope[]
+  school_ex_timetable Ex_timetable[]
+  school_timetable    School_timetable[]
+  school_score        Score[]
+  school_EX_Day       School_EX_Day[]
+  school_subject      School_Subject[]
+}
+
+model School_EX_Day {
+  id               String @id @default(cuid())
+  school_ex_day_id String
+  grade            Int
+  subject          String
+  year             String // 修改为 String 类型
+  quarter          Int
+  EX_Day           String
+  title            String
+  school_ex_day    School @relation(fields: [school_ex_day_id], references: [id])
+}
+
+//想不起用來做甚麼 大數據 AI 方向用?
+model School_Subject {
+  id                String @id @unique @default(cuid())
+  quarter           Int
+  grade             Int
+  chine_data        String
+  math_data         String
+  eng_data          String
+  school_subject_id String
+  school_subject    School @relation(fields: [school_subject_id], references: [id])
+}
+
+model School_timetable {
+  id                         String  @id @default(cuid())
+  name                       String
+  img                        String?
+  school_school_timetable_id String
+  school_name                String
+  grade                      Int
+  year                       String
+  quarter                    Int
+  school_school_timetable    School  @relation(fields: [school_school_timetable_id], references: [id])
+
+  @@index([school_school_timetable_id, grade, year, quarter])
+}
+
+model Ex_pager {
+  id                 String  @id @default(cuid())
+  name               String
+  img                String?
+  school_ex_pager_id String
+  school_name        String
+  grade              Int
+  subject            String
+  year               String
+  quarter            Int
+  school_ex_pager    School  @relation(fields: [school_ex_pager_id], references: [id])
+
+  @@index([school_ex_pager_id, grade, subject, year, quarter])
+}
+
+model Ex_scope {
+  id                 String @id @default(cuid())
+  name               String
+  img                String
+  school_ex_scope_id String
+  school_name        String
+  grade              Int
+  quarter            Int
+  subject            String
+  school_ex_scope    School @relation(fields: [school_ex_scope_id], references: [id])
+
+  @@index([school_ex_scope_id, grade, quarter, subject])
+}
+
+model Ex_timetable {
+  id                String  @id @default(cuid())
+  name              String
+  img               String?
+  school_ex_time_id String
+  school_name       String
+  grade             Int
+  year              String
+  quarter           Int
+  subject           String
+  school_ex_time    School  @relation(fields: [school_ex_time_id], references: [id])
+
+  @@index([school_ex_time_id, grade, year, quarter, subject])
+}
+
+model Booklist {
+  id                 String @id @default(cuid())
+  name               String
+  img                String
+  school_booklist_id String
+  school_name        String
+  grade              Int
+  year               String
+  school_booklist    School @relation(fields: [school_booklist_id], references: [id])
+
+  @@index([school_booklist_id, grade, year])
+}
+
+model Score {
+  id              String @id @default(cuid())
+  school_score_id String
+  grade           Int
+  subject         String
+  score           Int
+  quarter         Int
+  school_name     String
+  school_score    School @relation(fields: [school_score_id], references: [id])
+}
+
+model student_school_timetable {
+  id                          String  @id @default(cuid())
+  name                        String
+  img                         String?
+  student_school_timetable_id String
+  student_name                String
+  grade                       Int
+  year                        String
+  quarter                     Int
+  school                      String
+  student                     Student @relation(fields: [student_school_timetable_id], references: [id])
+}
+
+model student_ex_paper {
+  id                  String  @id @default(cuid())
+  name                String  @unique
+  img                 String
+  student_ex_paper_id String
+  student_name        String  @unique
+  grade               Int
+  subject             String
+  year                String
+  quarter             Int
+  school              String
+  student             Student @relation(fields: [student_ex_paper_id], references: [id])
+}
+
+model student_ex_scope {
+  id                  String  @id @default(cuid())
+  name                String  @unique
+  img                 String?
+  student_ex_scope_id String
+  student_name        String  @unique
+  grade               Int
+  quarter             Int
+  school              String
+  subject             String
+  student             Student @relation(fields: [student_ex_scope_id], references: [id])
+}
+
+model student_ex_timetable {
+  id                      String  @id @default(cuid())
+  name                    String  @unique
+  img                     String?
+  student_ex_timetable_id String
+  student_name            String  @unique
+  grade                   Int
+  year                    String
+  quarter                 Int
+  school                  String
+  subject                 String
+  student                 Student @relation(fields: [student_ex_timetable_id], references: [id])
+}
+
+model student_booklist {
+  id                  String  @id @default(cuid())
+  name                String  @unique
+  img                 String?
+  student_booklist_id String
+  student_name        String  @unique
+  grade               Int
+  year                String
+  school              String
+  student             Student @relation(fields: [student_booklist_id], references: [id])
+}
+
+model student_score {
+  id               String  @id @default(cuid())
+  student_score_id String
+  grade            Int
+  subject          String  @unique
+  score            Int
+  quarter          Int
+  student_name     String  @unique
+  year             String
+  school           String
+  name             String
+  img              String?
+  student          Student @relation(fields: [student_score_id], references: [id])
+}
+
+model public_holiday {
+  id            String   @id @default(cuid())
+  publicholiday String[]
+}
+
+model timetemplate {
+  id                  String   @id @default(cuid())
+  publicholiday_model String[]
+  title               String
+  day_start           String
+  day_end             String
+  start_time          String
+  end_time            String
+  weekdays            Json
+  days                Json
+  grade               Int
+  lesson              String
+  Courses             Course[] @relation("TimeTemplateToCourses") // 反向关系字段
+}
+
+model dailyreviews {
+  id                 String @id @default(uuid())
+  title              String
+  content            String
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  student_id         String
+  Students           Student @relation(fields: [student_id], references: [id])
+  teacher_id         String
+  Teachers           StaffUser @relation(fields: [teacher_id], references: [id])
+  
+}
+
+enum UserRole {
+  ADMIN
+  SUPADMIN
+  TEACHER
+  PARENT
+  USER
+}

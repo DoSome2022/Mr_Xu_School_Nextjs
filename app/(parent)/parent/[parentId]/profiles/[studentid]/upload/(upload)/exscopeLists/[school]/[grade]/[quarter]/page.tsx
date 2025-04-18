@@ -1,0 +1,47 @@
+"use client";
+
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import useSWR from "swr";
+
+const ExScope_Grade_Quarter_Subject = () => {
+  const params = useParams<{
+    parentId: string;
+    studentid: string;
+    school: string;
+    grade: number;
+    quarter: number;
+  }>();
+  const ParentID = params?.parentId as string;
+  const StudentID = params?.studentid as string;
+  const SchoolName = params?.school as string;
+  const Grade = params?.grade as number;
+  const Quarter = params?.quarter as number;
+
+  const fetcher = (...args) => fetch(...args).then((res) => res.json());
+  const { data, error, isLoading } = useSWR(
+    "http://127.0.0.1:8000/api/School_data/schoolsubjects/",
+    fetcher
+  );
+
+  if (error) return <>error: {error}</>;
+  if (isLoading) return <>載入中 ....</>;
+
+  return (
+    <>
+      <span>ExScope_Grade_Quarter_Subject</span>
+      <br />
+      {data.map((subject: any) => (
+        <Link
+          key={subject.school_subject}
+          className="text-stone-950 hover:text-gray-700 block mb-2"
+          href={`/parent/${ParentID}/profiles/${StudentID}/upload/exscopeLists/${SchoolName}/${Grade}/${Quarter}/${subject.school_subject}`}
+        >
+          科目: {subject.school_subject}
+        </Link>
+      ))}
+    </>
+  );
+};
+
+export default ExScope_Grade_Quarter_Subject;
