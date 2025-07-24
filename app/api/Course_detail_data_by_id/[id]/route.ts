@@ -14,7 +14,8 @@ export async function GET (req : Request , {params}:{params:{id:string}}) {
                 }
             },
             student: true,
-            Teacher_data: true
+            Teacher_data: true,
+            joinStudent: true
         }
     });
     return NextResponse.json(res)

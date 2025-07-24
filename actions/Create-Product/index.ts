@@ -15,7 +15,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
             description,
             price,
             product_price_record_id,
-            stock
+            stock,
+            Course_id
         } = data;
 
     let Product_data;
@@ -27,7 +28,9 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 description: description,
                 price : price,
                 product_price_record_id : product_price_record_id,
-                stock : stock
+                stock : stock,
+                Course_id : Course_id,
+                
             }
         });
     } catch (error) {

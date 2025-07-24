@@ -6,8 +6,9 @@ export type FieldErrors<T> = {
 
 export type ActionState<TInput, TOutput> = {
     fieldErrors?: FieldErrors<TInput>;
-    error?: string | null;
+    error?: string | undefined;
     data?: TOutput;
+    success?: string | undefined;
 }
 
 export const CreateSafeAction = <TInput, TOutput>(

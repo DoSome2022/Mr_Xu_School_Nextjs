@@ -4,16 +4,26 @@ import { useParams } from 'next/navigation';
 import Link from "next/link";
 import { useEffect, useState } from 'react';
 
+interface StudentName {
+    id:string;
+    name:string;
+    grade:string;
+    year:string;
+    quarter:string;
+    subject:string;
+}
 const ScoreLists_Year_Quarter_Subject_List = () => {
-    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ;  grade : number ; year: string; quarter:number; subject: string;}>();
+    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ;  grade : string ; year: string; quarter:string; subject: string;}>();
     const ParentID = params?.parentdetailbyID as string;
     const StudentID = params?.studentdetailbyID as string;
-    const Grade = params?.grade as number;
+    const Grade = params?.grade as string;
     const Year = params?.year as string;
-    const Quarter = params?.quarter as number;
-    const Subject = params?.subject as string;
+    const Quarter = params?.quarter as string;
+    const Subject = params?.subject ? decodeURIComponent(params.subject) : '';
 
-    const [ GetStudentScoreLists , setGetStudentScoreLists ] = useState<any>([]);
+    const [ GetStudentScoreLists , setGetStudentScoreLists ] = useState<StudentName[]>([]);
+
+    console.log("params : ", params )
 
     useEffect(()=>{
         if(StudentID){
@@ -42,6 +52,7 @@ const ScoreLists_Year_Quarter_Subject_List = () => {
             <span> ScoreLists_Year_Quarter_Subject_List </span>
             <br />
             {GetStudentScoreLists.map((d)=>{
+                if(d.grade == Grade && d.year == Year && d.quarter == Quarter && d.subject == Subject){
                 return(
                     <>
             <br />
@@ -52,7 +63,9 @@ const ScoreLists_Year_Quarter_Subject_List = () => {
                 </Link>
             <br />
                     </>
-                )
+                )                    
+                }
+
             })}
         </>
     )

@@ -1,17 +1,20 @@
 "use client";
 
 import { useParams } from 'next/navigation';
-import Link from "next/link";
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
+interface ScoreListsByID{
+    name : string;
+    img: string;
+}
 
 const ScoreLists_Year_Quarter_Subject_List_By_ID = () => {
     const params = useParams<{ studentid : string ;}>();
 
     const StudentID = params?.studentid as string;
 
-    const [ GetStudentScoreDetailByID , setGetStudentScoreDetailByID] = useState<any>([]);
+    const [ GetStudentScoreDetailByID , setGetStudentScoreDetailByID] = useState<ScoreListsByID[]>([]);
 
     useEffect(()=>{
         if(StudentID){
@@ -42,7 +45,7 @@ const ScoreLists_Year_Quarter_Subject_List_By_ID = () => {
         <>
             <span> ScoreLists_Year_Quarter_Subject_List_By_ID </span>
             <br />
-{GetStudentScoreDetailByID.map((d:any)=>{
+{GetStudentScoreDetailByID.map((d)=>{
     return(
         <div key={d.id} className="my-2">
           {d.name}

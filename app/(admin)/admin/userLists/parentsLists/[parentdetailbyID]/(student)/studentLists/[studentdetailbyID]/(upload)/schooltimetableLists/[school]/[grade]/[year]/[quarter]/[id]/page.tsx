@@ -1,22 +1,35 @@
 "use client";
 
 import { useParams } from 'next/navigation';
-import Link from "next/link";
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
+interface StudentDetailData {
+    name: string;
+    img: string;
+    id: string;
+    school: string;
+    grade: string;
+    year: string;
+    quarter: string;
+}
+
 const SchoolTimeTableLists_Grade_Year_Quarter_Lists_By_ID = () => {
-    const params = useParams<{ studentdetailbyID : string ;}>();
-
+    const params = useParams<{ studentdetailbyID : string ; id : string ; parentdetailbyID: string; school : string; grade : string ; year: string; quarter: string;}>();
     const StudentID = params?.studentdetailbyID as string;
+    const SchoolName = params?.school as string;
+    const Grade = params?.grade as string;
+    const Year = params?.year as string;
+    const Quarter = params?.quarter as string;
+    const Id = params?.id as string;
 
-    const [ GetStudentSchoolTimeTableDetailByID , setGetStudentSchoolTimeTableDetailByID ] = useState<any>([]);
+    const [ GetStudentSchoolTimeTableDetailByID , setGetStudentSchoolTimeTableDetailByID ] = useState<StudentDetailData[]>([]);
 
     useEffect(()=>{
-        if(StudentID){
-            const getstudentschooltimetabledetailbyid = async (StudentID: string) => {
+        if(StudentID && Id){
+            const getstudentschooltimetabledetailbyid = async (StudentID: string , id: string) => {
                 try {
-                    const res = await fetch(`/api/student/Student_ScTimetable_by_id_Lists/${StudentID}`)
+                    const res = await fetch(`/api/student/Student_ScTimetable_by_id_Lists_by_id/${StudentID}/${id}`)
                     if(!res.ok) {
                         throw new Error("斷線！");
                     }
@@ -26,12 +39,12 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Lists_By_ID = () => {
                     console.error(error)
                 }
             };
-            getstudentschooltimetabledetailbyid(StudentID)
+            getstudentschooltimetabledetailbyid(StudentID , Id)
         }
-    },[StudentID])
+    },[StudentID , Id])
 
 
-    console.log(GetStudentSchoolTimeTableDetailByID[0])
+    console.log(GetStudentSchoolTimeTableDetailByID)
 
 
     return(
@@ -39,6 +52,7 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Lists_By_ID = () => {
             <span> SchoolTimeTableLists_Grade_Year_Quarter_Lists_By_ID </span>
             <br />
 {GetStudentSchoolTimeTableDetailByID.map((d)=>{
+    if(d.school == SchoolName && d.grade == Grade && d.year == Year && d.quarter == Quarter){
     return(
         <>
         {d.name}
@@ -50,7 +64,9 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Lists_By_ID = () => {
                     alt=""
                     />
         </>
-    )
+    )        
+    }
+
 })}
         </>
     )

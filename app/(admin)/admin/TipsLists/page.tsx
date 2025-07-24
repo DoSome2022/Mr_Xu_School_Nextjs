@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React,{ useEffect, useState } from "react";
 import { Button } from "@/components/ui/button"; // 假設你使用 shadcn/ui 的 Button
 import { Input } from "@/components/ui/input"; // 假設你使用 shadcn/ui 的 Input
 
@@ -17,7 +17,7 @@ interface ApplyData {
   };
 }
 
-const TipsLists = () => {
+const TipsLists:React.FC = () => {
   const [getApplyData, setGetApplyData] = useState<ApplyData[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>("");
 

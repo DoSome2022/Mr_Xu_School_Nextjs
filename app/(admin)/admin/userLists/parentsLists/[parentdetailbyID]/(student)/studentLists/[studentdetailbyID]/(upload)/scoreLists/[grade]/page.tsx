@@ -4,19 +4,26 @@ import { useParams } from 'next/navigation';
 import Link from "next/link";
 import useSWR from "swr";
 
+interface StudentSchoolYear {
+    school_year: string;
+}
 const ScoreLists_Year = () => {
-    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ;  grade : number}>();
+    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ;  grade : string}>();
     const ParentID = params?.parentdetailbyID as string;
     const StudentID = params?.studentdetailbyID as string;
-    const Grade = params?.grade as number;
+    const Grade = params?.grade as string;
 
-    const fetcher = (...args) => fetch(...args).then((res) => res.json());
+    const fetcher = (url: string, init?: RequestInit):Promise<StudentSchoolYear[]> => fetch(url, init).then((res) => res.json());
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL|| "http://127.0.0.1:8000"
 
-    const { data , error , isLoading } = useSWR('http://127.0.0.1:8000/api/School_data/schoolyears/' , fetcher);
+    const { data , error , isLoading } = useSWR(`http://127.0.0.1:8000/api/School_data/schoolyears/` , fetcher);
 
     if(error) return <> error : {error} </>
     if(isLoading) return <> 載入中 .... </>
-
+      // 確保 data 是陣列
+      if (!data || !Array.isArray(data)) {
+        return <div className="p-4 text-red-500">無效的資料格式</div>;
+    }
 
 
     return(

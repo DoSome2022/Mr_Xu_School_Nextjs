@@ -3,22 +3,26 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Image from "next/image"; 
 
+interface SchoolBookData {
+    name: string;
+    img: string;
+}
 const BookLists_year_grade_by_Id = () => {
 
-    const params = useParams<{year: string ; grade: number; id:string}>();//plz use console.log check params name
+    const params = useParams<{year: string ; grade: string; id:string; schooldetailbyID:string;}>();//plz use console.log check params name
     const SchoolId = params?.schooldetailbyID as string;// 獲取URL中的SchoolId參數
     const yearId = params?.year as string// 獲取URL中的yearId參數
-    const GradeId = params?.grade as number // 獲取URL中的GradeId參數
+    const GradeId = params?.grade as string // 獲取URL中的GradeId參數
     const BookListById = params?.id as string // 獲取URL中的Id參數
 
     console.log(BookListById)
 
-    const [ GetBooklistsDetailDataById , setGetBooklistsDetailDataById ] = useState<any>([]);
+    const [ GetBooklistsDetailDataById , setGetBooklistsDetailDataById ] = useState<SchoolBookData[]>([]);
 
 
     useEffect(() =>{
         if(SchoolId && yearId && GradeId && BookListById) {
-            const getBooklitsDetailById = async (SchoolId: string ,yearId:string , GradeId:Number , BookListById:string) => {
+            const getBooklitsDetailById = async (SchoolId: string ,yearId:string , GradeId:string , BookListById:string) => {
                 try {
                 const res = await fetch(`/api/Booklists_detail_data_by_id/${SchoolId}/${yearId}/${GradeId}/${BookListById}`);
                 if(!res.ok) {

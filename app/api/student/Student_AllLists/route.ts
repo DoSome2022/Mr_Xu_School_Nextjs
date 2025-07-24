@@ -8,7 +8,8 @@ export async function GET (req : Request) {
     if(req.method === "GET") {
     const res = await db.student.findMany({
         include:{
-            student_class: true
+            student_class: true,
+            Parent_data:true
         }
     });
     return NextResponse.json(res)

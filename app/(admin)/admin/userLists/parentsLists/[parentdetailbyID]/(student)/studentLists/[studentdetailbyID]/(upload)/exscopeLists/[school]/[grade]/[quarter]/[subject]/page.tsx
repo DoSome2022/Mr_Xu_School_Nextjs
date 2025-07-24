@@ -4,17 +4,27 @@ import { useParams } from 'next/navigation';
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+interface StudentName {
+    id: string
+    name: string
+    school: string
+    grade: string
+    quarter: string
+    subject: string
+}
+
+
 const ExScope_Grade_Quarter_Subject_Lists = () => {
 
-    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ; school : string; grade : number ; quarter : number ; subject : string;}>();
+    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ; school : string; grade : string ; quarter : string ; subject : string;}>();
     const ParentID = params?.parentdetailbyID as string;
     const StudentID = params?.studentdetailbyID as string;
     const SchoolName = params?.school as string;
-    const Grade = params?.grade as number;
-    const Quarter = params?.quarter as number;
-    const Subject = params?.subject as string;
+    const Grade = params?.grade as string;
+    const Quarter = params?.quarter as string;
+    const Subject = params?.subject ? decodeURIComponent(params.subject) : '';
 
-    const [ GetStudentExScopeLists , setGetStudentExScopeLists ] = useState<any>([]);
+    const [ GetStudentExScopeLists , setGetStudentExScopeLists ] = useState<StudentName[]>([]);
 
     useEffect(()=>{
         if(StudentID){
@@ -35,22 +45,27 @@ const ExScope_Grade_Quarter_Subject_Lists = () => {
     },[StudentID])
 
 
-    console.log(GetStudentExScopeLists[0])
+    console.log(GetStudentExScopeLists)
 
     return(
         <>
             <span> ExScope_Grade_Quarter_Subject_Lists </span>
             <br />
         {GetStudentExScopeLists.map((d)=>{
+            if(d.school == SchoolName && d.grade == Grade && d.quarter == Quarter && d.subject == Subject ){
             return(
                 <>
         <Link className='text-stone-950 hover:text-gray-700'
-                href={`/admin/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/exscopeLists/${SchoolName}/${Grade}/${d.id}`}
+                href={`/admin/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/exscopeLists/${SchoolName}/${Grade}/${Quarter}/${Subject}/${d.id}`}
             >
                 名稱:{d.name}
             </Link>
+
+            <br />
                 </>
             )
+            }
+
 
 
         })}

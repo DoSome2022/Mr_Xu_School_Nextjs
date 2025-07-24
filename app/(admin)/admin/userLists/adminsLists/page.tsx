@@ -1,11 +1,25 @@
 "use client";
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import React,{ useEffect, useState } from "react"
+
+enum Role {
+    ADMIN,
+    SUPADMIN ,
+    TEACHER ,
+}
 
 
-const adminLists = () =>{
-    const [ GetSupAdminLists , setGetSupAdminLists ] = useState([]);
+interface SupAdminData{
+    id: string,
+    username: string,
+    nickname: string,
+    role: Role 
+    cram:  string,
+}
+
+const adminLists :React.FC = () =>{
+    const [ GetSupAdminLists , setGetSupAdminLists ] = useState<SupAdminData[]>([]);
 
     useEffect(()=>{
         const fetchsupadminlistsData = async () =>{
@@ -38,7 +52,7 @@ const adminLists = () =>{
         <br />
 
         {GetSupAdminLists.map((d)=>{
-            if(d.role === "SUPADMIN"){
+            if(d.role === Role.SUPADMIN){
                 return(
                     <>
         <Link

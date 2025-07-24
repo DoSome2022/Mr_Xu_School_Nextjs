@@ -5,7 +5,7 @@ import * as z from "zod";
 import { useState, useEffect ,useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "next/navigation";
+import { useParams} from "next/navigation";
 
 import { Input } from "@/components/ui/input"; 
 
@@ -21,13 +21,7 @@ import {
 } from "@/components/ui/form"
 
 
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+
 import { student_score_Create_Schema } from "@/actions/Create-Student_Score/schema";
 import { SWR_School_Subject } from "../fatchdata/swrschool_subject";
 import { SWR_School_Grade } from "../fatchdata/swrschool_grade";
@@ -36,9 +30,6 @@ import { createStudentScore } from "@/actions/Create-Student_Score";
 import { SWR_School_Year } from "../fatchdata/swrschool_year";
 import Image from "next/image";
 
-interface StudentID {
-    studentId : string;
-}
 
 interface StudentData{
     id : string;
@@ -48,8 +39,8 @@ interface StudentData{
 }
 
 interface Student_Score_Create_FormProps{
-    studentId : StudentID;
-    data : StudentData
+    studentId : string;
+    data : StudentData[]
 }
 
 
@@ -57,15 +48,17 @@ interface Student_Score_Create_FormProps{
 const Student_Score_Create_Form = ({studentId , data}:Student_Score_Create_FormProps) =>{
 
         //上傳圖片
-        const [uploadedImageUrl, setUploadedImageUrl ] = useState();
-        const [ error, setError ] = useState<string | undefined>("");
-        const [ success, setSuccess  ] = useState<string | undefined>("");
-        
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [ error, setError ] = useState<string | undefined>("");
+    const [ success, setSuccess  ] = useState<string | undefined>("");
+    const param = useParams();
+    const parentId = param.parentdetailbyID as string;
     const [isPending , startTransition] = useTransition();
 
     const student_score_create_form = useForm<z.infer<typeof student_score_Create_Schema>>({
         resolver : zodResolver(student_score_Create_Schema),
         defaultValues:{
+            parentId: parentId,
             subject: "",
             student_name:"",
             student_score_id: studentId,
@@ -87,31 +80,20 @@ const Student_Score_Create_Form = ({studentId , data}:Student_Score_Create_FormP
         }
     },[data[0]])
 
-    const handleImageUpload = async (event) => {
-        const file = event.target.files[0]
-        const formData = new FormData();
-        formData.append("file",file);
-        formData.append("upload_preset", "test_upLoad_img")
+  // 處理圖片上傳
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
 
-
-        console.log("-- 已選的圖片 --",file,"--end--")
-
-        const uploadResponse = await fetch(
-            "https://api.cloudinary.com/v1_1/dlullfqaw/image/upload",
-            {
-                method:"POST",
-                body:formData,
-            }
-        );
-
-        const uploadedImageData = await uploadResponse.json();
-        const imageUrl = uploadedImageData.secure_url;
-        setUploadedImageUrl(imageUrl);
-        student_score_create_form.setValue("img",imageUrl)
-        console.log("--上傳後--",imageUrl,"-- end --")
-
-
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        student_score_create_form.setValue("img", base64String);
+        setPreviewImage(base64String);
+      };
+      reader.readAsDataURL(file);
     }
+  };
 
 
     const student_score_create_form_onSubmit = (values : z.infer<typeof student_score_Create_Schema>) => {
@@ -129,6 +111,8 @@ const Student_Score_Create_Form = ({studentId , data}:Student_Score_Create_FormP
 
     return(
         <>
+        {error && <div className="text-red-500 mb-4">{error}</div>}
+        {success && <div className="text-green-500 mb-4">{success}</div>}
 <Form {...student_score_create_form}>
                 <form
                     onSubmit={student_score_create_form.handleSubmit(student_score_create_form_onSubmit)}
@@ -191,7 +175,7 @@ const Student_Score_Create_Form = ({studentId , data}:Student_Score_Create_FormP
                 />
                 </div> 
                 <div className="space-y-4" 
-                //hidden
+                hidden
                 >
                 <FormField
                     control={student_score_create_form.control}
@@ -296,55 +280,41 @@ const Student_Score_Create_Form = ({studentId , data}:Student_Score_Create_FormP
                 </div> 
 
                 <div className="space-y-4">
-                <FormField
-                    control={student_score_create_form.control}
-                    name="img"
-                    render={({ field }) => (
-                        <>
-                <FormItem> 
-            <FormLabel>上傳圖片</FormLabel> 
-            <FormControl>
-
-                   <Input 
-                {...field}
-                disabled={isPending}
+            <FormField
+              control={student_score_create_form.control}
+              name="img"
+              render={() => (
+                <FormItem>
+                  <FormLabel>上傳圖片</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      onChange={handleImageUpload}
+                      type="file"
+                      accept="image/*"
+                      className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div> 
                 
-                type="hidden"
-                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" />
-            </FormControl> 
-            </FormItem>
-        <FormItem> 
-
-            <FormControl>
-
-                   <Input 
-
-                disabled={isPending}
-                onChange={handleImageUpload}
-                type="file"
-                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" />
-        </FormControl> 
-        <FormMessage />
-        </FormItem>
-                        </>
-                    )}
-                />
-
-                </div> 
-                
-                <button disabled={isPending} type="submit">
+                <Button disabled={isPending} type="submit">
                     建立
-                </button>
+                </Button>
 
                 </form>
-                {uploadedImageUrl && (
-                    <Image 
-                    width={500}
-                    height={500}
-                    src={uploadedImageUrl}
-                    alt=""
-                    />
-                )}
+                {previewImage && (
+          <Image
+            width={500}
+            height={500}
+            src={previewImage}
+            alt="預覽圖片"
+            className="mt-4"
+          />
+        )}
             </Form>
         </>
     )

@@ -60,6 +60,21 @@ const HeaderLinks = [
         "name": "提示列表",
         "path" : "/admin/TipsLists"
     },
+    {
+        "id": "11",
+        "name": "單據列表",
+        "path" : "/admin/InvoiceLists"
+    },
+    {
+        "id": "11",
+        "name": "收據列表",
+        "path" : "/admin/ReceiptLists"
+    },
+    {
+        "id": "12",
+        "name": "課室列表",
+        "path" : "/admin/classroomLists"
+    },
 ]
 
 

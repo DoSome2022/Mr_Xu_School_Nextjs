@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache"; 
 import { InputType , ReturnType } from "./types"; 
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { School_timetable_Create_Schema } from "./schema";
+import { redirect } from "next/navigation";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -37,7 +37,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- school_timetable_Data -- : " , school_timetable_Data , " -- End -- ")
-    return { data: school_timetable_Data }
+    // return { data: school_timetable_Data }
+    return redirect(`/admin/schoolLists/${school_school_timetable_id}/extimeLists`)
 }
 
 export const createSchoolTimeTable = CreateSafeAction(School_timetable_Create_Schema, handler)

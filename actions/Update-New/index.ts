@@ -26,9 +26,10 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         });
     } catch (error) {
         console.log(error)
+        return { error: "Error updating news" };
     }
     console.log("-- News_update_Data -- : " , news_data , " -- End -- ")
-    return { data: news_data }
+    return { data: news_data , success: "News updated successfully" }
 }
 
 export const update_News_action = CreateSafeAction(News_Update_Schema, handler)

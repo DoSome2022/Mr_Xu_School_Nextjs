@@ -10,6 +10,14 @@ import {
 
 import useSWR from "swr";
 
+interface CourseLesson {
+  id: string;
+  course_lesson: string;
+}
+
+
+
+
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 

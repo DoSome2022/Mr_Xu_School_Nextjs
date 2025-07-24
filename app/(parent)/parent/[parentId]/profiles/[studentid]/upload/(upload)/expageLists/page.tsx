@@ -4,6 +4,9 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface StudentSchool {
+  school: string;
+}
 const ExPageLists = () => {
 
   const params = useParams<{parentId : string ; studentid : string}>();
@@ -11,7 +14,7 @@ const ExPageLists = () => {
   const StudentID = params?.studentid as string;
 
     //拿學生資料
-    const [GetSutudentData , setGetSutudentData] = useState([]);
+    const [GetSutudentData , setGetSutudentData] = useState<StudentSchool[]>([]);
     
   //用ParentId去拿student DB裹的DATA
   useEffect(()=>{
@@ -42,7 +45,7 @@ const ExPageLists = () => {
                 >
                         上傳考試卷
                     </Link>
-            {GetSutudentData?.map((d:any)=>{
+            {GetSutudentData?.map((d)=>{
                 return(
                     <>                    
 

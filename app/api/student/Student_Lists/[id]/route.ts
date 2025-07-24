@@ -13,7 +13,13 @@ if(req.method === "GET"){
         where:{
             student_parent_data_id :String(id)
         },include:{
-            Parent_data: true
+            Parent_data: true,
+            student_class: true,
+            course: {
+                include:{
+                    class:true,
+                }
+            },
         }
     });
     return NextResponse.json(res)

@@ -4,20 +4,27 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface SchoolName {
+    id: string;
+    name: string;
+    grade: number;
+    quarter: number;
+    subject: string;
+}
 const ExScopeLists_Grade_Subject_exscpelists = () => {
 
-    const params = useParams<{grade : number ; quarter: number ; subject: string }>();
-
+    const params = useParams<{grade : string ; quarter: string ; subject: string ; schooldetailbyID: string}>();
+    console.log("params :" , params)
     const SchoolId = params?.schooldetailbyID  as string;
-    const GradeId = params?.grade as number;
-    const QuarterId = params?.quarter as number;
-    const SubjectId = params?.subject as string;
+    const GradeId = params?.grade as string;
+    const QuarterId = params?.quarter as string;
+    const SubjectId = params?.subject ? decodeURIComponent(params.subject) : '';
  
-    const [ GetExScopeListsDataById , setGetExScopeListsDataById ] = useState<any>([]);
+    const [ GetExScopeListsDataById , setGetExScopeListsDataById ] = useState<SchoolName[]>([]);
 
     useEffect(() =>{
         if(SchoolId && GradeId && QuarterId && SubjectId) {
-            const getExScopeListsDetail = async (SchoolId: string  , GradeId:number ,QuarterId:number ,SubjectId: string) => {
+            const getExScopeListsDetail = async (SchoolId: string  , GradeId:string ,QuarterId:string ,SubjectId: string) => {
                 try {
                 const res = await fetch(`/api/Exscopelists_by_id/${SchoolId}/${GradeId}/${QuarterId}/${SubjectId}`);
                 if(!res.ok) {
@@ -41,18 +48,21 @@ const ExScopeLists_Grade_Subject_exscpelists = () => {
         <>
             ExScopeLists_Grade_Subject_exscpelists
             {GetExScopeListsDataById.map((d)=>{
-                return(
-                    <>
-                
-            <br />
-                <Link className="text-stone-950 hover:text-gray-700" 
-                    href={`/admin/schoolLists/${SchoolId}/exscopeLists/${GradeId}/${QuarterId}/${SubjectId}/${d.id}`}
-                >
-                    name:{d.name}
-                </Link>
-            <br />    
-                    </>
-                )
+                if(d.grade == Number(GradeId) && d.quarter == Number(QuarterId) && d.subject == SubjectId){
+                    return(
+                        <>
+                    
+                <br />
+                    <Link className="text-stone-950 hover:text-gray-700" 
+                        href={`/admin/schoolLists/${SchoolId}/exscopeLists/${GradeId}/${QuarterId}/${SubjectId}/${d.id}`}
+                    >
+                        name:{d.name}
+                    </Link>
+                <br />    
+                        </>
+                    )
+
+                }
             })}
 
         </>

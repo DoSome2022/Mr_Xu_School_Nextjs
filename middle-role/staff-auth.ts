@@ -1,6 +1,6 @@
-import authConfig_stafflogin from "@/auth.config_stafflogin";
-import NextAuth from "next-auth";
+// import authConfig_stafflogin from "@/auth.config_stafflogin";
+// import NextAuth from "next-auth";
 
-const {auth} = NextAuth(authConfig_stafflogin)
+// const {auth} = NextAuth(authConfig_stafflogin)
 
-export const staffAuth = {auth};
+// export const staffAuth = {auth};

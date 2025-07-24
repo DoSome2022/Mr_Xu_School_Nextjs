@@ -5,10 +5,6 @@ import { NextResponse } from "next/server";
 import { auth } from "./auth";
 
 
-
-
-
-
 export default auth((req) => {
 
     const publicRoutes = ["/", "/login", "/stafflogin","/hide/createMainAdmin"];

@@ -3,19 +3,19 @@ import { useEffect ,useState } from "react";
 
 
 interface SchoolID {
-    SchoolId : string;
-    data : string;
+    id: string
+    school_name: string
 }
 
 interface EX_Pager_Create_FormProps{
-    SchoolId : SchoolID
+    SchoolId : string
 }
 
 const Ex_pager_uploadForm = ({SchoolId} : EX_Pager_Create_FormProps) => {
     
 
 
-    const [ GetSchoolById , setGetSchoolById ] = useState([]);
+    const [ GetSchoolById , setGetSchoolById ] = useState<SchoolID[]>([]);
 
 
                     // 拿School data by id

@@ -35,9 +35,9 @@ import { SWR_School_Quarter } from "../fatchdata/swrschool_quarter";
 import { createSchoolTimeTable } from "@/actions/Create-School_Timetable";
 import Image from "next/image";
 
-interface SchoolID {
-    SchoolId : string;
-}
+// interface SchoolID {
+//     SchoolId : string;
+// }
 
 interface SchoolData {
     id: string;
@@ -45,8 +45,8 @@ interface SchoolData {
 }
 
 interface SchoolTimeTable_Create_FormProps{
-    SchoolId : SchoolID;
-    data: SchoolData
+    SchoolId : string;
+    data: SchoolData[]
 }
 
 
@@ -57,9 +57,11 @@ const SchoolTimeTable_Create_Form = ({SchoolId , data} : SchoolTimeTable_Create_
     const [ error, setError ] = useState<string | undefined>("");
     const [ success, setSuccess  ] = useState<string | undefined>("");
     const [isPending , startTransition] = useTransition();
+    const [PreviewImage, setPreviewImage] = useState<string | null>(null);
+    
 
         //上傳圖片
-        const [uploadedImageUrl, setUploadedImageUrl ] = useState();
+        // const [uploadedImageUrl, setUploadedImageUrl ] = useState();
 
         // console.log("-- School Data : --",data[0],"-- end --")
     
@@ -85,31 +87,25 @@ const SchoolTimeTable_Create_Form = ({SchoolId , data} : SchoolTimeTable_Create_
         }
     })
 
-    const handleImageUpload = async (event) => {
-        const file = event.target.files[0]
-        const formData = new FormData();
-        formData.append("file",file);
-        formData.append("upload_preset", "test_upLoad_img")
+  // 處理圖片上傳
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
 
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        schooltimetable_create_form.setValue("img", base64String);
+        setPreviewImage(base64String);
+      };
+      reader.readAsDataURL(file);
 
-        console.log("-- 已選的圖片 --",file,"--end--")
-
-        const uploadResponse = await fetch(
-            "https://api.cloudinary.com/v1_1/dlullfqaw/image/upload",
-            {
-                method:"POST",
-                body:formData,
-            }
-        );
-
-        const uploadedImageData = await uploadResponse.json();
-        const imageUrl = uploadedImageData.secure_url;
-        setUploadedImageUrl(imageUrl);
-        schooltimetable_create_form.setValue("img",imageUrl)
-        console.log("--上傳後--",imageUrl,"-- end --")
-
-
+      setPreviewImage(URL.createObjectURL(file));
     }
+  };
+
+
+
 
 
     const schooltimetable_create_form_onSubmit = (values : z.infer<typeof School_timetable_Create_Schema>) => {
@@ -128,6 +124,8 @@ const SchoolTimeTable_Create_Form = ({SchoolId , data} : SchoolTimeTable_Create_
 
     return(
         <>
+                      {error && <div className="text-red-500 mb-4">{error}</div>}
+                      {success && <div className="text-green-500 mb-4">{success}</div>}
             <Form {...schooltimetable_create_form}>
                 <form
                     onSubmit={schooltimetable_create_form.handleSubmit(schooltimetable_create_form_onSubmit)}
@@ -186,10 +184,12 @@ const SchoolTimeTable_Create_Form = ({SchoolId , data} : SchoolTimeTable_Create_
             )
 })}
 
-<div className="space-y-4" >
+<div className="space-y-4" 
+hidden
+>
                 <FormField
                     control={schooltimetable_create_form.control}
-                    name="school_booklist_id"
+                    name="school_school_timetable_id"
                     render={({ field }) => (
                 <FormItem>
                     <FormControl>
@@ -264,7 +264,7 @@ const SchoolTimeTable_Create_Form = ({SchoolId , data} : SchoolTimeTable_Create_
                     render={({ field }) => (
                         <>
                 <FormItem> 
-            <FormLabel>上傳圖片</FormLabel> 
+            <FormLabel>上傳</FormLabel> 
             <FormControl>
 
                    <Input 
@@ -290,6 +290,7 @@ const SchoolTimeTable_Create_Form = ({SchoolId , data} : SchoolTimeTable_Create_
                         </>
                     )}
                 />
+
                 </div> 
                 
                 <Button disabled={isPending} type="submit">
@@ -299,16 +300,15 @@ const SchoolTimeTable_Create_Form = ({SchoolId , data} : SchoolTimeTable_Create_
                 </form>
             </Form>
 
-            {
-                uploadedImageUrl && (
-                    <Image
-                    width={500}
-                    height={500}
-                    src={uploadedImageUrl}
-                    alt=""
-                    />
-                )
-            }
+                {PreviewImage && (
+          <Image
+            width={500}
+            height={500}
+            src={PreviewImage}
+            alt="預覽圖片"
+            className="mt-4"
+          />
+        )}
 
         </>
     )

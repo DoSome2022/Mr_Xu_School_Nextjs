@@ -1,23 +1,34 @@
 "use client";
 
 import { useParams } from 'next/navigation';
-import Link from "next/link";
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
-
+interface StudentDetailData {
+    name: string;
+    img: string;
+    id : string;
+    grade: string;
+    year: string;
+    quarter: string;
+    subject: string;
+}
 const ScoreLists_Year_Quarter_Subject_List_By_ID = () => {
-    const params = useParams<{ studentdetailbyID : string ;}>();
-
+    const params = useParams<{ studentdetailbyID : string ; id : string ;parentdetailbyID : string ;  grade : string ; year: string; quarter:string; subject: string;}>();
     const StudentID = params?.studentdetailbyID as string;
+    const Grade = params?.grade as string;
+    const Year = params?.year as string;
+    const Quarter = params?.quarter as string;
+    const Subject = params?.subject ? decodeURIComponent(params.subject) : '';
+    const Id = params?.id as string;
 
-    const [ GetStudentScoreDetailByID , setGetStudentScoreDetailByID] = useState<any>([]);
+    const [ GetStudentScoreDetailByID , setGetStudentScoreDetailByID] = useState<StudentDetailData[]>([]);
 
     useEffect(()=>{
-        if(StudentID){
-            const getstudentscoredetailbyid = async (StudentID: string) => {
+        if(StudentID && Id){
+            const getstudentscoredetailbyid = async (StudentID: string, id: string) => {
                 try {
-                    const res = await fetch(`/api/student/Student_Score_by_id_Lists/${StudentID}`)
+                    const res = await fetch(`/api/student/Student_Score_by_id_Lists_by_id/${StudentID}/${id}`)
                     if(!res.ok) {
                         throw new Error("斷線！");
                     }
@@ -27,9 +38,9 @@ const ScoreLists_Year_Quarter_Subject_List_By_ID = () => {
                     console.error(error)
                 }
             };
-            getstudentscoredetailbyid(StudentID)
+            getstudentscoredetailbyid(StudentID , Id)
         }
-    },[StudentID])
+    },[StudentID , Id])
 
 
     console.log(GetStudentScoreDetailByID[0])
@@ -39,6 +50,7 @@ const ScoreLists_Year_Quarter_Subject_List_By_ID = () => {
             <span> ScoreLists_Year_Quarter_Subject_List_By_ID </span>
             <br />
 {GetStudentScoreDetailByID.map((d)=>{
+    if(d.grade == Grade && d.year == Year && d.quarter == Quarter && d.subject == Subject && d.id == Id) {
     return(
         <>
         {d.name}
@@ -50,7 +62,9 @@ const ScoreLists_Year_Quarter_Subject_List_By_ID = () => {
                     alt=""
                     />
         </>
-    )
+    )        
+    }
+
 })}
         </>
     )

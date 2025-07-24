@@ -2,6 +2,7 @@
 
 import { AdminNavbar } from "@/app/(admin)/admin/_components/navbar";
 import AdminComponents from "@/app/(admin)/admin/page";
+import SupAdminPage from "@/app/(supadmin)/supadmin/[supadminid]/page";
 import TeacherByIdComponents from "@/app/(teacher)/teacher/[teacherId]/page";
 import { getUserById } from "@/data/user";
 import { useSession } from "next-auth/react";
@@ -50,6 +51,24 @@ const PublicPage = () => {
             </>
         )
     }
+
+
+    //supadmin 權限
+
+    if(staffuserdata?.role === "SUPADMIN"){
+        if(typeof window !== "undefined") {
+            window.location.replace(`/supadmin/${staffuserdata?.id}`)
+        }
+            
+    
+    return(
+        <>
+  
+         <SupAdminPage />   
+        </>
+    )
+}
+
     //staff teacher權限
     // if(staffuserdata?.staff === true && staffuserdata?.isadmin === false ){
         if(staffuserdata?.role === "TEACHER"   ){

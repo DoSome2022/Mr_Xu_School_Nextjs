@@ -11,4 +11,5 @@ export const student_score_Create_Schema = z.object({
     year: z.string(),
     name: z.string(),
     img: z.string(),
+    parentId: z.string(),
 })

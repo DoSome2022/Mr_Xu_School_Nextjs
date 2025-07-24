@@ -24,7 +24,9 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 student_id : "",
                 student_parent_data_id : id,
                 teachers : "",
-                pay : false 
+                pay : false ,
+                ismember:false,
+                issurvive:true
 
             }
         });

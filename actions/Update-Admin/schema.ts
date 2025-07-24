@@ -1,4 +1,4 @@
-import { optional, z } from "zod";
+import { z } from "zod";
 
 export const Admin_Update_Schema = z.object({
     userid: z.string(),

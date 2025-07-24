@@ -5,8 +5,8 @@ import { useEffect, useState, useTransition } from "react";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Input } from "@/components/ui/input";
+// import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,7 +14,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  // FormMessage,
 } from "@/components/ui/form";
 
 import {
@@ -29,14 +29,29 @@ import { Apply_Create_Schema } from "@/actions/Create-Apply/schema";
 import { createApply } from "@/actions/Create-Apply";
 
 
+interface GetStudentData {
+  id: string;
+  username: string;
+  Student:[];
+  name:  string;
+  grade: number;
+}
 
-const AddToApply_Create_Form = ({ productId }: { productId: string}) => {
+interface StudentData {
+  id: string;
+  name:  string;
+  grade: number;
+}
+
+const AddToApply_Create_Form = ({ productId , productName ,courseid, }: { productId: string ; productName: string ; courseid: string }) => {
     const param = useParams();
     const parentId = param.parentId as string;
     console.log("param : ",param)
     console.log("productId : ",productId)
+    console.log("productName : ",productName)
+    console.log("courseid : ",courseid)
     const [isPending , startTransition] = useTransition();
-    const [ GetStudentData , setGetStudentData ] = useState([]);
+    const [ GetStudentData , setGetStudentData ] = useState<GetStudentData[]>([]);
 
     useEffect(()=>{
       if(parentId){
@@ -69,7 +84,10 @@ const AddToApply_Create_Form = ({ productId }: { productId: string}) => {
           product_id:productId,
           username:username,
           apply_student_id:"",
-          parentId:parentId,
+          parent_id:"",
+          course_id: "",
+          course_name: "",
+          applystate:"待處理"
         },
       });
 
@@ -77,6 +95,9 @@ const AddToApply_Create_Form = ({ productId }: { productId: string}) => {
     useEffect(()=>{
       if(GetStudentData){
         AddToApply_Create_form.setValue("username",username)
+        AddToApply_Create_form.setValue("course_id",courseid)
+        AddToApply_Create_form.setValue("course_name",productName)
+        AddToApply_Create_form.setValue("parent_id",parentId)
       }
     },[GetStudentData])
 
@@ -115,7 +136,7 @@ const AddToApply_Create_Form = ({ productId }: { productId: string}) => {
                             <SelectValue placeholder="請選擇學生" />
                           </SelectTrigger>
                           <SelectContent>
-                            {StudentsData?.map((data:any) => {
+                            {StudentsData?.map((data :StudentData) => {
                               return (
                                 <SelectItem value={data.id} key={data.id}>
                                   姓名:{data.name} 年級:{data.grade}

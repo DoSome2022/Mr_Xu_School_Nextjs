@@ -2,11 +2,35 @@
 
 import WhatsAppButton from "@/components/whatappsButton/whatappsbtn";
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import React,{ useEffect, useState } from "react"
 
-const parentsLists = () =>{
+enum Role {
+    PARENT 
+}
 
-    const [GetParentsData , setGetParentsData ] = useState([]);
+
+interface ParaentData {
+    id: string;
+    username : string;
+    nickname : string;
+    email : string;
+    role : Role;
+    phone: string;
+}
+
+// API 回傳的原始數據結構
+interface RawParentData {
+    id: string;
+    username: string;
+    nickname: string;
+    email: string;
+    role: string; // 字符串
+    phone: string;
+}
+
+const parentsLists:React.FC = () =>{
+
+    const [GetParentsData , setGetParentsData ] = useState<ParaentData[]>([]);
 
     useEffect(()=>{
         const fetchparentsData = async () => {
@@ -17,8 +41,12 @@ const parentsLists = () =>{
                 throw new Error('斷線！')
             }
             const result = await res.json()
+            const convertedData = result.map((item:RawParentData) => ({
+                ...item,
+                role: item.role === "PARENT" ? Role.PARENT : item.role,
+              }));
     
-            setGetParentsData(result)
+            setGetParentsData(convertedData)
         }
         fetchparentsData()
     },[])
@@ -42,7 +70,7 @@ const parentsLists = () =>{
         
         GetParentsData.map((data)=>{
         
-            if(data.role === "PARENT")
+            if(data.role === Role.PARENT)
         
             return(
                 <>
@@ -56,6 +84,8 @@ const parentsLists = () =>{
                 <br />
                 phone: {data.phone}
                 </Link>
+
+
 
                 <br />
                 <WhatsAppButton whatappmessage={data.phone} />

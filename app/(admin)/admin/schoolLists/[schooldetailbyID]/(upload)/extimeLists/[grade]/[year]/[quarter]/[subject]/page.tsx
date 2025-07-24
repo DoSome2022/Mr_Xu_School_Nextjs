@@ -1,29 +1,35 @@
 "use client";
 
-import useSWR from "swr";
-
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface SchoolExTime {
+    id: string;
+    name: string;
+    grade: number;
+    quarter: number;
+    year:string;
+    subject: string;
+}
 
 
 const ExTimeLists_Grade_Year_Quarter_Subject_extimelists = () =>{
 
-    const params = useParams<{grade : number; year : string; quarter: number; subject: string}>();
-
+    const params = useParams<{grade : string; year : string; quarter: string; subject: string; schooldetailbyID:string}>();
+    console.log("params :" , params)
     const SchoolId = params?.schooldetailbyID  as string;
-    const GradeId = params?.grade as number;
+    const GradeId = params?.grade as string;
     const YearId = params?.year as string;
-    const QuarterId = params?.quarter as number;
-    const SubjectId = params?.subject as string;
+    const QuarterId = params?.quarter as string;
+    const SubjectId = params?.subject ? decodeURIComponent(params.subject) : '';
 
 
-    const [ GetExTimeListsDataById , setGetExTimeListsDataById ] = useState<any>([]);
+    const [ GetExTimeListsDataById , setGetExTimeListsDataById ] = useState<SchoolExTime[]>([]);
 
     useEffect(() =>{
         if(SchoolId && YearId && GradeId && QuarterId && SubjectId) {
-            const getExTimeListsDetail = async (SchoolId: string  , GradeId:number,yearId:string ,QuarterId:number ,SubjectId: string) => {
+            const getExTimeListsDetail = async (SchoolId: string , GradeId:string,yearId:string ,QuarterId:string ,SubjectId: string) => {
                 try {
                 const res = await fetch(`/api/Extimelists_by_id/${SchoolId}/${GradeId}/${yearId}/${QuarterId}/${SubjectId}`);
                 if(!res.ok) {
@@ -47,18 +53,21 @@ const ExTimeLists_Grade_Year_Quarter_Subject_extimelists = () =>{
         <>
             ExTimeLists_Grade_Year_Quarter_Subject_extimelists
             {GetExTimeListsDataById.map((d)=>{
-                return(
-                    <>
-                        <br />
-                    <Link className="text-stone-950 hover:text-gray-700" 
-                    href={`/admin/schoolLists/${SchoolId}/extimeLists/${GradeId}/${YearId}/${QuarterId}/${SubjectId}/${d.id}`}
-                >
-                   name:{d.name}
-                    </Link>
+                if(d.grade == Number(GradeId) && d.quarter == Number(QuarterId) && d.year == YearId && d.subject == SubjectId){
+                    return(
+                        <>
+                            <br />
+                        <Link className="text-stone-950 hover:text-gray-700" 
+                        href={`/admin/schoolLists/${SchoolId}/extimeLists/${GradeId}/${YearId}/${QuarterId}/${SubjectId}/${d.id}`}
+                    >
+                       name:{d.name}
+                        </Link>
+    
+                            <br />
+                        </>
+                    )
 
-                        <br />
-                    </>
-                )
+                }
             })}
 
 

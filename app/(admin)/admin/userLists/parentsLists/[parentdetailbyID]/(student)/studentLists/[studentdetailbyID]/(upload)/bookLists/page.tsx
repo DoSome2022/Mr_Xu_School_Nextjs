@@ -1,9 +1,12 @@
 "use client";
 
 import { useParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface SchoolData {
+  school: string
+}
 const Student_BookLists_School = () =>{
 
     const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string}>();
@@ -13,7 +16,7 @@ const Student_BookLists_School = () =>{
 
 
     //拿學生資料
-    const [GetSutudentData , setGetSutudentData] = useState([]);
+    const [GetSutudentData , setGetSutudentData] = useState<SchoolData[]>([]);
     
   //用ParentId去拿student DB裹的DATA
   useEffect(()=>{

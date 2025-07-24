@@ -4,14 +4,16 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-
+interface StudentSchool {
+  school: string;
+}
 const ExScope = () => {
     const params = useParams<{parentId : string ; studentid : string}>();
     const ParentId = params?.parentId as string;
     const StudentID = params?.studentid as string;
 
            //拿學生資料
-    const [GetSutudentData , setGetSutudentData] = useState([]);
+    const [GetSutudentData , setGetSutudentData] = useState<StudentSchool[]>([]);
     
     //用ParentId去拿student DB裹的DATA
     useEffect(()=>{
@@ -44,7 +46,7 @@ const ExScope = () => {
                         上傳考試範圍
                     </Link>
             <br />
-            {GetSutudentData.map((d:any)=>{
+            {GetSutudentData.map((d)=>{
                 return(
                 <>
                     <br />

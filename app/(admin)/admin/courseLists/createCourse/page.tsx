@@ -1,5 +1,4 @@
 import Course_Create_Form from "@/components/CreateForm/Course-Create-Form"
-import { db } from "@/lib/db";
 
 
 

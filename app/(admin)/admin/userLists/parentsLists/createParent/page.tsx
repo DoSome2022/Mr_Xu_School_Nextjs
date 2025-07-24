@@ -1,3 +1,4 @@
+"use client";
 import Parent_Create_Form from "@/components/CreateForm/Parent-Create-Form"
 
 

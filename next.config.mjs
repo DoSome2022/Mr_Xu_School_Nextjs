@@ -2,6 +2,11 @@
 const nextConfig = {
     images:{
         domains:['res.cloudinary.com','console.cloudinary.com']
+    },
+    experimental:{
+        serverActions:{
+            bodySizeLimit: '50mb'
+        }
     }
 };
 

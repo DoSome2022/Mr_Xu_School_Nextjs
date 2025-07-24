@@ -5,26 +5,31 @@ import Link from "next/link";
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 
-import useSWR from "swr";
-
-
+interface SchoolData{
+    id: string;
+    name: string;
+    grade: number;
+    year: string;
+    quarter: number;
+    subject: string;
+}
 
 const ExPageLists_grade_year_quarter_subject_expagelists = () => {
-    const params = useParams<{grade: number; year: string; quarter: number; subject: string}>();
+    const params = useParams<{grade: string; year: string; quarter: string; subject: string; schooldetailbyID:string;}>();
     const SchoolId = params?.schooldetailbyID as string;
-    const GradeId = params?.grade as number;
+    const GradeId = params?.grade as string;
     const YearId = params?.year as string;
-    const QuarterId = params?.quarter as number;
-    const SubjectId = params?.subject as string;
+    const QuarterId = params?.quarter as string;
+    const SubjectId = params?.subject ? decodeURIComponent(params.subject) : '';
 
 
 
 
-    const [ GetExPageListsDataById , setGetExPageListsDataById ] = useState<any>([]);
+    const [ GetExPageListsDataById , setGetExPageListsDataById ] = useState<SchoolData[]>([]);
 
     useEffect(() =>{
         if(SchoolId && YearId && GradeId && QuarterId ) {
-            const getExPageListsDetail = async (SchoolId: string  , GradeId:number,yearId:string ,QuarterId:number, SubjectId:string) => {
+            const getExPageListsDetail = async (SchoolId: string , GradeId:string,yearId:string ,QuarterId:string, SubjectId:string) => {
                 try {
                 const res = await fetch(`/api/Expagelists_by_id/${SchoolId}/${GradeId}/${yearId}/${QuarterId}/${SubjectId}`);
                 if(!res.ok) {
@@ -47,19 +52,22 @@ const ExPageLists_grade_year_quarter_subject_expagelists = () => {
         <>
             ExPageLists_grade_year_quarter_subject_expagelists
             {GetExPageListsDataById.map((d)=>{
-                return(
-                    <>
-                        <br />
-                        <Link
-                            className="text-stone-950 hover:text-gray-700" 
-                            href={`/admin/schoolLists/${SchoolId}/expageLists/${GradeId}/${YearId}/${QuarterId}/${SubjectId}/${d.id}`} 
-                            >
-                              name:{d.name}
-                              <br />
-                        </Link>
-                        <br />
-                    </>
-                )
+                if(d.grade == Number(GradeId) && d.quarter == Number(QuarterId) && d.year == YearId && d.subject == SubjectId){
+                    return(
+                        <>
+                            <br />
+                            <Link
+                                className="text-stone-950 hover:text-gray-700" 
+                                href={`/admin/schoolLists/${SchoolId}/expageLists/${GradeId}/${YearId}/${QuarterId}/${SubjectId}/${d.id}`} 
+                                >
+                                  name:{d.name}
+                                  <br />
+                            </Link>
+                            <br />
+                        </>
+                    )
+
+                }
             })}
 
 

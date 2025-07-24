@@ -14,7 +14,7 @@ interface ExtendedReturnType {
 }
 
 const handler = async (data: InputType): Promise<ExtendedReturnType> => {
-  const { apply, apply_student_id, product_id, username, parentId } = data;
+  const { apply, apply_student_id, product_id, username , course_id , course_name,parent_id,applystate} = data;
 
   let Apply_data;
 
@@ -65,6 +65,10 @@ const handler = async (data: InputType): Promise<ExtendedReturnType> => {
         apply_student_id,
         product_id,
         username,
+        course_id,
+        course_name,
+        parent_id,
+        applystate,
       },
     });
 
@@ -77,7 +81,7 @@ const handler = async (data: InputType): Promise<ExtendedReturnType> => {
     return { error: "無法創建 Apply" };
   }
 
-  return  redirect(`/parent/${parentId}/`);
+  return  redirect(`/parent/${parent_id}/`);
 };
 
 export const createApply = CreateSafeAction(Apply_Create_Schema, handler);

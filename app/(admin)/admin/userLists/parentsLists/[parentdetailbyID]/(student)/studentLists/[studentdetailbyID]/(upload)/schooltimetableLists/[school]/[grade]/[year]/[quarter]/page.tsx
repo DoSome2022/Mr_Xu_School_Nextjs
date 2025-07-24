@@ -4,17 +4,25 @@ import { useParams } from 'next/navigation';
 import Link from "next/link";
 import { useEffect, useState } from 'react';
 
+interface StudentSchoolName {
+    id:string
+    name:string
+    school:string
+    grade:string
+    year:string
+    quarter:string
+}
 const SchoolTimeTableLists_Grade_Year_Quarter_Lists = () => {
 
-    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ; school : string; grade : number ; year: string; quarter: number;}>();
+    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ; school : string; grade : string ; year: string; quarter: string;}>();
     const ParentID = params?.parentdetailbyID as string;
     const StudentID = params?.studentdetailbyID as string;
     const SchoolName = params?.school as string;
-    const Grade = params?.grade as number;
+    const Grade = params?.grade as string;
     const Year = params?.year as string;
-    const Quarter = params?.quarter as number;
+    const Quarter = params?.quarter as string;
 
-    const [ GetStudentSchoolTimeTableLists , setGetStudentSchoolTimeTableLists ] = useState<any>([]);
+    const [ GetStudentSchoolTimeTableLists , setGetStudentSchoolTimeTableLists ] = useState<StudentSchoolName[]>([]);
 
     useEffect(()=>{
         if(StudentID){
@@ -35,13 +43,14 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Lists = () => {
     },[StudentID])
 
 
-    console.log(GetStudentSchoolTimeTableLists[0])
+    console.log(GetStudentSchoolTimeTableLists)
 
     return(
         <>
             <span> SchoolTimeTableLists_Grade_Year_Quarter_Lists </span>
             <br />
             {GetStudentSchoolTimeTableLists.map((d)=>{
+                if(d.school == SchoolName && d.grade == Grade && d.year == Year && d.quarter == Quarter ){
                 return(
                     <>
             <br />
@@ -52,7 +61,9 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Lists = () => {
                 </Link>
             <br />
                     </>
-                )
+                )    
+                }
+
             })}
         </>
     )

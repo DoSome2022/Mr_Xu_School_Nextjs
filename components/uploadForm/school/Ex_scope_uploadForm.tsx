@@ -1,19 +1,19 @@
 import EX_Scope_Create_Form from "@/components/CreateForm/EX-Scope-Create-Form"
 import { useEffect ,useState } from "react";
 
-interface SchoolID {
-    SchoolId : string;
-    data : string;
+interface SchoolData {
+    id: string;
+    school_name: string;
 }
 
 interface Ex_scope_uploadFormProps{
-    SchoolId : SchoolID
+    SchoolId : string
 }
 
 
 const Ex_scope_uploadForm = ({SchoolId} : Ex_scope_uploadFormProps) => {
 
-    const [ GetSchoolById , setGetSchoolById ] = useState([]);
+    const [ GetSchoolById , setGetSchoolById ] = useState<SchoolData[]>([]);
                     // 拿School data by id
                     useEffect(() =>{
 

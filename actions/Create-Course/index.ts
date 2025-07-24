@@ -26,6 +26,19 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         classroom,
     } = data;
 
+    // 驗證 course_subject
+    if (!course_subject) {
+        return { error: "課程科目 (course_subject) 為必填欄位" };
+    }
+
+    // 驗證 classroom 是否存在
+    const classroomRecord = await db.classroom.findUnique({
+        where: { id: classroom }, // 假設 classroom 是 id
+    });
+    if (!classroomRecord) {
+        return { error: `教室 ${classroom} 不存在` };
+    }
+
     let course_data;
 
     try {
@@ -34,15 +47,13 @@ const handler = async (data: InputType): Promise<ReturnType> => {
             ? weekdays.map((item) => item.date)
             : [];
 
-        // 合併所有日期 (days + weekdays)
-        const allDates = [
-            ...validatedDays.map(day => day.date), 
+        // 合併並去重所有日期
+        const allDates = [...new Set([
+            ...validatedDays.map(day => day.date),
             ...validatedWeekdays
-        ].filter(date => date); // 過濾掉空值
+        ])].filter(date => date);
 
-        // 使用事務確保所有操作要麼全部成功，要麼全部失敗
         course_data = await db.$transaction(async (prisma) => {
-            // 1. 首先建立課程
             const course = await prisma.course.create({
                 data: {
                     course_name,
@@ -64,37 +75,41 @@ const handler = async (data: InputType): Promise<ReturnType> => {
                     Teacher_data: {
                         connect: course_teacher_data_id.map(id => ({ id })),
                     },
+                    isshow: true,
                 },
                 include: {
                     Teacher_data: true,
                 },
             });
 
-            // 2. 為每個日期建立 Class
             const classPromises = allDates.map(async (date) => {
-                // 從 days 中找出對應的 lesson 資訊
                 const dayInfo = validatedDays.find(d => d.date === date);
-                const lesson = dayInfo ? dayInfo.lesson : "1"; // 預設為第1節課
+                const lesson = dayInfo ? dayInfo.lesson : "1";
 
                 return prisma.class.create({
                     data: {
                         class_time_h: calculateClassHours(start_time, end_time),
-                        cram: "", // 根據需要填寫
-                        classroom: classroom, // 根據需要填寫
-                        class_course_id: course.id,
+                        cram: "",
+                        classroom: {
+                            connect: { id: classroom },
+                        },
+                        class_course: {
+                            connect: { id: course.id }
+                        },
                         class_lesson: lesson,
                         class_start_time: start_time,
                         class_end_time: end_time,
                         class_subject: course_subject,
                         teacher,
                         grade,
-                        node: parseInt(lesson), // 假設 node 對應 lesson
-                        attend_number: 0, // 初始為0
+                        node: isNaN(parseInt(lesson)) ? 1 : parseInt(lesson),
+                        attend_number: 0,
                         class_date: date,
                         persons,
-                        freq: "weekly", // 或其他適當值
+                        freq: "weekly",
                         title: `${course_name} - ${date}`,
                         allDay: false,
+                        isshow: true,
                     },
                 });
             });
@@ -103,28 +118,165 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
             return {
                 ...course,
-                classes, // 包含所有建立的 class
+                classes,
             };
         });
 
+        // console.log("-- Course_Data -- : ", course_data, " -- End -- ");
+        // revalidatePath("/admin/courseLists");
+        // redirect("/admin/courseLists");
     } catch (error) {
         console.error("建立課程錯誤:", error);
-        return { error: "建立課程失敗" };
+        return { error: "建立課程失敗，請檢查輸入數據" };
     }
 
     console.log("-- Course_Data -- : ", course_data, " -- End -- ");
-    revalidatePath("/admin/courseLists");
-    redirect("/admin/courseLists");
+    // revalidatePath("/admin/courseLists");
+  return redirect("/admin/courseLists");
 };
 
-// 輔助函數：計算課程時長（小時）
+// 計算課程時長（小時）
 function calculateClassHours(startTime: string, endTime: string): number {
     const start = parseInt(startTime);
     const end = parseInt(endTime);
-    return (end - start) / 100; // 假設時間格式為 "0900" 這樣的形式
+    if (isNaN(start) || isNaN(end)) {
+        throw new Error("無效的時間格式");
+    }
+    return (end - start) / 100;
 }
 
 export const create_Course = CreateSafeAction(Course_Create_Schema, handler);
 
 
+// "use server";
 
+// import { revalidatePath } from "next/cache";
+// import { InputType, ReturnType } from "./types";
+// import { db } from "@/lib/db";
+// import { CreateSafeAction } from "@/lib/create-safe-action";
+// import { Course_Create_Schema } from "./schema";
+// import { redirect } from "next/navigation";
+
+// const handler = async (data: InputType): Promise<ReturnType> => {
+//     const {
+//         course_name,
+//         persons,
+//         teacher,
+//         course_teacher_data_id,
+//         TimeTemplateID,
+//         day_start,
+//         day_end,
+//         start_time,
+//         end_time,
+//         days,
+//         weekdays,
+//         publicholiday,
+//         grade,
+//         course_subject,
+//         classroom,
+//     } = data;
+
+//     // 驗證 course_subject
+//     if (!course_subject) {
+//         return { error: "課程科目 (course_subject) 為必填欄位" };
+//     }
+
+//     let course_data;
+
+//     try {
+//         const validatedDays = Array.isArray(days) ? days : [];
+//         const validatedWeekdays = Array.isArray(weekdays)
+//             ? weekdays.map((item) => item.date)
+//             : [];
+
+//         // 合併所有日期 (days + weekdays)
+//         const allDates = [
+//             ...validatedDays.map(day => day.date),
+//             ...validatedWeekdays
+//         ].filter(date => date);
+
+//         course_data = await db.$transaction(async (prisma) => {
+//             const course = await prisma.course.create({
+//                 data: {
+//                     course_name,
+//                     persons,
+//                     grade,
+//                     teacher,
+//                     course_subject, // 現在保證是 string
+//                     course_teacher_data_id,
+//                     day_start,
+//                     day_end,
+//                     start_time,
+//                     end_time,
+//                     days: validatedDays,
+//                     weekdays: validatedWeekdays,
+//                     publicholiday_model: publicholiday,
+//                     TimeTemplate: {
+//                         connect: { id: TimeTemplateID },
+//                     },
+//                     Teacher_data: {
+//                         connect: course_teacher_data_id.map(id => ({ id })),
+//                     },
+//                     isshow: true,
+//                 },
+//                 include: {
+//                     Teacher_data: true,
+//                 },
+//             });
+
+//             const classPromises = allDates.map(async (date) => {
+//                 const dayInfo = validatedDays.find(d => d.date === date);
+//                 const lesson = dayInfo ? dayInfo.lesson : "1";
+
+//                 return prisma.class.create({
+//                     data: {
+//                         class_time_h: calculateClassHours(start_time, end_time),
+//                         cram: "",
+//                         classroom: classroom,
+//                         class_course: {
+//                             connect: { id: course.id }
+//                         },
+//                         class_lesson: lesson,
+//                         class_start_time: start_time,
+//                         class_end_time: end_time,
+//                         class_subject: course_subject, // 也保證是 string
+//                         teacher,
+//                         grade,
+//                         node: isNaN(parseInt(lesson)) ? 1 : parseInt(lesson),
+//                         attend_number: 0,
+//                         class_date: date,
+//                         persons,
+//                         freq: "weekly",
+//                         title: `${course_name} - ${date}`,
+//                         allDay: false,
+//                         isshow: true,
+//                     },
+//                 });
+//             });
+
+//             const classes = await Promise.all(classPromises);
+
+//             return {
+//                 ...course,
+//                 classes,
+//             };
+//         });
+
+//     } catch (error) {
+//         console.error("建立課程錯誤:", error);
+//         return { error: "建立課程失敗" };
+//     }
+
+//     console.log("-- Course_Data -- : ", course_data, " -- End -- ");
+//     revalidatePath("/admin/courseLists");
+//     redirect("/admin/courseLists");
+// };
+
+// // 計算課程時長（小時）
+// function calculateClassHours(startTime: string, endTime: string): number {
+//     const start = parseInt(startTime);
+//     const end = parseInt(endTime);
+//     return (end - start) / 100;
+// }
+
+// export const create_Course = CreateSafeAction(Course_Create_Schema, handler);

@@ -4,16 +4,24 @@ import { useParams } from 'next/navigation';
 import Link from "next/link";
 import { useEffect, useState } from 'react';
 
+interface StudentData {
+    id: string;
+    name: string;
+    quarter: number;
+    year: string;
+    grade: number;
+    school: string;
+}
 const SchoolTimeTableLists_Grade_Year_Quarter_Lists = () => {
-    const params = useParams<{parentId: string; studentid: string; school: string; grade: number; year: string; quarter: number}>();
+    const params = useParams<{parentId: string; studentid: string; school: string; grade: string; year: string; quarter: string}>();
     const ParentID = params?.parentId as string;
     const StudentID = params?.studentid as string;
     const SchoolName = params?.school as string;
-    const Grade = params?.grade as number;
+    const Grade = params?.grade as string;
     const Year = params?.year as string;
-    const Quarter = params?.quarter as number;
+    const Quarter = params?.quarter as string;
 
-    const [GetStudentSchoolTimeTableLists, setGetStudentSchoolTimeTableLists] = useState<any>([]);
+    const [GetStudentSchoolTimeTableLists, setGetStudentSchoolTimeTableLists] = useState<StudentData[]>([]);
 
     useEffect(() => {
         if (StudentID) {
@@ -39,7 +47,8 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Lists = () => {
         <>
             <span> SchoolTimeTableLists_Grade_Year_Quarter_Lists </span>
             <br />
-            {GetStudentSchoolTimeTableLists.map((d: any) => (
+            {GetStudentSchoolTimeTableLists.map((d) => {
+                if(d.school == SchoolName && d.grade == Number(Grade) && d.year == Year && d.quarter == Number(Quarter)){
                 <div key={d.id}> {/* 添加 key 属性 */}
                     <br />
                     <Link
@@ -50,7 +59,9 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Lists = () => {
                     </Link>
                     <br />
                 </div>
-            ))}
+
+                }
+})}
         </>
     );
 };

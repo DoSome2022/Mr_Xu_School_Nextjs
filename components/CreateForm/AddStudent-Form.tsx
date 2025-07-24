@@ -78,7 +78,7 @@ const Add_Student_Form = () => {
   };
 
   const renderCheckbox = (student: any) => {
-    if (student.pay === true) {
+    // if (student.pay === true) {
       return (
         <FormField
           control={form.control}
@@ -104,7 +104,7 @@ const Add_Student_Form = () => {
           )}
         />
       );
-    }
+    // }
     return null;
   };
 

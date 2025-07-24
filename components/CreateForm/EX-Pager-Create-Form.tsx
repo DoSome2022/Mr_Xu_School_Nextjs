@@ -5,7 +5,6 @@ import * as z from "zod";
 import { useState, useEffect ,useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "next/navigation";
 
 import { Input } from "@/components/ui/input"; 
 
@@ -21,14 +20,6 @@ import {
 } from "@/components/ui/form"
 
 
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-
 import { Ex_pager_Create_Schema } from "@/actions/Create-Ex_pager/schema";
 import { SWR_School_Subject } from "../fatchdata/swrschool_subject";
 import { SWR_School_Year } from "../fatchdata/swrschool_year";
@@ -38,9 +29,7 @@ import Image from "next/image";
 import { createExPager } from "@/actions/Create-Ex_pager";
 
 
-interface SchoolID {
-    SchoolId : string;
-}
+
 
 interface SchoolData {
     id: string;
@@ -48,8 +37,8 @@ interface SchoolData {
 }
 
 interface EX_Pager_Create_FormProps{
-    SchoolId : SchoolID;
-    data: SchoolData
+    SchoolId : string;
+    data: SchoolData[]
 }
 
 
@@ -62,7 +51,7 @@ const EX_Pager_Create_Form = ({SchoolId , data}: EX_Pager_Create_FormProps) =>{
     const [isPending , startTransition] = useTransition();
 
     //上傳圖片
-    const [uploadedImageUrl, setUploadedImageUrl ] = useState();
+    const [PreviewImage, setPreviewImage] = useState<string | null>(null);
     
     // console.log("-- School Data : --",data[0],"-- end --")
 
@@ -89,32 +78,40 @@ const EX_Pager_Create_Form = ({SchoolId , data}: EX_Pager_Create_FormProps) =>{
 
         }
     })
+  // 處理圖片上傳
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
 
-    const handleImageUpload = async (event) => {
-        const file = event.target.files[0]
-        const formData = new FormData();
-        formData.append("file",file);
-        formData.append("upload_preset", "test_upLoad_img")
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        ex_pager_create_form.setValue("img", base64String);
+        setPreviewImage(base64String);
+      };
+      reader.readAsDataURL(file);
 
-
-        console.log("-- 已選的圖片 --",file,"--end--")
-
-        const uploadResponse = await fetch(
-            "https://api.cloudinary.com/v1_1/dlullfqaw/image/upload",
-            {
-                method:"POST",
-                body:formData,
-            }
-        );
-
-        const uploadedImageData = await uploadResponse.json();
-        const imageUrl = uploadedImageData.secure_url;
-        setUploadedImageUrl(imageUrl);
-        ex_pager_create_form.setValue("img",imageUrl)
-        console.log("--上傳後--",imageUrl,"-- end --")
-
-
+      setPreviewImage(URL.createObjectURL(file));
     }
+  };
+
+    // const handleFileChange = (field:any) => (e:React.ChangeEvent<HTMLInputElement>) => {
+    //     if(e.target.files && e.target.files.length > 0){
+    //         field.onChange(e.target.files[0]);
+    //         const file = e.target.files[0];
+
+    //         const reader = new FileReader();
+
+    //         reader.onload = () => {
+    //             const base645String = reader.result as string;
+    //             ex_pager_create_form.setValue("img",base645String);
+    //             setPreviewImage(base645String)
+    //             };
+    //             reader.readAsDataURL(file);
+
+    //             setPreviewImage(URL.createObjectURL(file));
+    //     }
+    // }
 
     const ex_pager_create_form_onSubmit = (values : z.infer<typeof Ex_pager_Create_Schema>) => {
         console.log("--  create ex pager -- : ", values ,"-- End --");
@@ -131,6 +128,9 @@ const EX_Pager_Create_Form = ({SchoolId , data}: EX_Pager_Create_FormProps) =>{
 
     return(
         <>
+                      {error && <div className="text-red-500 mb-4">{error}</div>}
+                      {success && <div className="text-green-500 mb-4">{success}</div>}
+
 <Form {...ex_pager_create_form}>
                 <form
                     onSubmit={ex_pager_create_form.handleSubmit(ex_pager_create_form_onSubmit)}
@@ -189,10 +189,12 @@ const EX_Pager_Create_Form = ({SchoolId , data}: EX_Pager_Create_FormProps) =>{
             )
 })}
 
-<div className="space-y-4" >
+                {/* <div className="space-y-4" 
+                hidden
+                >
                 <FormField
                     control={ex_pager_create_form.control}
-                    name="school_booklist_id"
+                    name="school_ex_pager_id"
                     render={({ field }) => (
                 <FormItem>
                     <FormControl>
@@ -209,7 +211,7 @@ const EX_Pager_Create_Form = ({SchoolId , data}: EX_Pager_Create_FormProps) =>{
                 </FormItem>
                     )}
                 />
-            </div> 
+            </div>  */}
 
 
                 <div className="space-y-4">
@@ -271,6 +273,7 @@ const EX_Pager_Create_Form = ({SchoolId , data}: EX_Pager_Create_FormProps) =>{
                 </FormItem>
                     )}
                 />
+
                 </div> 
 
                 <div className="space-y-4">
@@ -280,7 +283,7 @@ const EX_Pager_Create_Form = ({SchoolId , data}: EX_Pager_Create_FormProps) =>{
                     render={({ field }) => (
                         <>
                 <FormItem> 
-            <FormLabel>上傳圖片</FormLabel> 
+            <FormLabel>上傳</FormLabel> 
             <FormControl>
 
                    <Input 
@@ -315,16 +318,15 @@ const EX_Pager_Create_Form = ({SchoolId , data}: EX_Pager_Create_FormProps) =>{
 
                 </form>
             </Form>
-            {
-                uploadedImageUrl && (
-                    <Image
-                    width={500}
-                    height={500}
-                    src={uploadedImageUrl}
-                    alt=""
-                    />
-                )
-            }
+                {PreviewImage && (
+          <Image
+            width={500}
+            height={500}
+            src={PreviewImage}
+            alt="預覽圖片"
+            className="mt-4"
+          />
+        )}
         </>
     )
 }

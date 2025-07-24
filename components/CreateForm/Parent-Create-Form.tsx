@@ -22,7 +22,7 @@ import {
  } from "@/components/ui/form"
 import { Parent_Create_Schema } from "@/actions/Create-Parent/schema";
 import { createParent } from "@/actions/Create-Parent";
-import { Checkbox } from "../ui/checkbox";
+
 
  
 const Parent_Create_Form = () => {

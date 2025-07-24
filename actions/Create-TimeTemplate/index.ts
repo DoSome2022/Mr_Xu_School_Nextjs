@@ -67,7 +67,6 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         days,
         start_time,
         end_time,
-        grade,
         lesson,
     } = data;
 
@@ -105,7 +104,6 @@ const handler = async (data: InputType): Promise<ReturnType> => {
                 publicholiday_model: publicholiday,
                 weekdays: weekdays,
                 days: days, // 保留原始 days 格式，因為 schema 要求對象陣列
-                grade,
                 lesson,
                 start_time,
                 end_time,

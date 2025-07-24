@@ -4,22 +4,30 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Image from "next/image"; 
 
+interface SchoolExScopeData{
+    name: string;
+    img: string;
+    grade: number;
+    quarter: number;
+    subject: string;
+    schooldetailbyID:  string;
+}
 
 const ExScopeLists_Grade_Subject_exscpelists = () =>{
 
-    const params = useParams<{grade : number ; quarter: number ; subject: string; id:string }>();
-
+    const params = useParams<{grade : string ; quarter: string ; subject: string; id:string; schooldetailbyID:string }>();
     const SchoolId = params?.schooldetailbyID  as string;
-    const GradeId = params?.grade as number;
-    const QuarterId = params?.quarter as number;
-    const SubjectId = params?.subject as string;
+    const GradeId = params?.grade as string;
+    const QuarterId = params?.quarter as string;
+    const SubjectId = params?.subject ? decodeURIComponent(params.subject) : '';
     const ExScopeListById = params?.id as string;
+    console.log("params :" , params)
 
-    const [ GetExScopeListDetailDataById , setGetExScopeListDetailDataById ] = useState<any>([]);
+    const [ GetExScopeListDetailDataById , setGetExScopeListDetailDataById ] = useState<SchoolExScopeData[]>([]);
 
     useEffect(() =>{
         if(SchoolId  && GradeId && QuarterId && SubjectId && ExScopeListById) {
-            const getExScopeListDetailById = async (SchoolId: string  , GradeId:number ,QuarterId:number,SubjectId:string,ExScopeListById:string ) => {
+            const getExScopeListDetailById = async (SchoolId: string  , GradeId:string ,QuarterId:string,SubjectId:string,ExScopeListById:string ) => {
                 try {
                 const res = await fetch(`/api/Exscopelists_detail_data_by_id/${SchoolId}/${GradeId}/${QuarterId}/${SubjectId}/${ExScopeListById}`);
                 if(!res.ok) {
@@ -41,6 +49,7 @@ const ExScopeLists_Grade_Subject_exscpelists = () =>{
         <>
                     <>
             {GetExScopeListDetailDataById.map((d)=>{
+                if(d.grade == Number(GradeId) && d.quarter == Number(QuarterId) && d.subject == SubjectId && d.schooldetailbyID == SchoolId){
                                 return(
                                     <>
                                     name:{d.name}
@@ -54,7 +63,9 @@ const ExScopeLists_Grade_Subject_exscpelists = () =>{
                 
                                     }
                                     </>
-                                )
+                                )                    
+                }
+
             })}
         </>
         </>

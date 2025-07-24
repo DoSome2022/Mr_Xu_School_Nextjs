@@ -6,25 +6,37 @@ import { useParams } from 'next/navigation';
 
 import Link from "next/link";
 
+interface SchoolSubject {
+    school_subject: string;
+    grade: number;
+    quarter: number;
+    year: string;
+}
 
-const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
+
+const fetcher = (url: string, init?: RequestInit):Promise<SchoolSubject[]>  => fetch(url, init).then((res) => res.json());
+const apiUrl = process.env.NEXT_PUBLIC_API_URL|| "http://127.0.0.1:8000"
 
 
 const ExTimeLists_Grade_Year_Quarter_Subject = () =>{
 
-    const params = useParams<{grade : string; year : string; quarter: string}>();
+    const params = useParams<{grade : string; year : string; quarter: string; schooldetailbyID:string;}>();
 
     const SchoolId = params?.schooldetailbyID  as String;
     const GradeId = params?.grade as String;
     const YearId = params?.year as String;
     const QuarterId = params?.quarter as String;
 
-    const { data , error , isLoading } = useSWR('http://127.0.0.1:8000/api/School_data/schoolsubjects/' , fetcher);
+    const { data , error , isLoading } = useSWR(`${apiUrl}/api/School_data/schoolsubjects/` , fetcher);
 
     if(error) return <> error : {error} </>
     if(isLoading) return <> 載入中 .... </>
-    
+      // 確保 data 是陣列
+    if (!data || !Array.isArray(data)) {
+        return <div className="p-4 text-red-500">無效的資料格式</div>;
+    }
+    console.log(data)    
 
 
     console.log(data)
@@ -33,19 +45,21 @@ const ExTimeLists_Grade_Year_Quarter_Subject = () =>{
         <>
             ExTimeLists_Grade_Year_Quarter_Subject
 
-            {data.map((subject) =>{
-                return(
-                    <>
-                        <br />
-                    <Link className="text-stone-950 hover:text-gray-700" 
-                    href={`/admin/schoolLists/${SchoolId}/extimeLists/${GradeId}/${YearId}/${QuarterId}/${subject.school_subject}`}
-                >
-                   科目: {subject.school_subject}
-                    </Link>
-
-                        <br />
-                    </>
-                )
+            {data.map((d) =>{
+                // if(d.grade == Number(GradeId) && d.year == YearId && d.quarter == Number(QuarterId) ){}
+                    return(
+                        <>
+                            <br />
+                        <Link className="text-stone-950 hover:text-gray-700" 
+                        href={`/admin/schoolLists/${SchoolId}/extimeLists/${GradeId}/${YearId}/${QuarterId}/${d.school_subject}`}
+                    >
+                       科目: {d.school_subject}
+                        </Link>
+    
+                            <br />
+                        </>
+                    )
+                
             })}
             
 

@@ -4,6 +4,9 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface StudentSchoolBookLists{
+  school: string;
+}
 const Student_BookLists_School = () =>{
 
     const params = useParams<{parentId : string ; studentid : string}>();
@@ -14,7 +17,7 @@ const Student_BookLists_School = () =>{
 
 
     //拿學生資料
-    const [GetSutudentData , setGetSutudentData] = useState([]);
+    const [GetSutudentData , setGetSutudentData] = useState<StudentSchoolBookLists[]>([]);
     
   //用ParentId去拿student DB裹的DATA
   useEffect(()=>{
@@ -37,7 +40,7 @@ const Student_BookLists_School = () =>{
     return(
         <>
             Student_BookLists_School
-            {GetSutudentData.map((d:any)=>{
+            {GetSutudentData.map((d)=>{
                 return(
                     <>
             <br />

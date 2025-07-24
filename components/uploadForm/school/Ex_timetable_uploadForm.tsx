@@ -1,18 +1,18 @@
 import EX_Time_Create_Form from "@/components/CreateForm/EX-Time-Create-Form"
 import { useEffect ,useState } from "react";
 
-interface SchoolID {
-    SchoolId : string;
-    data : string;
+interface SchoolData {
+    id: string;
+    school_name: string;
 }
 
 interface Ex_timetable_uploadFormProps{
-    SchoolId : SchoolID
+    SchoolId : string
 }
 
 const Ex_timetable_uploadForm = ({SchoolId} : Ex_timetable_uploadFormProps) => {
     
-    const [ GetSchoolById , setGetSchoolById ] = useState([]);
+    const [ GetSchoolById , setGetSchoolById ] = useState<SchoolData[]>([]);
     // 拿School data by id
     useEffect(() =>{
 

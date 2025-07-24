@@ -3,9 +3,6 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link"
 import { useEffect, useState } from "react";
 
-
-
-
 const newsLists = () =>{
 
     //為了拿 公告 data

@@ -4,15 +4,19 @@ import Student_EX_Scope_Create_Form from "@/components/CreateForm/Student-EX-Sco
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-
+interface GetStudentData {
+    id: string;
+    name: string;
+    grade: number;
+    school: string;
+}
 const Student_ExscopeLists_upload = () =>{
 
     const params = useParams();
     console.log(params)
-    const ParentID = params?.parentdetailbyID as string;
     const StudentID = params?.studentdetailbyID as string;
 
-    const [ GetStudentData , setGetStudentData ] = useState([]);
+    const [ GetStudentData , setGetStudentData ] = useState<GetStudentData[]>([]);
 
     useEffect(() => {
         if(StudentID){
@@ -29,9 +33,20 @@ const Student_ExscopeLists_upload = () =>{
         }
     },[StudentID])
 
+    if (!StudentID) {
+        return <div className="p-4 text-red-500">無效的學生 ID</div>;
+      }
+    
+    
+      if (!GetStudentData) {
+        return <div className="p-4">載入中...</div>;
+      }
+
+
+
     return(
         <>
-<Student_EX_Scope_Create_Form studentId={StudentID} data={GetStudentData} />
+            <Student_EX_Scope_Create_Form studentId={StudentID} data={GetStudentData} />
         </>
     )
     

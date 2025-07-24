@@ -5,6 +5,7 @@ import { InputType , ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Ex_scope_Create_Schema } from "./schema";
+import { redirect } from "next/navigation";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -37,7 +38,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- ex_scope_Data -- : " , ex_scope_Data , " -- End -- ")
-    return { data: ex_scope_Data }
+    // return { data: ex_scope_Data }
+    return redirect(`/admin/schoolLists/${school_ex_scope_id}/exscopeLists/`)
 }
 
 export const createExScope = CreateSafeAction(Ex_scope_Create_Schema, handler)

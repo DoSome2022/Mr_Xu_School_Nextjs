@@ -7,15 +7,19 @@ import Student_Score_Create_Form from "@/components/CreateForm/Student-Score-Cre
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-
+interface StudentData {
+    id: string;
+    name: string;
+    grade: number;
+    school: string;
+}
 const Student_Score_upload = () =>{
 
     const params = useParams();
     console.log(params)
-    const ParentID = params?.parentdetailbyID as string;
     const StudentID = params?.studentdetailbyID as string;
 
-    const [ GetStudentData , setGetStudentData ] = useState([]);
+    const [ GetStudentData , setGetStudentData ] = useState<StudentData[]>([]);
 
     useEffect(() => {
         if(StudentID){

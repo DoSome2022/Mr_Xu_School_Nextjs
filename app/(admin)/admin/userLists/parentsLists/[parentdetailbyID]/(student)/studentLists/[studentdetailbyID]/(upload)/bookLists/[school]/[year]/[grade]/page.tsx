@@ -4,18 +4,25 @@ import { useParams } from 'next/navigation';
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+interface StudentData{
+    id : string;
+    name : string;
+    school: string;
+    grade: string;
+    year: string;
+}
 const Student_BookLists_School_Year_Grade_Lists= () => {
-    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ; school : string ; year : string ; grade : number}>();
+    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ; school : string ; year : string ; grade : string}>();
     console.log(params)
     const ParentID = params?.parentdetailbyID as string;
     const StudentID = params?.studentdetailbyID as string;
     const SchoolName = params?.school as string;
     const Year = params?.year as string;
-    const Grade = params?.grade as number;
+    const Grade = params?.grade as string;
 
 
 
-    const [ GetStudentBookLists , setGetStudentBookLists ] = useState<any>([]);
+    const [ GetStudentBookLists , setGetStudentBookLists ] = useState<StudentData[]>([]);
 
 
     useEffect(()=>{
@@ -37,7 +44,7 @@ const Student_BookLists_School_Year_Grade_Lists= () => {
     },[StudentID])
 
 
-    console.log(GetStudentBookLists[0])
+    console.log("GetStudentBookLists :" ,GetStudentBookLists)
 
 
     return(
@@ -48,6 +55,8 @@ const Student_BookLists_School_Year_Grade_Lists= () => {
 <br />
 
 {GetStudentBookLists.map((d)=>{
+
+    if(d.school== SchoolName && d.year == Year && d.grade == Grade ) {
     return(
         <>
                     <Link
@@ -57,9 +66,14 @@ const Student_BookLists_School_Year_Grade_Lists= () => {
             名稱：{d.name}
 
             </Link>
-
+            <br />
         </>
     )
+    }
+
+
+
+
 })}
 
 

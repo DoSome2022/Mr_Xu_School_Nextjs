@@ -4,19 +4,34 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+interface StudentDetailData {
+    name: string;
+    img: string;
+    id: string;
+    school: string;
+    grade: string;
+    quarter: string;
+    subject: string;
+}
+
 const ExScope_Grade_Quarter_Subject_Lists_By_ID = () => {
 
-    const params = useParams<{studentdetailbyID : string ; }>();
+    const params = useParams<{studentdetailbyID : string ; parentdetailbyID:string; school: string; grade: string; quarter: string; subject: string; id: string;}>();
     const StudentID = params?.studentdetailbyID as string;
+    const Id = params?.id as string;
+    const SchoolName = params?.school as string;
+    const Grade = params?.grade as string;
+    const Quarter = params?.quarter as string;
+    const Subject = params?.subject ? decodeURIComponent(params.subject) : '';
 
-    const [ GetStudentExScopeDetailByID , setGetStudentExScopeDetailByID] = useState<any>([]);
+    const [ GetStudentExScopeDetailByID , setGetStudentExScopeDetailByID] = useState<StudentDetailData[]>([]);
 
 
     useEffect(()=>{
-        if(StudentID){
-            const getstudentexscopedetailbyid = async (StudentID: string) => {
+        if(StudentID && Id){
+            const getstudentexscopedetailbyid = async (StudentID: string ,id: string) => {
                 try {
-                    const res = await fetch(`/api/student/Student_ExScope_by_id_Lists/${StudentID}`)
+                    const res = await fetch(`/api/student/Student_ExScope_by_id_Lists_by_id/${StudentID}/${id}`)
                     if(!res.ok) {
                         throw new Error("斷線！");
                     }
@@ -26,12 +41,12 @@ const ExScope_Grade_Quarter_Subject_Lists_By_ID = () => {
                     console.error(error)
                 }
             };
-            getstudentexscopedetailbyid(StudentID)
+            getstudentexscopedetailbyid(StudentID , Id)
         }
-    },[StudentID])
+    },[StudentID , Id])
 
 
-    console.log(GetStudentExScopeDetailByID[0])
+    console.log(GetStudentExScopeDetailByID)
 
     return(
         <>
@@ -40,7 +55,8 @@ const ExScope_Grade_Quarter_Subject_Lists_By_ID = () => {
             <span> ExScope_Grade_Quarter_Subject_Lists_By_ID </span>
             <br />
 {GetStudentExScopeDetailByID.map((d)=>{
-    return(
+    if(d.school == SchoolName && d.grade == Grade && d.quarter == Quarter && d.subject == Subject && d.id == Id){
+ return(
         <>
         {d.name}
         <br />
@@ -51,7 +67,9 @@ const ExScope_Grade_Quarter_Subject_Lists_By_ID = () => {
                     alt=""
                     />
         </>
-    )
+    )        
+    }
+   
 })}
             
         </>

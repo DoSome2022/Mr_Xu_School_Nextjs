@@ -5,6 +5,7 @@ import { InputType , ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { student_ex_timetable_Create_Schema } from "./schema";
+import { redirect } from "next/navigation";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -19,6 +20,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
             quarter,
             school,
             subject,
+            parentId
         } = data;
 
     let student_ex_timetable_Data;
@@ -41,7 +43,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- student_ex_timetable_Data -- : " , student_ex_timetable_Data , " -- End -- ")
-    return { data: student_ex_timetable_Data }
+    return redirect(`/admin/userLists/parentsLists/${parentId}/studentLists/${student_ex_timetable_id}/extimeLists`)
 }
 
 export const createStudentExTimeTable = CreateSafeAction(student_ex_timetable_Create_Schema, handler)

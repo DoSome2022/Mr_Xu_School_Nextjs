@@ -3,43 +3,30 @@ import Link from "next/link"
 import { useEffect, useState } from "react";
 import { useParams } from 'next/navigation';
 
-interface Parent {
+
+interface ParentData {
+  nickname: string;
+  username: string;
+}
+
+
+interface StudentData {
     id: string;
-    username: string;
-    nickname?: string;
-    email: string;
-    phone?: string;
-    role: string;
+    name: string;
+    school: string;
+    grade: number;
+    Parent_data: ParentData;
+    
   }
 
 const ParentDetail = () => {
     const params = useParams();
     const ParentId = params?.parentdetailbyID as string;
 
-    //這個是由user db開始出發拉下去直到parent data
-    // const [GetParentData , setGetParentData] = useState([]);
 
 
     //Student的DATA
-    const [GetStudentData , setGetStudentData] = useState([]);
-
-  //拿 parent data
-    // useEffect(() => {
-    //     if(ParentId){
-    //         const fetchParentsData = async (userId :string) =>{
-    //             //在app/api/other/User_Parent/route.ts
-    //             const res = await fetch(`/api/other/User_Parent/${userId}`);
-    //             if(!res){
-    //                 throw new Error("斷線！")
-    //             }
-    //            const result = await res.json();
-    //            setGetParentData(result)
-    //         }
-    //         fetchParentsData(ParentId)
-    //         }
-    // },[ParentId])
-  // console.log(" --  家長數據  -- :  ",GetParentData," -- end -- ");
-
+    const [GetStudentData , setGetStudentData] = useState<StudentData[]>([]);
 
 
   
@@ -53,6 +40,8 @@ const ParentDetail = () => {
           throw new Error("斷線！")
         }
         const result = await res.json();
+
+
         setGetStudentData(result);
       }
       fetchStudentData(ParentId)

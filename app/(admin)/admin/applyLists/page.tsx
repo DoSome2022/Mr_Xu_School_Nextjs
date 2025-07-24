@@ -3,9 +3,15 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+interface ApplyData{
+    id: string;
+    title: string;
+    apply: boolean;
+    course_id: string;
+}
 
 const ApplyLists = () => {
-    const [ GetApplyData , setGetApplyData ] = useState([]);
+    const [ GetApplyData , setGetApplyData ] = useState<ApplyData[]>([]);
 
     useEffect(()=>{
         const fetchApplyData = async () => {
@@ -24,7 +30,7 @@ const ApplyLists = () => {
         <>
             <span>ApplyLists</span>
 
-            {GetApplyData.map((d:any)=>{
+            {GetApplyData.map((d)=>{
 
                 return(
                     <>
@@ -33,10 +39,15 @@ const ApplyLists = () => {
                             <p>title:{d.title}</p>
 
                             <br />
+                        </Link>
+
+                        <Link href={`/admin/courseLists/${d.course_id}`}>
+                            直去課程
+                        </Link>
 
                             <p>申請狀況: {d.apply ? "批準" : "不批準"}</p>
                             <br />
-                        </Link>
+
                     </>
                 )
 

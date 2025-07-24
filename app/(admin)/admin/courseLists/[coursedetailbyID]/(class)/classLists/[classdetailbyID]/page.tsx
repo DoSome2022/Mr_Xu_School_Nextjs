@@ -89,6 +89,10 @@ const ClassDetail = () => {
             <br />
             年級: { gradeMapping[GetClassDataById[0]?.grade] ||GetClassDataById[0]?.grade}
             <br />
+            <Link href={`/admin/courseLists/${CourseId}/classLists/${ClassId}/leavestudent`}>
+            請假學生
+            </Link>
+            <br />
             <Link href={`/admin/courseLists/${CourseId}/classLists/${ClassId}/addclassstudent`}>
             加入加堂學生
             </Link>

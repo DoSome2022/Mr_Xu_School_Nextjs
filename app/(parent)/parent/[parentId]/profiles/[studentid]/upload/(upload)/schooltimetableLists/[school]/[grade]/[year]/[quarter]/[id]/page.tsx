@@ -1,19 +1,26 @@
 "use client";
 
 import { useParams } from 'next/navigation';
-import Link from "next/link";
+// import Link from "next/link";
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
+interface SchoolTimeTableByID {
+    id: string;
+    name: string;
+}
+
+
 const SchoolTimeTableLists_Grade_Year_Quarter_Lists_By_ID = () => {
-    const params = useParams<{ studentid : string ;}>();
+    const params = useParams<{ studentid : string ; id:string}>();
 
     const StudentID = params?.studentid as string;
+    const Id = params?.id as string;
 
-    const [ GetStudentSchoolTimeTableDetailByID , setGetStudentSchoolTimeTableDetailByID ] = useState<any>([]);
+    const [ GetStudentSchoolTimeTableDetailByID , setGetStudentSchoolTimeTableDetailByID ] = useState<SchoolTimeTableByID[]>([]);
 
     useEffect(()=>{
-        if(StudentID){
+        if(Id){
             const getstudentschooltimetabledetailbyid = async (StudentID: string) => {
                 try {
                     const res = await fetch(`/api/Parents_Student/Parents_Student_Lists/${StudentID}`);
@@ -26,9 +33,9 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Lists_By_ID = () => {
                     console.error(error)
                 }
             };
-            getstudentschooltimetabledetailbyid(StudentID)
+            getstudentschooltimetabledetailbyid(Id)
         }
-    },[StudentID])
+    },[Id])
 
         // 檢查是否為圖片格式的輔助函數
         const isImage = (url: string) => {

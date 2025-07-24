@@ -2,22 +2,28 @@
 
 import Link from "next/link";
 import { useParams } from 'next/navigation';
-
 import useSWR from "swr";
 
+interface SchoolQuarter {
+    school_quarter: string;
+}
 const ExPageLists_grade_year_quarter = () => {
 
-    const params = useParams<{grade: string; year: string}>();
+    const params = useParams<{grade: string; year: string; schooldetailbyID:string}>();
     const SchoolId = params?.schooldetailbyID as String;
     const GradeId = params?.grade as String;
     const YearId = params?.year as String;
 
-    const fetcher = (...args) => fetch(...args).then((res) => res.json());
-    const { data , error , isLoading } = useSWR('http://127.0.0.1:8000/api/School_data/schoolquarters/' , fetcher);
+    const fetcher = (url: string, init?: RequestInit):Promise<SchoolQuarter[]>  => fetch(url, init).then((res) => res.json());
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL|| "http://127.0.0.1:8000"
+    const { data , error , isLoading } = useSWR(`${apiUrl}/api/School_data/schoolquarters/` , fetcher);
 
     if(error) return <> error : {error} </>
     if(isLoading) return <> 載入中 .... </>
-
+      // 確保 data 是陣列
+      if (!data || !Array.isArray(data)) {
+        return <div className="p-4 text-red-500">無效的資料格式</div>;
+    }
   
     return(
         <>

@@ -9,5 +9,6 @@ export const student_ex_paper_Create_Schema = z.object({
     grade: z.number().min(1,'請選擇年級'),
     year: z.string().min(1,'請選擇年份'),
     quarter: z.number().min(1,'請選擇季度'),
-    school: z.string()
+    school: z.string(),
+    parentId: z.string(),
 })

@@ -4,12 +4,15 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface StudentSchool {
+  school: string;
+}
 const ExTimeLists = () => {
   const params = useParams<{ parentId: string; studentid: string }>();
   const ParentId = params?.parentId as string;
   const StudentID = params?.studentid as string;
 
-  const [GetSutudentData, setGetSutudentData] = useState<any[]>([]);
+  const [GetSutudentData, setGetSutudentData] = useState<StudentSchool[]>([]);
 
   useEffect(() => {
     if (StudentID) {
@@ -38,7 +41,7 @@ const ExTimeLists = () => {
         上傳考試時間表
       </Link>
       <br />
-      {GetSutudentData.map((d: any) => (
+      {GetSutudentData.map((d) => (
         <Link
           key={d.school}
           className="text-stone-950 hover:text-gray-700 block mb-2"

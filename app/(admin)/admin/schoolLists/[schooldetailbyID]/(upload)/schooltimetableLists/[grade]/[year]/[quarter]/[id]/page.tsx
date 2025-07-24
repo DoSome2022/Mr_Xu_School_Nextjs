@@ -3,23 +3,30 @@ import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 
-
+interface SchoolTimeTable {
+    name: string;
+    img: string;
+    grade: number;
+    quarter: number;
+    year: string;
+    schooldetailbyID:string;
+}
 
 const SchoolTimeTableLists_Grade_Year_Quarter_Subject_extimelists_Detail = () =>{
-    const params = useParams<{grade : number; year : string; quarter: number; id:string;}>();
+    const params = useParams<{grade : string; year : string; quarter: string; id:string; schooldetailbyID:string}>();
 
     const SchoolId = params?.schooldetailbyID  as string;
-    const GradeId = params?.grade as number;
+    const GradeId = params?.grade as string;
     const YearId = params?.year as string;
-    const QuarterId = params?.quarter as number;
+    const QuarterId = params?.quarter as string;
     const SchoolTimeTableListById = params?.id as string;
 
-    const [ GetSchoolTimeTableListDetailDataById , setGetSchoolTimeTableListDetailDataById ] = useState<any>([]);
+    const [ GetSchoolTimeTableListDetailDataById , setGetSchoolTimeTableListDetailDataById ] = useState<SchoolTimeTable[]>([]);
 
 
     useEffect(() =>{
         if(SchoolId && YearId && GradeId && QuarterId &&  SchoolTimeTableListById) {
-            const getSchoolTimeTableListsDetailById = async (SchoolId: string ,yearId:string , GradeId:number ,QuarterId:number,SchoolTimeTableListById:string ) => {
+            const getSchoolTimeTableListsDetailById = async (SchoolId: string ,yearId:string , GradeId:string ,QuarterId:string,SchoolTimeTableListById:string ) => {
                 try {
                 const res = await fetch(`/api/Schooltimetablelists_detail_data_by_id/${SchoolId}/${GradeId}/${yearId}/${QuarterId}/${SchoolTimeTableListById}`);
                 if(!res.ok) {
@@ -41,6 +48,7 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Subject_extimelists_Detail = () =>
     return(
         <>
             {GetSchoolTimeTableListDetailDataById.map((d)=>{
+                if(d.grade  == Number(GradeId) && d.year == YearId && d.quarter == Number(QuarterId) && d.schooldetailbyID == SchoolTimeTableListById){
                                 return(
                                     <>
                                     name:{d.name}
@@ -54,7 +62,9 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Subject_extimelists_Detail = () =>
                 
                                     }
                                     </>
-                                )
+                                )                    
+                }
+
             })}
         </>
     )

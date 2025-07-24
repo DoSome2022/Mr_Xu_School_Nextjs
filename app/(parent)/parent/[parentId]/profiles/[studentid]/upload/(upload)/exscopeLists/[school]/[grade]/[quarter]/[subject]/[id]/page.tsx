@@ -4,17 +4,28 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-const ExScope_Grade_Quarter_Subject_Lists_By_ID = () => {
-  const params = useParams<{ studentid: string }>();
-  const StudentID = params?.studentid as string;
+interface ExScopeListsByIDData{
+  id: string;
+  img: string;
+  name: string;
+  year: string;
+  grade: number;
+  quarter: number;
+}
 
-  const [GetStudentExScopeDetailByID, setGetStudentExScopeDetailByID] = useState<any[]>([]);
+
+const ExScope_Grade_Quarter_Subject_Lists_By_ID = () => {
+  const params = useParams<{ studentid: string ; id: string}>();
+  const StudentID = params?.studentid as string;
+  const Id = params?.id as string;
+
+  const [GetStudentExScopeDetailByID, setGetStudentExScopeDetailByID] = useState<ExScopeListsByIDData[]>([]);
 
   useEffect(() => {
-    if (StudentID) {
+    if (Id) {
       const getstudentexscopedetailbyid = async (StudentID: string) => {
         try {
-          const res = await fetch(`/api/Parents_Student/Parents_Student_Lists/${StudentID}`);
+          const res = await fetch(`/api/Parents_Student/Parents_Student_ExScope_by_id_Lists/${StudentID}`);
           if (!res.ok) {
             throw new Error("斷線！");
           }
@@ -24,9 +35,9 @@ const ExScope_Grade_Quarter_Subject_Lists_By_ID = () => {
           console.error(error);
         }
       };
-      getstudentexscopedetailbyid(StudentID);
+      getstudentexscopedetailbyid(Id);
     }
-  }, [StudentID]);
+  }, [Id]);
 
     // 檢查是否為圖片格式的輔助函數
     const isImage = (url: string) => {

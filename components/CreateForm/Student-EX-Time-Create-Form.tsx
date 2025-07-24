@@ -5,7 +5,6 @@ import * as z from "zod";
 import { useState, useEffect ,useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "next/navigation";
 
 import { Input } from "@/components/ui/input"; 
 
@@ -21,15 +20,6 @@ import {
 } from "@/components/ui/form"
 
 
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-
-
 import { SWR_School_Year } from "../fatchdata/swrschool_year";
 import { SWR_School_Grade } from "../fatchdata/swrschool_grade";
 import { SWR_School_Quarter } from "../fatchdata/swrschool_quarter";
@@ -37,10 +27,8 @@ import { student_ex_timetable_Create_Schema } from "@/actions/Create-Student_Ex_
 import Image from "next/image";
 import { createStudentExTimeTable } from "@/actions/Create-Student_Ex_timetable";
 import { SWR_School_Subject } from "../fatchdata/swrschool_subject";
+import { useParams } from "next/navigation";
 
-interface StudentID {
-    studentId : string;
-}
 
 interface StudentData{
     id : string;
@@ -50,23 +38,25 @@ interface StudentData{
 }
 
 interface Student_EX_Time_Create_FormProps{
-    studentId : StudentID;
-    data : StudentData
+    studentId : string;
+    data : StudentData[]
 }
-
-
 
 const Student_EX_Time_Create_Form = ({ studentId , data }: Student_EX_Time_Create_FormProps) =>{
 
     const [isPending , startTransition] = useTransition();
         //上傳圖片
-        const [uploadedImageUrl, setUploadedImageUrl ] = useState();
+        const [previewImage, setPreviewImage] = useState<string | null>(null);
         const [ error, setError ] = useState<string | undefined>("");
         const [ success, setSuccess  ] = useState<string | undefined>("");
+        const param = useParams();
+        const parentId = param.parentdetailbyID as string;
+        
 
     const ex_time_create_form = useForm<z.infer<typeof student_ex_timetable_Create_Schema>>({
         resolver : zodResolver(student_ex_timetable_Create_Schema),
         defaultValues:{
+            parentId: parentId,
             name: "",
             student_name :"",
             school:"",
@@ -75,7 +65,8 @@ const Student_EX_Time_Create_Form = ({ studentId , data }: Student_EX_Time_Creat
             grade: 0,
             quarter: 0,
             student_ex_timetable_id: studentId,
-            img: ""
+            img: "",
+            
         }
     })
     
@@ -89,32 +80,20 @@ const Student_EX_Time_Create_Form = ({ studentId , data }: Student_EX_Time_Creat
         }
     },[data[0]])
 
-    const handleImageUpload = async (event) => {
-        const file = event.target.files[0]
-        const formData = new FormData();
-        formData.append("file",file);
-        formData.append("upload_preset", "test_upLoad_img")
+  // 處理圖片上傳
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
 
-
-        console.log("-- 已選的圖片 --",file,"--end--")
-
-        const uploadResponse = await fetch(
-            "https://api.cloudinary.com/v1_1/dlullfqaw/image/upload",
-            {
-                method:"POST",
-                body:formData,
-            }
-        );
-
-        const uploadedImageData = await uploadResponse.json();
-        const imageUrl = uploadedImageData.secure_url;
-        setUploadedImageUrl(imageUrl);
-        ex_time_create_form.setValue("img",imageUrl)
-        console.log("--上傳後--",imageUrl,"-- end --")
-
-
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        ex_time_create_form.setValue("img", base64String);
+        setPreviewImage(base64String);
+      };
+      reader.readAsDataURL(file);
     }
-
+  };
     const ex_time_create_form_onSubmit = (values : z.infer<typeof student_ex_timetable_Create_Schema>) => {
         console.log("--  create ex time -- : ", values ,"-- End --")
         setError("");
@@ -127,9 +106,13 @@ const Student_EX_Time_Create_Form = ({ studentId , data }: Student_EX_Time_Creat
         })
     }
 
+    console.log("-- bug -- :",ex_time_create_form.formState.errors  ,"-- END --")
+
 
     return(
         <>
+                {error && <div className="text-red-500 mb-4">{error}</div>}
+                {success && <div className="text-green-500 mb-4">{success}</div>}
 <Form {...ex_time_create_form}>
                 <form
                     onSubmit={ex_time_create_form.handleSubmit(ex_time_create_form_onSubmit)}
@@ -278,55 +261,42 @@ const Student_EX_Time_Create_Form = ({ studentId , data }: Student_EX_Time_Creat
                 </div> 
 
 
-            <div className="space-y-4">
-                <FormField
-                    control={ex_time_create_form.control}
-                    name="img"
-                    render={({ field }) => (
-                        <>
-                <FormItem> 
-            <FormLabel>上傳圖片</FormLabel> 
-            <FormControl>
-
-                   <Input 
-                {...field}
-                disabled={isPending}
-                
-                type="hidden"
-                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" />
-            </FormControl> 
-            </FormItem>
-        <FormItem> 
-
-            <FormControl>
-
-                   <Input 
-
-                disabled={isPending}
-                onChange={handleImageUpload}
-                type="file"
-                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" />
-        </FormControl> 
-        </FormItem>
-                        </>
-                    )}
-                />
-
-                </div> 
+                <div className="space-y-4">
+            <FormField
+              control={ex_time_create_form.control}
+              name="img"
+              render={() => (
+                <FormItem>
+                  <FormLabel>上傳圖片</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      onChange={handleImageUpload}
+                      type="file"
+                      accept="image/*"
+                      className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
                 <Button disabled={isPending} type="submit">
                     建立
                 </Button>
 
                 </form>
-                {uploadedImageUrl && (
-                    <Image 
-                    width={500}
-                    height={500}
-                    src={uploadedImageUrl}
-                    alt=""
-                    />
-                )}
+                {previewImage && (
+          <Image
+            width={500}
+            height={500}
+            src={previewImage}
+            alt="預覽圖片"
+            className="mt-4"
+          />
+        )}
             </Form>
         </>
     )

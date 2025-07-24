@@ -2,13 +2,13 @@
 import SchoolTimeTable_Create_Form from "@/components/CreateForm/SchoolTimeTable-Create-Form";
 import { useEffect ,useState } from "react";
 
-interface SchoolID {
-    SchoolId : string;
-    data : string;
+interface SchoolData {
+    id: string;
+    school_name: string;
 }
 
 interface School_Timetable_uploadFormProps{
-    SchoolId : SchoolID
+    SchoolId : string
 }
 
 const School_Timetable_uploadForm = ({SchoolId} : School_Timetable_uploadFormProps) => {

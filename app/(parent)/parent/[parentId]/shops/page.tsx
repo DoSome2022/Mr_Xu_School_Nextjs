@@ -4,10 +4,17 @@ import AddToCart_Create_Form from "@/components/CreateForm/AddToApplyForm";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+interface ProductData {
+  id: string;
+  name: string;
+  description: string;
+  Course_id:string;
+}
+
 const shops = () => {
   const param = useParams();
 
-  const [getProductsData , setgetProductsData] = useState([]);
+  const [getProductsData , setgetProductsData] = useState<ProductData[]>([]);
 
   useEffect(()=>{
     const fetchproductsData = async () =>{
@@ -27,7 +34,7 @@ console.log("getProductsData : ",getProductsData)
 
     return (
         <>
-          {getProductsData?.map((d:any)=>{
+          {getProductsData?.map((d)=>{
             return(
               <>
               <br />
@@ -36,7 +43,7 @@ console.log("getProductsData : ",getProductsData)
               description:{d.description}
               <br />
 
-              <AddToCart_Create_Form  productId={d.id}/>
+              <AddToCart_Create_Form  productId={d.id}  productName={d.name}  courseid={d.Course_id}/>
               </>
             )
           })}

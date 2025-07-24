@@ -5,6 +5,7 @@ import { InputType , ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Booklist_Create_Schema } from "./schema";
+import { redirect } from "next/navigation";
 
 
 
@@ -43,7 +44,7 @@ let booklist_Data;
 
     
     console.log("-- booklist_Data -- : " , booklist_Data , " -- End -- ")
-    return { data: booklist_Data }
+    return redirect(`/admin/schoolLists/${school_booklist_id}/bookLists/`)
 }
 
 export const createBooklist = CreateSafeAction(Booklist_Create_Schema, handler)

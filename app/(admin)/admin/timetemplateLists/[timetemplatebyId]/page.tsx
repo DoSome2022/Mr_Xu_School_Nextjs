@@ -1,17 +1,44 @@
 "use client";
-
-import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import React,{ useEffect, useState } from "react";
+
+interface DayData {
+    date:string;
+    start_time:string;
+    end_time:string;
+    lesson:string;
+}
+
+interface Weekdays{
+    date:string;
+    start_time:string;
+    end_time:string;
+    lesson:string;
+}
 
 
-const TimeTemplatebyId =()=>{
+interface TimeTemplateData{
+    id: string;
+    publicholiday_model:{
+        [porp:number]:string;
+    };
+    title: string;
+    day_start: string;
+    day_end:string;
+    start_time:string;
+    end_time:string;
+    weekdays:Weekdays[];
+    days:DayData[];
+    grade:number;
+    lesson:string;
+}
+const TimeTemplatebyId:React.FC =()=>{
     const param = useParams();
     const TimeTempById = param?.timetemplatebyId as string;
-    const [GetTimeTempById , setGetTimeTempById] = useState([]);
+    const [GetTimeTempById , setGetTimeTempById] = useState<TimeTemplateData[]>([]);
 
     useEffect(()=>{
-        const timetempbyid = async(id:any)=>{
+        const timetempbyid = async(id:string)=>{
             const res = await fetch(`/api/TimeTemplate_Lists_by_id/${id}`);
             if(!res){
                 throw new Error("斷線！");
@@ -33,17 +60,14 @@ const TimeTemplatebyId =()=>{
         <div>
             TimeTemplatebyId
                 <br />
-            {GetTimeTempById.map((d:any)=>{
+            {GetTimeTempById.map((d)=>{
                 return(
                     <>
-                    <Link href={`/admin/timetemplateLists/${d.id}/edit`}>
-                    修改
-                    </Link>
                         <br />
                         Title: {d.title},
                         月 開始時間: {d.day_start},
                         月 結束時間: {d.end_time},
-                        星期日子:{ d.weekdays.map((wd:any)=>{
+                        星期日子:{ d.weekdays.map((wd)=>{
                             return(
                                 <>
                                     <br />
@@ -63,7 +87,7 @@ const TimeTemplatebyId =()=>{
                         <br />
                         <br />
 
-                        單獨日子:{d.days.map((sd:any)=>{
+                        單獨日子:{d.days.map((sd)=>{
                             return(
                                 <>
                                   日期：{sd.date},

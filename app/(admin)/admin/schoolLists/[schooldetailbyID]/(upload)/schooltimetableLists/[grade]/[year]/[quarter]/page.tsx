@@ -7,23 +7,25 @@ import { useEffect, useState } from "react";
 
 import Link from "next/link";
 
-
-
+interface SchoolData {
+    id: string;
+    name: string;
+}
 
 const SchoolTimeTableLists_Grade_Year_Quarter_Subject = () =>{
 
-    const params = useParams<{grade : string; year : string; quarter: string}>();
+    const params = useParams<{grade : string; year : string; quarter: string; schooldetailbyID:  string}>();
+    console.log("params : ",params)
+    const SchoolId = params?.schooldetailbyID  as string;
+    const GradeId = params?.grade as string;
+    const YearId = params?.year as string;
+    const QuarterId = params?.quarter as string;
 
-    const SchoolId = params?.schooldetailbyID  as String;
-    const GradeId = params?.grade as String;
-    const YearId = params?.year as String;
-    const QuarterId = params?.quarter as String;
-
-    const [ GetSchoolTimeTableListsById , setGetSchoolTimeTableListsById ] = useState<any>([]);
+    const [ GetSchoolTimeTableListsById , setGetSchoolTimeTableListsById ] = useState<SchoolData[]>([]);
 
     useEffect(() =>{
         if(SchoolId && YearId && GradeId && QuarterId ) {
-            const getSchoolTimeTableListsDetail = async (SchoolId: string ,yearId:string , GradeId:number ,QuarterId:number ) => {
+            const getSchoolTimeTableListsDetail = async (SchoolId: string ,yearId:string , GradeId:string ,QuarterId:string ) => {
                 try {
                 const res = await fetch(`/api/Schooltimetablelists_by_id/${SchoolId}/${GradeId}/${yearId}/${QuarterId}`);
                 if(!res.ok) {

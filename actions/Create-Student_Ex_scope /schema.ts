@@ -9,4 +9,6 @@ export const student_ex_scope_Create_Schema = z.object({
     quarter: z.number(),
     school: z.string(),
     subject: z.string(),
+    parentId: z.string(),
+    
 })

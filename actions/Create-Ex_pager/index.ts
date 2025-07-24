@@ -5,6 +5,7 @@ import { InputType , ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Ex_pager_Create_Schema } from "./schema";
+import { redirect } from "next/navigation";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -39,7 +40,6 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- ex_pager_Data -- : " , ex_pager_Data , " -- End -- ")
-    return { data: ex_pager_Data }
+    return redirect(`/admin/schoolLists/${school_ex_pager_id}/expageLists/`)
 }
-
 export const createExPager = CreateSafeAction(Ex_pager_Create_Schema, handler)

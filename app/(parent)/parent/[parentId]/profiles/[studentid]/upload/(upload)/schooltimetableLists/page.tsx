@@ -4,13 +4,18 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface StudentSchool {
+    id: string;
+    school : string;
+}
+
 const SchoolTimeTableLists = () => {
     const params = useParams<{parentId : string ; studentid : string}>();
     const ParentId = params?.parentId as string;
     const StudentID = params?.studentid as string;
 
     // 拿學生資料
-    const [GetSutudentData, setGetSutudentData] = useState([]);
+    const [GetSutudentData, setGetSutudentData] = useState<StudentSchool[]>([]);
 
     // 用ParentId去拿student DB裹的DATA
     useEffect(()=>{
@@ -41,7 +46,7 @@ const SchoolTimeTableLists = () => {
                 上傳學校時間表
             </Link>
             <br />
-            {GetSutudentData.map((d:any)=>{
+            {GetSutudentData.map((d)=>{
                 return(
                     <div key={d.id}> {/* 添加 key 属性 */}
                         <Link

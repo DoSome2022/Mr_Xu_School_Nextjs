@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const student_booklist_Create_Schema = z.object({
+    studentId: z.string(),
+    parentId:  z.string(),
     name : z.string().min(1,'最少輸入1個名'),
     img : z.string(),
     student_booklist_id : z.string(),

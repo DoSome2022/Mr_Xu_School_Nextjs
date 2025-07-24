@@ -113,8 +113,11 @@ const ClassDetail = () => {
                 <br />
                 學生列表
                 <br />
-                {GetClassData[0]?.student.map((student, index) => (
-                    <div key={student.id}>
+                {GetClassData[0]?.student.map((student, index) => {
+                    if(student.pay){
+                        return(
+                            <>
+                                                 <div key={student.id}>
                         學生名稱: {student.name} (年級: {student.grade})
                         <br />
                         <FormField
@@ -150,7 +153,12 @@ const ClassDetail = () => {
                             )}
                         />
                     </div>
-                ))}
+                            </>
+                        )
+                    }
+   
+}    
+            )}
                 <Button
                     disabled={isPending || isSubmitted}
                     type="submit"

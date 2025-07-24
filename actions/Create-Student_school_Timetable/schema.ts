@@ -9,4 +9,5 @@ export const student_school_timetable_Create_Schema = z.object({
     year: z.string(),
     quarter: z.number(),
     school: z.string(),
+    parentId: z.string(),
 })

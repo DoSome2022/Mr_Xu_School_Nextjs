@@ -4,18 +4,26 @@ import { useParams } from 'next/navigation';
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-
+interface Student_name{
+    id: string;
+    name: string;
+    school: string;
+    grade: string;
+    year: string;
+    quarter: string;
+    subject: string;
+}
 const ExPageLists_Grade_Year_Quarter_Subject_Lists = () => {
-    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ; school : string; grade : number ; year: string; quarter:number; subject:string}>();
+    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ; school : string; grade : string ; year: string; quarter:string; subject:string}>();
     const ParentID = params?.parentdetailbyID as string;
     const StudentID = params?.studentdetailbyID as string;
     const SchoolName = params?.school as string;
-    const Grade = params?.grade as number;
+    const Grade = params?.grade as string;
     const Year = params?.year as string;
-    const Quarter = params?.quarter as number;
-    const Subject = params?.subject as string;
+    const Quarter = params?.quarter as string;
+    const Subject = params?.subject ? decodeURIComponent(params.subject) : '';
 
-    const [ GetStudentExPaperLists , setGetStudentExPaperLists ] = useState<any>([]);
+    const [ GetStudentExPaperLists , setGetStudentExPaperLists ] = useState<Student_name[]>([]);
 
     useEffect(()=>{
         if(StudentID){
@@ -36,21 +44,29 @@ const ExPageLists_Grade_Year_Quarter_Subject_Lists = () => {
     },[StudentID])
 
 
-    console.log(GetStudentExPaperLists[0])
+    console.log(GetStudentExPaperLists)
+    console.log(Subject)
+
     return(
         <>
             <span> ExPageLists_Grade_Year_Quarter_Subject_Lists </span>
             <br />
             {GetStudentExPaperLists.map((d)=>{
-                return(
+                if(d.school == SchoolName && d.grade == Grade && d.year == Year  && d.quarter == Quarter && d.subject == Subject){
+              return(
                     <>
                            <Link className='text-stone-950 hover:text-gray-700'
                            href={`/admin/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/expageLists/${SchoolName}/${Grade}/${Year}/${Quarter}/${Subject}/${d.id}`}
                        >
                            名稱:{d.name}
-                       </Link>                    
+                       </Link>    
+                       <br />                
                     </>
                 )
+                }
+
+
+  
 
             })}
         </>

@@ -5,7 +5,6 @@ import * as z from "zod";
 import { useState, useEffect ,useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "next/navigation";
 
 import { Input } from "@/components/ui/input"; 
 
@@ -30,9 +29,6 @@ import { SWR_School_Grade } from "../fatchdata/swrschool_grade";
 import { SWR_School_Year } from "../fatchdata/swrschool_year";
 import { createBooklist } from "@/actions/Create-Booklist";
 
-interface SchoolID {
-    SchoolId : string;
-}
 
 interface SchoolData {
     id: string;
@@ -40,23 +36,14 @@ interface SchoolData {
 }
 
 interface BookList_Create_FormProps{
-    SchoolId : SchoolID;
-    data: SchoolData
+    SchoolId : string;
+    data: SchoolData[]
 }
 
 
 const BookList_Create_Form = ({SchoolId , data}: BookList_Create_FormProps) =>{
 
-
-
-
-            //上傳圖片
-            const [uploadedImageUrl, setUploadedImageUrl ] = useState();
-
-
           console.log("-- School Data : --",data[0],"-- end --")
-
-         
 
         const [ SchoolName , setSchoolName ] = useState('');
 
@@ -67,14 +54,10 @@ const BookList_Create_Form = ({SchoolId , data}: BookList_Create_FormProps) =>{
            }
         },[data ])
 
-
-
- 
-
     const [ error, setError ] = useState<string | undefined>("");
     const [ success, setSuccess  ] = useState<string | undefined>("");
     const [isPending , startTransition] = useTransition();
-    const [ previewImage , setpreviewImage ] = useState<string | null>(null);
+    const [PreviewImage, setPreviewImage] = useState<string | null>(null);
 
 
         const booklist_create_form = useForm<z.infer<typeof Booklist_Create_Schema >>({
@@ -90,52 +73,38 @@ const BookList_Create_Form = ({SchoolId , data}: BookList_Create_FormProps) =>{
         }
 
     })
+  // 處理圖片上傳
+//   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     if (e.target.files && e.target.files.length > 0) {
+//       const file = e.target.files[0];
+//       const reader = new FileReader();
 
+//       reader.onload = () => {
+//         const base64String = reader.result as string;
+//         booklist_create_form.setValue("img", base64String);
+//         setPreviewImage(base64String);
+//       };
+//       reader.readAsDataURL(file);
+//     }
+//   };
 
-    // const handleImageUpload = async (event) => {
-    //     const file = event.target.files[0]
-    //     const formData = new FormData();
-    //     formData.append("file",file);
-    //     formData.append("upload_preset", "test_upLoad_img")
+  // 處理圖片上傳
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
 
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        booklist_create_form.setValue("img", base64String);
+        setPreviewImage(base64String);
+      };
+      reader.readAsDataURL(file);
 
-    //     console.log("-- 已選的圖片 --",file,"--end--")
-
-    //     const uploadResponse = await fetch(
-    //         "https://api.cloudinary.com/v1_1/dlullfqaw/image/upload",
-    //         {
-    //             method:"POST",
-    //             body:formData,
-    //         }
-    //     );
-
-    //     const uploadedImageData = await uploadResponse.json();
-    //     const imageUrl = uploadedImageData.secure_url;
-    //     setUploadedImageUrl(imageUrl);
-    //     booklist_create_form.setValue("img",imageUrl)
-    //     console.log("--上傳後--",imageUrl,"-- end --")
-
-
-    // }
-
-
-    const handleFileChange = (field:any) => (e:React.ChangeEvent<HTMLInputElement>) => {
-        if(e.target.files && e.target.files.length > 0){
-            field.onChange(e.target.files[0]);
-            const file = e.target.files[0];
-
-            const reader = new FileReader();
-
-            reader.onload = () => {
-                const base645String = reader.result as string;
-                booklist_create_form.setValue("img",base645String);
-                setpreviewImage(base645String)
-                };
-                reader.readAsDataURL(file);
-
-                setpreviewImage(URL.createObjectURL(file));
-        }
+      setPreviewImage(URL.createObjectURL(file));
     }
+  };
+
 
 
 
@@ -153,7 +122,8 @@ const BookList_Create_Form = ({SchoolId , data}: BookList_Create_FormProps) =>{
 
     return(
         <>
-
+                      {error && <div className="text-red-500 mb-4">{error}</div>}
+                      {success && <div className="text-green-500 mb-4">{success}</div>}
             <Form {...booklist_create_form}>
                 <form
                     onSubmit={booklist_create_form.handleSubmit(booklist_create_form_onSubmit)}
@@ -213,11 +183,8 @@ const BookList_Create_Form = ({SchoolId , data}: BookList_Create_FormProps) =>{
             )
 })}
 
-                
 
-
-
-                <div className="space-y-4" >
+                {/* <div className="space-y-4" >
                 <FormField
                     control={booklist_create_form.control}
                     name="school_booklist_id"
@@ -237,7 +204,7 @@ const BookList_Create_Form = ({SchoolId , data}: BookList_Create_FormProps) =>{
                 </FormItem>
                     )}
                 />
-            </div> 
+            </div>  */}
 
 
                 <div className="space-y-4">
@@ -281,7 +248,7 @@ const BookList_Create_Form = ({SchoolId , data}: BookList_Create_FormProps) =>{
                     render={({ field }) => (
                         <>
                 <FormItem> 
-            <FormLabel>上傳圖片</FormLabel> 
+            <FormLabel>上傳</FormLabel> 
             <FormControl>
 
                    <Input 
@@ -317,16 +284,15 @@ const BookList_Create_Form = ({SchoolId , data}: BookList_Create_FormProps) =>{
                 </form>
             </Form>
 
-            {
-                uploadedImageUrl && (
-                    <Image
-                    width={500}
-                    height={500}
-                    src={uploadedImageUrl}
-                    alt=""
-                    />
-                )
-            }
+                {PreviewImage && (
+          <Image
+            width={500}
+            height={500}
+            src={PreviewImage}
+            alt="預覽圖片"
+            className="mt-4"
+          />
+        )}
         </>
     )
 }

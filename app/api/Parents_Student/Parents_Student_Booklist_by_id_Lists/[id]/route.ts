@@ -10,7 +10,7 @@ export async function GET(
     if(req.method === "GET"){
         const res = await db.student_booklist.findMany({
             where:{
-                student_booklist_id :String(id)
+                id :String(id)
             }
         });
         return NextResponse.json(res)

@@ -4,17 +4,21 @@ import Student_BookList_Create_Form from "@/components/CreateForm/Student-BookLi
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-
+interface StudentData {
+    id: string;
+    name: string;
+    grade: number;
+    school: string;
+}
 
 const Student_BookLists_upload = () =>{
 
 
     const params = useParams();
     console.log(params)
-    const ParentID = params?.parentdetailbyID as string;
     const StudentID = params?.studentdetailbyID as string;
 
-    const [ GetStudentData , setGetStudentData ] = useState([]);
+    const [ GetStudentData , setGetStudentData ] = useState<StudentData[]>([]);
 
     useEffect(() => {
         if(StudentID){
@@ -32,8 +36,16 @@ const Student_BookLists_upload = () =>{
     },[StudentID])
 
 
-    // console.log(" --  Student Data : -- ", StudentID ,"-- End --")
+    console.log(" --  Student Data : -- ", StudentID ,"-- End --")
 
+    if (!StudentID) {
+        return <div className="p-4 text-red-500">無效的學生 ID</div>;
+      }
+    
+    
+      if (!GetStudentData) {
+        return <div className="p-4">載入中...</div>;
+      }
 
     return(
         <>

@@ -10,6 +10,15 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .border-border {
+    border: 1px solid hsl(var(--border));
+  }
+  .bg-background {
+    background-color: hsl(var(--background));
+  }
+  .text-foreground {
+    color: hsl(var(--foreground));
+  }
 }
 
 @layer base {

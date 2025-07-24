@@ -39,6 +39,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 chine_ex_day : chine_ex_day,
                 math_ex_day : math_ex_day,
                 eng_ex_day : eng_ex_day,
+                ismember:  false,
+                issurvive: true,
                 chine_ex:"",
                 math_ex:"",
                 eng_ex:"",

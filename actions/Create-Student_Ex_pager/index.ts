@@ -1,10 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache"; 
 import { InputType , ReturnType } from "./types"; 
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { student_ex_paper_Create_Schema } from "./schema";
+import { redirect } from "next/navigation";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -19,6 +19,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
             year,
             quarter,
             school,
+            parentId,
         } = data;
 
     let student_ex_paper_Data;
@@ -41,7 +42,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- student_ex_paper_Data -- : " , student_ex_paper_Data , " -- End -- ")
-    return { data: student_ex_paper_Data }
+    return redirect(`/admin/userLists/parentsLists/${parentId}/studentLists/${student_ex_paper_id}/expageLists/`)
 }
 
 export const createStudentExPaper = CreateSafeAction(student_ex_paper_Create_Schema, handler)

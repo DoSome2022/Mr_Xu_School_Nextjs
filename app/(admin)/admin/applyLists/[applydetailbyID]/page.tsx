@@ -18,34 +18,91 @@ import { Apply_Reject_Schema } from "@/actions/Apply-Reject/schema";
 import { z } from "zod";
 import { AcceptApplyClass } from "@/actions/Apply-Accept";
 import { RejectApplyClass } from "@/actions/Apply-Reject";
+import WhatsAppButton from "@/components/whatappsButton/whatappsbtn";
+
+// 定義 ApplyData 的類型，根據 API 回傳數據
+interface ApplyData {
+  id: string;
+  title: string;
+  subject: string;
+  content: string;
+  apply: boolean;
+  isapply: boolean;
+  apply_student_id: string;
+  course_id: string;
+  course_name: string;
+  craetedAt: string;
+  createdata: string;
+  parent_id: string;
+  product_id: string;
+  username: string;
+  student: {
+    id: string;
+    name: string;
+    school: string;
+    grade: number;
+    student_id: string;
+  };
+  updatedAt: string;
+}
+
+// 定義 ParentData 的類型，根據 API 回傳數據
+interface ParentData {
+  id: string;
+  phone: string;
+  // 根據實際 API 回傳添加其他屬性
+}
 
 const ApplyDetail = () => {
   const params = useParams();
   const applydetailbyID = params.applydetailbyID as string;
-  console.log("param :", params);
 
-  const [GetApplyByIdData, setGetApplyByIdData] = useState<any>({});
+  // 使用正確的初始狀態和類型
+  const [GetApplyByIdData, setGetApplyByIdData] = useState<ApplyData | null>(null);
+  const [GetParentDatabyid, setGetParentDatabyid] = useState<ParentData[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
+  // 獲取申請數據
   useEffect(() => {
     const fetchApplyByIdData = async (id: string) => {
       try {
         const res = await fetch(`/api/Apply_Lists_By_Id/${id}`);
         if (!res.ok) {
-          throw new Error("無法獲取數據");
+          throw new Error("無法獲取申請數據");
         }
         const result = await res.json();
         setGetApplyByIdData(result);
-      } catch (error) {
+      } catch (error: any) {
         console.error("獲取申請數據失敗:", error);
+        setError("無法載入申請數據");
       }
     };
-    fetchApplyByIdData(applydetailbyID);
+    if (applydetailbyID) {
+      fetchApplyByIdData(applydetailbyID);
+    }
   }, [applydetailbyID]);
 
-  console.log(" -- ApplyLists -- : ", GetApplyByIdData, " -- end -- ");
+  // 獲取家長數據，僅在 parentId 存在時觸發
+  useEffect(() => {
+    const fetchParentByIdData = async (id: string) => {
+      try {
+        const res = await fetch(`/api/Parents_Lists_by_id/${id}`);
+        if (!res.ok) {
+          throw new Error("無法獲取家長數據");
+        }
+        const result = await res.json();
+        setGetParentDatabyid(result); // 假設 API 返回單個對象
+      } catch (error: any) {
+        console.error("獲取家長數據失敗:", error);
+        setError("無法載入家長數據");
+      }
+    };
+    if (GetApplyByIdData?.parent_id) {
+      fetchParentByIdData(GetApplyByIdData.parent_id);
+    }
+  }, [GetApplyByIdData?.parent_id]);
 
-  const { title, subject, content, apply, isapply } = GetApplyByIdData;
-
+  // 表單設置
   const apply_status_Accept = useForm<z.infer<typeof Apply_Accept_Schema>>({
     resolver: zodResolver(Apply_Accept_Schema),
     defaultValues: {
@@ -60,30 +117,73 @@ const ApplyDetail = () => {
     },
   });
 
+  // 提交處理
   const apply_status_Accept_onSubmit = (values: z.infer<typeof Apply_Accept_Schema>) => {
     console.log("-- apply_status_Accept_onSubmit -- : ", values, "-- End --");
-    startTransition(() => {
-      AcceptApplyClass(values);
+    startTransition(async () => {
+      try {
+        const result = await AcceptApplyClass(values);
+        if (result?.error) {
+          setError(result.error);
+        } else {
+          setError(null);
+          setGetApplyByIdData((prev) => (prev ? { ...prev, isapply: true } : prev));
+        }
+      } catch (error: any) {
+        console.error("接受申請失敗:", error);
+        setError("提交失敗，請稍後重試");
+      }
     });
   };
 
   const apply_status_Reject_onSubmit = (values: z.infer<typeof Apply_Reject_Schema>) => {
     console.log("-- apply_status_Reject_onSubmit -- : ", values, "-- End --");
-    startTransition(() => {
-      RejectApplyClass(values);
+    startTransition(async () => {
+      try {
+        const result = await RejectApplyClass(values);
+        if (result?.error) {
+          setError(result.error);
+        } else {
+          setError(null);
+          setGetApplyByIdData((prev) => (prev ? { ...prev, isapply: true } : prev));
+        }
+      } catch (error: any) {
+        console.error("拒絕申請失敗:", error);
+        setError("提交失敗，請稍後重試");
+      }
     });
   };
+
+  // 載入中或錯誤狀態
+  if (!GetApplyByIdData) {
+    return <div className="p-4">載入中...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 text-red-500">{error}</div>;
+  }
+
+  console.log("-- GetApplyByIdData -- : ", GetApplyByIdData, "-- End --");
+
+  console.log("-- GetParentDatabyid -- : ", GetParentDatabyid, "-- End --");
+
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">申請詳情</h1>
-      <p>標題: {title || "載入中..."}</p>
-      <p>主題: {subject || "載入中..."}</p>
-      <p>內容: {content || "載入中..."}</p>
-      <p>申請狀態: {apply ? "申請中" : "未申請"}</p>
-      <p>處理狀態: {isapply ? "已處理" : "未處理"}</p>
+      <p>標題: {GetApplyByIdData.title}</p>
+      <p>主題: {GetApplyByIdData.subject}</p>
+      <p>內容: {GetApplyByIdData.content}</p>
+      <p>申請狀態: {GetApplyByIdData.apply ? "申請中" : "未申請"}</p>
+      <p>處理狀態: {GetApplyByIdData.isapply ? "已處理" : "未處理"}</p>
 
-      {isapply ? (
+      {GetParentDatabyid ? (
+        <WhatsAppButton whatappmessage={GetParentDatabyid[0]?.phone} />
+      ) : (
+        <p>載入家長資料中...</p>
+      )}
+
+      {GetApplyByIdData.isapply ? (
         <p className="text-green-600 font-semibold">已處理</p>
       ) : (
         <div className="mt-4 space-y-4">
@@ -109,122 +209,3 @@ const ApplyDetail = () => {
 };
 
 export default ApplyDetail;
-
-
-// "use client";
-
-// import { useParams } from "next/navigation";
-// import { startTransition, useEffect, useState } from "react";
-
-// import { 
-//     Form,
-//     FormControl,
-//     FormField,
-//     FormItem,
-//     FormLabel,
-//     FormMessage 
-// } from "@/components/ui/form";
-// import { Button } from "@/components/ui/button";
-// import { useForm } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { Apply_Accept_Schema } from "@/actions/Apply-Accept/schema";
-// import { z } from "zod";
-// import { Apply_Reject_Schema } from "@/actions/Apply-Reject/schema";
-// import { AcceptApplyClass } from "@/actions/Apply-Accept";
-// import { RejectApplyClass } from "@/actions/Apply-Reject";
-// const ApplyDetail = () => {
-//     const params = useParams();
-    
-//     const applydetailbyID = params.applydetailbyID as string ;
-//         console.log("param :",params);
-//     const [ GetApplyByIdData , setGetApplyByIdData ] = useState([]);
-
-//     useEffect(()=>{
-    
-//         const fetchApplyByIdData = async (id:string) => {
-//             const res = await fetch(`/api/Apply_Lists_By_Id/${id}`);
-//             if (!res) {
-//                 throw new Error("斷線！");
-//             }
-//             const result = await res.json();
-//             setGetApplyByIdData(result);
-//         };
-//         fetchApplyByIdData(applydetailbyID);
-//     },[applydetailbyID])
-
-//     console.log(" --  ApplyLists -- : ", GetApplyByIdData, " -- end -- ");
-
-
-//     const title = GetApplyByIdData?.title;
-//     const subject = GetApplyByIdData?.subject;
-//     const content = GetApplyByIdData?.content;
-//     const apply = GetApplyByIdData?.apply;
-
-//     const apply_status_Accept = useForm<z.infer<typeof Apply_Accept_Schema>>({
-//         resolver : zodResolver(Apply_Accept_Schema),
-//         defaultValues:{
-//             applyId: applydetailbyID,
-            
-//         }
-//     })
-
-//     const apply_status_Reject = useForm<z.infer<typeof Apply_Reject_Schema>>({
-//         resolver : zodResolver(Apply_Reject_Schema),
-//         defaultValues:{
-//             applyId: applydetailbyID,
-            
-//         }
-//     })
-
-
-//     const apply_status_Accept_onSubmit = (values:z.infer<typeof Apply_Accept_Schema>) =>{
-//         console.log("-- apply_status_Accept_onSubmit -- : ", values, "-- End --");
-//         startTransition(()=>{
-//             AcceptApplyClass(values)
-//         })
-//     }
-
-//     const apply_status_Reject_onSubmit = (values:z.infer<typeof Apply_Reject_Schema>) =>{
-//         console.log("-- apply_status_Reject_onSubmit -- : ", values, "-- End --");
-//         startTransition(()=>{
-//             RejectApplyClass(values)
-//         })
-//     }
-
-
-//     return(
-//         <>
-//             <span>ApplyDetail</span>
-
-//             <span>{title}</span>
-//             <br />
-//             <span>{subject}</span>
-//             <br />
-//             <span>{content}</span>
-//             <br />
-//             <span>{apply}</span>
-
-//             <br />
-
-//             <Form {...apply_status_Accept}>
-//                 <form onSubmit={apply_status_Accept.handleSubmit(apply_status_Accept_onSubmit)}>
-//                     <Button>接受</Button>
-//                 </form>
-//             </Form>
-
-
-//             <Form {...apply_status_Reject}>
-//                 <form onSubmit={apply_status_Reject.handleSubmit(apply_status_Reject_onSubmit)}>
-//                     <Button>拒絕</Button>
-//                 </form>
-//             </Form>
-
-
-//         <br />
-
-
-//         </>
-//     )
-// }
-
-// export default ApplyDetail

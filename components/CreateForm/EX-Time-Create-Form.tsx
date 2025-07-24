@@ -36,9 +36,9 @@ import Image from "next/image";
 import { createExTimeTable } from "@/actions/Create-Ex_timetable";
 import { SWR_School_Subject } from "../fatchdata/swrschool_subject";
 
-interface SchoolID {
-    SchoolId : string;
-}
+// interface SchoolID {
+//     SchoolId : string;
+// }
 
 interface SchoolData {
     id: string;
@@ -46,8 +46,8 @@ interface SchoolData {
 }
 
 interface EX_Time_Create_FormProps{
-    SchoolId : SchoolID;
-    data: SchoolData
+    SchoolId : string;
+    data: SchoolData[]
 }
 
 
@@ -58,8 +58,7 @@ const EX_Time_Create_Form = ({SchoolId , data} : EX_Time_Create_FormProps) =>{
     const [ success, setSuccess  ] = useState<string | undefined>("");
     const [isPending , startTransition] = useTransition();
 
-        //上傳圖片
-        const [uploadedImageUrl, setUploadedImageUrl ] = useState();
+    const [PreviewImage, setPreviewImage] = useState<string | null>(null);
 
         //console.log("-- School Data : --",data[0],"-- end --")
     
@@ -86,31 +85,22 @@ const EX_Time_Create_Form = ({SchoolId , data} : EX_Time_Create_FormProps) =>{
         }
     })
 
-    const handleImageUpload = async (event) => {
-        const file = event.target.files[0]
-        const formData = new FormData();
-        formData.append("file",file);
-        formData.append("upload_preset", "test_upLoad_img")
+  // 處理圖片上傳
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
 
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        ex_time_create_form.setValue("img", base64String);
+        setPreviewImage(base64String);
+      };
+      reader.readAsDataURL(file);
 
-        console.log("-- 已選的圖片 --",file,"--end--")
-
-        const uploadResponse = await fetch(
-            "https://api.cloudinary.com/v1_1/dlullfqaw/image/upload",
-            {
-                method:"POST",
-                body:formData,
-            }
-        );
-
-        const uploadedImageData = await uploadResponse.json();
-        const imageUrl = uploadedImageData.secure_url;
-        setUploadedImageUrl(imageUrl);
-        ex_time_create_form.setValue("img",imageUrl)
-        console.log("--上傳後--",imageUrl,"-- end --")
-
-
+      setPreviewImage(URL.createObjectURL(file));
     }
+  };
 
     
     const ex_time_create_form_onSubmit = (values : z.infer<typeof Ex_timetable_Create_Schema>) => {
@@ -128,6 +118,8 @@ const EX_Time_Create_Form = ({SchoolId , data} : EX_Time_Create_FormProps) =>{
 
     return(
         <>
+                              {error && <div className="text-red-500 mb-4">{error}</div>}
+                              {success && <div className="text-green-500 mb-4">{success}</div>}
             <Form {...ex_time_create_form}>
                 <form
                     onSubmit={ex_time_create_form.handleSubmit(ex_time_create_form_onSubmit)}
@@ -186,10 +178,12 @@ const EX_Time_Create_Form = ({SchoolId , data} : EX_Time_Create_FormProps) =>{
             )
 })}
 
-<div className="space-y-4" >
+                <div className="space-y-4" 
+                hidden
+                >
                 <FormField
                     control={ex_time_create_form.control}
-                    name="school_booklist_id"
+                    name="school_ex_time_id"
                     render={({ field }) => (
                 <FormItem>
                     <FormControl>
@@ -267,7 +261,6 @@ const EX_Time_Create_Form = ({SchoolId , data} : EX_Time_Create_FormProps) =>{
                     )}
                 />
                 </div> 
-
                 <div className="space-y-4">
                 <FormField
                     control={ex_time_create_form.control}
@@ -275,7 +268,7 @@ const EX_Time_Create_Form = ({SchoolId , data} : EX_Time_Create_FormProps) =>{
                     render={({ field }) => (
                         <>
                 <FormItem> 
-            <FormLabel>上傳圖片</FormLabel> 
+            <FormLabel>上傳</FormLabel> 
             <FormControl>
 
                    <Input 
@@ -302,7 +295,7 @@ const EX_Time_Create_Form = ({SchoolId , data} : EX_Time_Create_FormProps) =>{
                     )}
                 />
 
-                </div>
+                </div> 
 
                 <Button disabled={isPending} type="submit">
                     建立
@@ -311,16 +304,15 @@ const EX_Time_Create_Form = ({SchoolId , data} : EX_Time_Create_FormProps) =>{
                 </form>
             </Form>
 
-            {
-                uploadedImageUrl && (
-                    <Image
-                    width={500}
-                    height={500}
-                    src={uploadedImageUrl}
-                    alt=""
-                    />
-                )
-            }
+                {PreviewImage && (
+          <Image
+            width={500}
+            height={500}
+            src={PreviewImage}
+            alt="預覽圖片"
+            className="mt-4"
+          />
+        )}
 
         </>
     )

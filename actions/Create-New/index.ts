@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache"; 
 import { InputType , ReturnType } from "./types"; 
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
