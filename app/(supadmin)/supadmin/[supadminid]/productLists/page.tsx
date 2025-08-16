@@ -51,7 +51,7 @@ const ProductListsbysupadmin = () => {
 
     return(
         <>
-            <Link className="text-stone-950 hover:text-gray-700" href={"/admin/productLists/createProduct"}>
+            <Link className="text-stone-950 hover:text-gray-700" href={`/supadmin/${supadminid}/productLists/createProduct`}>
                     建立商品
                 </Link>
             <span> ProductLists </span>

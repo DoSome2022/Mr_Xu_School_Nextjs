@@ -91,6 +91,7 @@ export const SupAdminNavbar = () =>{
             return(
                 <Link key={`${link.id}`} className="text-white hover:text-gray-300" href={`${link.path}`}>
                     {link.name}
+                    <br />
                 </Link>
             )
         })}

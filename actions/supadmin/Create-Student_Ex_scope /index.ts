@@ -40,7 +40,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- student_ex_scope_Data -- : " , student_ex_scope_Data , " -- End -- ")
-    return redirect(`/admin/userLists/parentsLists/${parentId}/studentLists/${student_ex_scope_id}/exscopeLists`)
+    return redirect(`/supadmin/userLists/parentsLists/${parentId}/studentLists/${student_ex_scope_id}/exscopeLists`)
 }
 
 export const SupcreateStudentExScope = CreateSafeAction(Supstudent_ex_scope_Create_Schema, handler)

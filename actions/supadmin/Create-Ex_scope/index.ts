@@ -39,7 +39,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
     }
     console.log("-- ex_scope_Data -- : " , ex_scope_Data , " -- End -- ")
     // return { data: ex_scope_Data }
-    return redirect(`/admin/schoolLists/${school_ex_scope_id}/exscopeLists/`)
+    return redirect(`/supadmin/schoolLists/${school_ex_scope_id}/exscopeLists/`)
 }
 
 export const createExScope = CreateSafeAction(SupEx_scope_Create_Schema, handler)

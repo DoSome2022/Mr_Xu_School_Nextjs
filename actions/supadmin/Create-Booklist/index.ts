@@ -45,7 +45,7 @@ let booklist_Data;
 
     
     console.log("-- booklist_Data -- : " , booklist_Data , " -- End -- ")
-    return redirect(`/admin/${supadminid}/schoolLists/${school_booklist_id}/bookLists/`)
+    return redirect(`/supadmin/${supadminid}/schoolLists/${school_booklist_id}/bookLists/`)
 }
 
 export const SupcreateBooklist = CreateSafeAction(SupBooklist_Create_Schema, handler)

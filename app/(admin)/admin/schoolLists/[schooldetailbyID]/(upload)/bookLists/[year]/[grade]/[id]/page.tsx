@@ -1,67 +1,142 @@
 "use client";
-import { useParams } from 'next/navigation';
+
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import Image from "next/image"; 
+import Image from "next/image";
+import Link from "next/link";
 
 interface SchoolBookData {
-    name: string;
-    img: string;
+  name: string;
+  img?: string;
 }
+
 const BookLists_year_grade_by_Id = () => {
+  const params = useParams();
+  const schoolId = params?.schooldetailbyID as string;
+  const yearId = params?.year as string;
+  const gradeId = params?.grade as string;
+  const bookListById = params?.id as string;
 
-    const params = useParams<{year: string ; grade: string; id:string; schooldetailbyID:string;}>();//plz use console.log check params name
-    const SchoolId = params?.schooldetailbyID as string;// 獲取URL中的SchoolId參數
-    const yearId = params?.year as string// 獲取URL中的yearId參數
-    const GradeId = params?.grade as string // 獲取URL中的GradeId參數
-    const BookListById = params?.id as string // 獲取URL中的Id參數
+  const [booklistDetail, setBooklistDetail] = useState<SchoolBookData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-    console.log(BookListById)
+  // 定義年級對應對象，與 BookLists_grade_Links 一致
+  const gradeMapping: { [key: string]: string } = {
+    "1": "小學1年級",
+    "2": "小學2年級",
+    "3": "小學3年級",
+    "4": "小學4年級",
+    "5": "小學5年級",
+    "6": "小學6年級",
+    "7": "初中1年級",
+    "8": "初中2年級",
+    "9": "初中3年級",
+    "10": "高中1年級",
+    "11": "高中2年級",
+    "12": "高中3年級",
+  };
 
-    const [ GetBooklistsDetailDataById , setGetBooklistsDetailDataById ] = useState<SchoolBookData[]>([]);
-
-
-    useEffect(() =>{
-        if(SchoolId && yearId && GradeId && BookListById) {
-            const getBooklitsDetailById = async (SchoolId: string ,yearId:string , GradeId:string , BookListById:string) => {
-                try {
-                const res = await fetch(`/api/Booklists_detail_data_by_id/${SchoolId}/${yearId}/${GradeId}/${BookListById}`);
-                if(!res.ok) {
-                    throw new Error("斷線！");
-                }
-                const result = await res.json();
-                setGetBooklistsDetailDataById(result);                    
-                } catch (error) {
-                    console.error(error);
-                }
-            };
-            getBooklitsDetailById(SchoolId,yearId,GradeId,BookListById);
+  useEffect(() => {
+    if (schoolId && yearId && gradeId && bookListById) {
+      const getBooklistDetail = async (
+        schoolId: string,
+        yearId: string,
+        gradeId: string,
+        bookListById: string
+      ) => {
+        setLoading(true);
+        setError(null);
+        try {
+          const res = await fetch(
+            `/api/Booklists_detail_data_by_id/${schoolId}/${yearId}/${gradeId}/${bookListById}`
+          );
+          if (!res.ok) {
+            throw new Error("無法載入書單詳情");
+          }
+          const result: SchoolBookData = await res.json(); // 明確指定返回類型
+          setBooklistDetail(result);
+        } catch (err: unknown) { // 使用 unknown 避免 any
+          console.error("載入錯誤:", err);
+          const errorMessage = err instanceof Error ? err.message : "無法載入書單詳情";
+          setError(errorMessage);
+        } finally {
+          setLoading(false);
         }
-    },[SchoolId ,yearId , GradeId ,BookListById] )
+      };
+      getBooklistDetail(schoolId, yearId, gradeId, bookListById);
+    } else {
+      setError("無效的學校ID、年份、年級或書單ID");
+      setLoading(false);
+    }
+  }, [schoolId, yearId, gradeId, bookListById]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-gray-600 text-lg">正在加載...</p>
+      </div>
+    );
+  }
 
-    console.log(GetBooklistsDetailDataById)
+  if (error || !booklistDetail) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-red-500 bg-red-100 p-3 rounded-md">{error || "無書單資料"}</p>
+      </div>
+    );
+  }
 
+  return (
+    <div className="min-h-screen bg-gray-100 pt-20">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-[#e7915b]">
+            書單詳情 - {yearId} {gradeMapping[gradeId] || gradeId}
+          </h1>
+          <div className="flex space-x-4">
+            <Link
+              href={`/admin/schoolLists/${schoolId}/bookLists/upload`}
+              className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
+            >
+              上傳書單
+            </Link>
+            <Link
+              href={`/admin/schoolLists/${schoolId}/bookLists/${yearId}/${gradeId}`}
+              className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
+            >
+              返回書單列表
+            </Link>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">書單詳情</h2>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">書單名稱</h3>
+              <p className="text-gray-800">{booklistDetail.name}</p>
+            </div>
+            {booklistDetail.img ? (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700">書單圖片</h3>
+                <div className="relative w-full max-w-md h-64">
+                  <Image
+                    src={booklistDetail.img}
+                    alt={booklistDetail.name}
+                    fill
+                    className="object-contain rounded-md"
+                    priority
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500">無書單圖片</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-    return(
-        <>
-            {GetBooklistsDetailDataById.map((d)=>{
-                return(
-                    <>
-                    name:{d.name}
-
-                    <br />
-
-                    {
-                        d.img && (
-                            <Image width={500} height={500} src={d.img} alt="" />
-                        )
-
-                    }
-                    </>
-                )
-            })}
-        </>
-    )
-}
-
-export default BookLists_year_grade_by_Id
+export default BookLists_year_grade_by_Id;

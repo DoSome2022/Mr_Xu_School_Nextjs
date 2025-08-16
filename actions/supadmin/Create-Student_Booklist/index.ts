@@ -39,7 +39,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- student_booklist_Data -- : " , student_booklist_Data , " -- End -- ")
-    return redirect(`/admin/userLists/parentsLists/${parentId}/studentLists/${studentId}/bookLists`)
+    return redirect(`/supadmin/userLists/parentsLists/${parentId}/studentLists/${studentId}/bookLists`)
 }
 
 export const SupcreateStudentBookList = CreateSafeAction(Supstudent_booklist_Create_Schema, handler)

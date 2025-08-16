@@ -159,14 +159,14 @@ model Product {
   name                    String         
   description             String
   price                   Float
-  stock                    Int
+  stock                   Int
   product_price_record_id String
   createdAt               DateTime       @default(now())
   updatedAt               DateTime       @updatedAt
   product_price_record    Price_record[]
   Course_id               String
+  Course                  Course?        @relation(fields: [Course_id], references: [id]) // 新增關係
 }
-
 
 
 model Message {
@@ -284,10 +284,11 @@ model Course {
   classroom              Classroom[]
   student                Student[]    @relation("CourseToStudent")
   Teacher_data           StaffUser[]
-  TimeTemplateID         String // 外键字段
-  TimeTemplate           timetemplate @relation("TimeTemplateToCourses", fields: [TimeTemplateID], references: [id]) // 关系字段
-  craetedAt               DateTime       @default(now())
-  updatedAt               DateTime       @updatedAt
+  TimeTemplateID         String
+  TimeTemplate           timetemplate @relation("TimeTemplateToCourses", fields: [TimeTemplateID], references: [id])
+  Products               Product[]    @relation // 新增反向關係
+  craetedAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
 }
 
 model Class {

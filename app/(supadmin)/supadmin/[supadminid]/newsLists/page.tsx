@@ -50,7 +50,7 @@ const newsListsbysupadmin = () =>{
 
     return(
         <>          
-        <Link className="text-stone-950 hover:text-gray-700" href={`/admin/${supadminid}/newsLists/createNews`}>
+        <Link className="text-stone-950 hover:text-gray-700" href={`/supadmin/${supadminid}/newsLists/createNews`}>
             建立公告
         </Link>
             <span>newsLists</span>

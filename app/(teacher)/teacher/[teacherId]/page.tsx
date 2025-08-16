@@ -118,6 +118,120 @@
 // export default TeacherByIdComponents;
 
 
+//13-08-2025原本
+
+// "use client";
+
+// import { Logout_Button } from "@/components/logout_button";
+// import { useSession } from "next-auth/react";
+// import TeacherNavber from "./_components/navbar";
+// import { useEffect, useState } from "react";
+
+// const TeacherByIdComponents = () => {
+//   const session = useSession();
+//   const teacherId = session?.data?.user?.id;
+
+//   const [GetTeacherData, setGetTeacherData] = useState([]);
+//   const [GetSchoolData, setGetSchoolData] = useState<any[]>([]);
+//   const [alerts, setAlerts] = useState<any[]>([]);
+
+//   useEffect(() => {
+//     if (teacherId) {
+//       const fetchTeacherData = async (id: string) => {
+//         try {
+//           const response = await fetch(`/api/Teacher_detail_data_by_id/${id}`);
+//           if (!response.ok) throw new Error("Failed to fetch teacher data");
+//           const data = await response.json();
+//           setGetTeacherData(data);
+//         } catch (error) {
+//           console.error("Error fetching teacher data:", error);
+//         }
+//       };
+//       fetchTeacherData(teacherId);
+//     }
+//   }, [teacherId]);
+
+//   useEffect(() => {
+//     const fetchSchoolData = async () => {
+//       try {
+//         const response = await fetch(`/api/School_Lists`);
+//         if (!response.ok) throw new Error("Failed to fetch school data");
+//         const data = await response.json();
+//         setGetSchoolData(data);
+//       } catch (error) {
+//         console.error("Error fetching school data:", error);
+//       }
+//     };
+//     fetchSchoolData();
+//   }, []);
+
+//   // 計算提示欄邏輯
+//   useEffect(() => {
+//     const currentDate = new Date(); // 當前日期
+//     const fiveSecondsInMs = 5 * 1000; // 5 秒的毫秒數
+
+//     const newAlerts = GetSchoolData.flatMap((school) =>
+//       school.school_EX_Day
+//         .map((exDay: any) => {
+//           const exDayDate = new Date(exDay.EX_Day); // 將 EX_Day 轉為 Date 物件
+//           const timeDiff = exDayDate.getTime() - currentDate.getTime(); // 時間差
+
+//           // 檢查是否超過 5 秒
+//           if (timeDiff > fiveSecondsInMs) {
+//             console.log(`EX_Day ${exDay.EX_Day} 已超過 5 秒，當前時間: ${currentDate.toLocaleString()}`);
+//           }
+
+//           // 條件：EX_Day 在當前日期後，且在 5 秒內
+//           if (fiveSecondsInMs) {
+//             const triggerTime = new Date(currentDate.getTime() + fiveSecondsInMs); // 當前時間 + 5 秒
+//             console.log(
+//               `提示將在 ${triggerTime.toLocaleString()} 發動，針對 EX_Day: ${exDay.EX_Day}`
+//             );
+//             return {
+//               schoolName: school.school_name,
+//               exDay: exDay.EX_Day,
+//               subject: exDay.subject,
+//             };
+//           }
+//           return null;
+//         })
+//         .filter(Boolean)
+//     );
+
+//     setAlerts(newAlerts);
+//   }, [GetSchoolData]);
+
+//   return (
+//     <>
+//       <div className="container mx-auto p-4 bg-blue-100">
+//         <div className="grid grid-cols-6 gap-4">
+//           <TeacherNavber teacherId={teacherId} />
+//         </div>
+
+//         {/* 提示欄 */}
+//         {alerts.length > 0 && (
+//           <div className="mt-4">
+//             {alerts.map((alert, index) => (
+//               <div
+//                 key={index}
+//                 className="p-4 mb-2 bg-yellow-100 border border-yellow-400 rounded-md"
+//               >
+//                 <p>
+//                   "{alert.schoolName}" 在 "{new Date(alert.exDay).toLocaleString()}" 進行 "{alert.subject}"，請去相關學生下留言。
+//                 </p>
+//               </div>
+//             ))}
+//           </div>
+//         )}
+//       </div>
+//       <Logout_Button />
+//     </>
+//   );
+// };
+
+// export default TeacherByIdComponents;
+
+
 "use client";
 
 import { Logout_Button } from "@/components/logout_button";
@@ -165,23 +279,22 @@ const TeacherByIdComponents = () => {
 
   // 計算提示欄邏輯
   useEffect(() => {
-    const currentDate = new Date(); // 當前日期
-    const fiveSecondsInMs = 5 * 1000; // 5 秒的毫秒數
+    const currentDate = new Date();
+    const fiveSecondsInMs = 5 * 1000;
 
     const newAlerts = GetSchoolData.flatMap((school) =>
       school.school_EX_Day
         .map((exDay: any) => {
-          const exDayDate = new Date(exDay.EX_Day); // 將 EX_Day 轉為 Date 物件
-          const timeDiff = exDayDate.getTime() - currentDate.getTime(); // 時間差
+          const exDayDate = new Date(exDay.EX_Day);
+          const timeDiff = exDayDate.getTime() - currentDate.getTime();
 
-          // 檢查是否超過 5 秒
           if (timeDiff > fiveSecondsInMs) {
             console.log(`EX_Day ${exDay.EX_Day} 已超過 5 秒，當前時間: ${currentDate.toLocaleString()}`);
           }
 
           // 條件：EX_Day 在當前日期後，且在 5 秒內
-          if (fiveSecondsInMs) {
-            const triggerTime = new Date(currentDate.getTime() + fiveSecondsInMs); // 當前時間 + 5 秒
+          if (timeDiff > 0 && timeDiff <= fiveSecondsInMs) {
+            const triggerTime = new Date(currentDate.getTime() + timeDiff);
             console.log(
               `提示將在 ${triggerTime.toLocaleString()} 發動，針對 EX_Day: ${exDay.EX_Day}`
             );
@@ -200,30 +313,41 @@ const TeacherByIdComponents = () => {
   }, [GetSchoolData]);
 
   return (
-    <>
-      <div className="container mx-auto p-4 bg-blue-100">
-        <div className="grid grid-cols-6 gap-4">
-          <TeacherNavber teacherId={teacherId} />
-        </div>
+    <div className="container mx-auto p-4 bg-white border border-blue-200 min-h-screen">
+      <div className="grid grid-cols-6 gap-4">
+        {/* 導航欄 */}
+        <TeacherNavber teacherId={teacherId} />
 
-        {/* 提示欄 */}
-        {alerts.length > 0 && (
-          <div className="mt-4">
-            {alerts.map((alert, index) => (
-              <div
-                key={index}
-                className="p-4 mb-2 bg-yellow-100 border border-yellow-400 rounded-md"
-              >
-                <p>
-                  "{alert.schoolName}" 在 "{new Date(alert.exDay).toLocaleString()}" 進行 "{alert.subject}"，請去相關學生下留言。
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* 主要內容區域 */}
+        <div className="col-span-5 bg-white border border-blue-200 rounded-md p-6">
+          {/* 提示欄 */}
+          {alerts.length > 0 && (
+            <div className="mb-4">
+              {alerts.map((alert, index) => (
+                <div
+                  key={index}
+                  className="p-4 mb-2 bg-yellow-50 border border-yellow-300 rounded-md text-yellow-800"
+                >
+                  <p className="text-base">
+                    <span className="font-semibold">{alert.schoolName}</span> 在{" "}
+                    <span className="font-semibold">
+                      {new Date(alert.exDay).toLocaleString()}
+                    </span>{" "}
+                    進行 <span className="font-semibold">{alert.subject}</span>
+                    ，請前往相關學生頁面留言。
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-      <Logout_Button />
-    </>
+
+      {/* 登出按鈕 */}
+      {/* <div className="mt-4 flex justify-end">
+        <Logout_Button />
+      </div> */}
+    </div>
   );
 };
 

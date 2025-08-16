@@ -29,7 +29,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- public_holiday -- : " , public_holiday , " -- End -- ")
-    return redirect(`/admin/${supadminid}/setpublicholidaysLists`)
+    return redirect(`/supadmin/${supadminid}/setpublicholidaysLists`)
 }
 
 export const SupcreatePublic_holiday = CreateSafeAction(Suppublic_holiday_create_Schema, handler)

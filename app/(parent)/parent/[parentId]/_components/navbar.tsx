@@ -18,15 +18,21 @@ export const ParentNavbar = () => {
   ];
 
   return (
-    <div className="flex flex-row justify-between">
-      <div className="flex flex-row gap-4">
+    <nav className="flex items-center justify-between bg-gray-800 p-4 shadow-md">
+      <div className="flex flex-row gap-6">
         {HeaderLinks.map((link) => (
-          <Link key={link.id} href={link.path}>
+          <Link
+            key={link.id}
+            href={link.path}
+            className="text-white text-lg font-medium hover:text-blue-400 transition-colors duration-200"
+          >
             {link.name}
           </Link>
         ))}
       </div>
-      <Logout_Button />
-    </div>
+      <div>
+        <Logout_Button />
+      </div>
+    </nav>
   );
 };

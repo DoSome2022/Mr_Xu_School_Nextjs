@@ -2,9 +2,11 @@
 import { Logout_Button } from "@/components/logout_button"
 import Link from "next/link"
 
+interface TeacherNavbarProps {
+  teacherId: string
+}
 
-
-const TeacherNavber = ({teacherId}) => {
+const TeacherNavber = ({ teacherId }: TeacherNavbarProps) => {
 
 const HeaderLinks = [
     {
@@ -25,12 +27,12 @@ const HeaderLinks = [
         "path": `/teacher/${teacherId}/workRecords`
 
     },
-    {
-        "id": "4",
-        "name": "筆記列表",
-        "path": `/teacher/${teacherId}/nodeLists`
+    // {
+    //     "id": "4",
+    //     "name": "筆記列表",
+    //     "path": `/teacher/${teacherId}/nodeLists`
 
-    },
+    // },
     {
         "id": "5",
         "name": "課程列表",
@@ -57,6 +59,8 @@ const HeaderLinks = [
                         </>
                     )
                 })}
+
+                <Logout_Button />
 
             </ul>
         </nav>

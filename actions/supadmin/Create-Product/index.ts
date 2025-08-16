@@ -38,7 +38,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- Product_Data -- : " , Product_data , " -- End -- ")
-    return redirect(`/admin/${supadminid}/productLists`)
+    return redirect(`/supadmin/${supadminid}/productLists`)
 }
 
 export const SupcreateProduct_action = CreateSafeAction(SupProduct_Create_Schema, handler)

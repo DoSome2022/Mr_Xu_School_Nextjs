@@ -53,7 +53,7 @@ const schoolListsbysupadmin = () => {
     return(
         <>
             <span>
-                <Link className="text-stone-950 hover:text-gray-700" href={`/supadmin/${supadminid}/schoolLists/createSchool`}>
+                <Link className="text-stone-950 hover:text-gray-700" href={`/supadmin/${supadminid}/schoolLists/createschool`}>
                     建立學校
                 </Link>
                 <br />

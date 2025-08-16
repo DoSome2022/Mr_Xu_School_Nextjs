@@ -53,7 +53,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
     }
 
     console.log("-- Parent_Data -- : " , user_data , " -- End -- ")
-    return redirect('/admin/userLists/parentsLists')
+    return redirect('/supadmin/userLists/parentsLists')
 }
 
 export const SupcreateParent = CreateSafeAction(SupParent_Create_Schema, handler)

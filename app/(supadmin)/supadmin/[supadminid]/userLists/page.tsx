@@ -18,8 +18,7 @@ const userListsbysupadmin = () => {
         <Link href={`/supadmin/${supadminId}/userLists/parentsLists`} >家長列表</Link>
         <br />
         <Link href={`/supadmin/${supadminId}/userLists/teachersLists`} >老師列表</Link>
-        <br />
-        <Link href={`/supadmin/${supadminId}/userLists/adminsLists`} >管理員列表</Link>  
+        
         </div>
 
         <span> userListsbysupadmin</span>

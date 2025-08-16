@@ -25,4 +25,5 @@ export const timetemplate_create_Schema = z.object({
     start_time: z.string(),
     end_time: z.string(),
     lesson: z.string(),
+    grade: z.number(),
 })

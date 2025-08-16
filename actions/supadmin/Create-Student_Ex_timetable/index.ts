@@ -42,7 +42,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- student_ex_timetable_Data -- : " , student_ex_timetable_Data , " -- End -- ")
-    return redirect(`/admin/userLists/parentsLists/${parentId}/studentLists/${student_ex_timetable_id}/extimeLists`)
+    return redirect(`/supadmin/userLists/parentsLists/${parentId}/studentLists/${student_ex_timetable_id}/extimeLists`)
 }
 
 export const SupcreateStudentExTimeTable = CreateSafeAction(Supstudent_ex_timetable_Create_Schema, handler)

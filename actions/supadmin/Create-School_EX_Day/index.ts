@@ -38,7 +38,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     }
 
     console.log("-- School_Ex_Day_data -- : ", School_Ex_Day_data, " -- End -- ");
-    return redirect(`/admin/${supadminid}/schoolLists/${school_ex_day_id}`);
+    return redirect(`/supadmin/${supadminid}/schoolLists/${school_ex_day_id}`);
 };
 
 export const SupcreateSchool_Ex_Day_data_action = CreateSafeAction(SupSchool_Ex_Day_Schema, handler);

@@ -1,47 +1,54 @@
 "use client";
 
-
-
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select";
-
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import useSWR from "swr";
+import { ControllerRenderProps } from "react-hook-form";
 
-const fetcher = (...args) => fetch(...args).then((res) => res.json());
+// 定義 fetcher 的參數為元組類型
+const fetcher = (url: string, init?: RequestInit) => fetch(url, init).then((res) => res.json());
 
-export const SWR_School_Subject = ({ field }) => {
-    const { data , error , isLoading } = useSWR('http://127.0.0.1:8000/api/School_data/schoolsubjects/' , fetcher);
-
-    if(error) return <> error : {error} </>
-    if(isLoading) return <> 載入中 .... </>
-    
-
-
-
-    return(
-        <>
-                    <Select  defaultValue={field.values} onValueChange={field.onChange}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="選擇科目"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {data?.map(datas=>{
-                                    return(
-                                    <SelectItem value={datas.school_subject} key={datas.id} >
-                                        {datas.school_subject}
-                                    </SelectItem>
-                                    )
-
-                                })}
-
-                            </SelectContent>
-
-                        </Select>        
-        </>
-    )
+interface SWRSchoolSubjectProps {
+  field: ControllerRenderProps<any, any>;
+  className?: string;
+  disabled?: boolean;
 }
+
+interface SchoolSubject {
+  id: string;
+  school_subject: string;
+}
+
+export const SWR_School_Subject = ({ field, className, disabled }: SWRSchoolSubjectProps) => {
+  const { data, error, isLoading } = useSWR<SchoolSubject[]>(
+    "http://127.0.0.1:8000/api/School_data/schoolsubjects/",
+    fetcher
+  );
+
+  if (error) return <div>錯誤: {error.message}</div>;
+  if (isLoading) return <div>載入中...</div>;
+
+  return (
+    <Select
+      defaultValue={String(field.value)}
+      onValueChange={(value) => field.onChange(value)}
+      disabled={disabled}
+    >
+      <SelectTrigger className={className}>
+        <SelectValue placeholder="選擇科目" />
+      </SelectTrigger>
+      <SelectContent>
+        {data?.map((datas) => (
+          <SelectItem value={datas.school_subject} key={datas.id}>
+            {datas.school_subject}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};

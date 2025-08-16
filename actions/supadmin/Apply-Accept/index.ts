@@ -29,7 +29,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- apply_data -- : " , apply_data , " -- End -- ")
-    return redirect(`/admin/${supadminId}/applyLists/`)
+    return redirect(`/supadmin/${supadminId}/applyLists/`)
 }
 
 export const SupAcceptApplyClass = CreateSafeAction(Sup_Apply_Accept_Schema, handler)

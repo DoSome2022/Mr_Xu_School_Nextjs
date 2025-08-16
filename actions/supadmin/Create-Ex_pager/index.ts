@@ -41,6 +41,6 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- ex_pager_Data -- : " , ex_pager_Data , " -- End -- ")
-    return redirect(`/admin/${supadminid}/schoolLists/${school_ex_pager_id}/expageLists/`)
+    return redirect(`/supadmin/${supadminid}/schoolLists/${school_ex_pager_id}/expageLists/`)
 }
 export const SupcreateExPager = CreateSafeAction(SupEx_pager_Create_Schema, handler)

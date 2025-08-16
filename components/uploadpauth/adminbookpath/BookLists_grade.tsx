@@ -1,77 +1,75 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from 'next/navigation';
-
+import { useParams } from "next/navigation";
 import useSWR from "swr";
 
-// 定義年級對應對象
-const gradeMapping:{[key:string]:string} = {
-    "1": "小學1年級",
-    "2": "小學2年級",
-    "3": "小學3年級",
-    "4": "小學4年級",
-    "5": "小學5年級",
-    "6": "小學6年級",
-    "7": "初中1年級",
-    "8": "初中2年級",
-    "9": "初中3年級",
-    "10": "高中1年級",
-    "11": "高中2年級",
-    "12": "高中3年級",
-  };
+const gradeMapping: { [key: string]: string } = {
+  "1": "小學1年級",
+  "2": "小學2年級",
+  "3": "小學3年級",
+  "4": "小學4年級",
+  "5": "小學5年級",
+  "6": "小學6年級",
+  "7": "初中1年級",
+  "8": "初中2年級",
+  "9": "初中3年級",
+  "10": "高中1年級",
+  "11": "高中2年級",
+  "12": "高中3年級",
+};
 
-  interface StudentGrades {
-    school_grade:string
-  }
-
-const BookLists_grade_Links = () =>{
-    const params = useParams<{year: string ; schooldetailbyID : string}>();//plz use console.log check params name
-    const SchoolId = params?.schooldetailbyID as string;// 獲取URL中的SchoolId參數
-    const yearId = params?.year as string// 獲取URL中的yearId參數
-    console.log("params : ", params)    
-
-
-    const fetcher = (url: string, init?: RequestInit):Promise<StudentGrades[]>  => fetch(url, init).then((res) => res.json());
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL|| "http://127.0.0.1:8000"
-    const { data , error , isLoading } = useSWR(`${apiUrl}/api/School_data/schoolgrades/` , fetcher);
-
-    if(error) return <> error : {error} </>
-    if(isLoading) return <> 載入中 .... </>
-      // 確保 data 是陣列
-      if (!data || !Array.isArray(data)) {
-        return <div className="p-4 text-red-500">無效的資料格式</div>;
-    }
-
-
-
-    return(
-        <>
-            {data.map((grades)=>{
-                return(
-                    <>
-                    <br />
-                        <Link className="text-stone-950 hover:text-gray-700" 
-                        href={`/admin/schoolLists/${SchoolId}/bookLists/${yearId}/${grades.school_grade}`}
-                        >
-            
-                            {gradeMapping[grades.school_grade]}
-                        
-                        </Link>
-                    <br />
-                    </>
-                )
-            }) 
-
-
-
-               
-            
-
-            }
-        </>
-    )
-
+interface StudentGrades {
+  school_grade: string;
 }
 
-export default BookLists_grade_Links
+const fetcher = (url: string, init?: RequestInit): Promise<StudentGrades[]> =>
+  fetch(url, init).then((res) => {
+    if (!res.ok) throw new Error("無法載入年級資料");
+    return res.json();
+  });
+
+const BookLists_grade_Links = () => {
+  const params = useParams();
+  const schoolId = params?.schooldetailbyID as string;
+  const yearId = params?.year as string;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const { data, error, isLoading } = useSWR(`${apiUrl}/api/School_data/schoolgrades/`, fetcher);
+
+  if (isLoading) {
+    return <p className="text-gray-600 text-lg">正在加載...</p>;
+  }
+
+  if (error || !data || !Array.isArray(data)) {
+    return (
+      <p className="text-red-500 bg-red-100 p-3 rounded-md">
+        {error?.message || "無法載入年級資料"}
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold text-gray-700">年級列表</h2>
+      {data.length === 0 ? (
+        <p className="text-gray-500">尚未新增年級</p>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          {data.map((grade) => (
+            <Link
+              key={grade.school_grade}
+              href={`/admin/schoolLists/${schoolId}/bookLists/${yearId}/${grade.school_grade}`}
+              className="block p-4 bg-gray-50 rounded-md hover:bg-[#e7915b] hover:text-white transition-colors duration-300"
+            >
+              <p className="text-gray-800 font-semibold">
+                {gradeMapping[grade.school_grade] || grade.school_grade}
+              </p>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default BookLists_grade_Links;

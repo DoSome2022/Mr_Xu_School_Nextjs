@@ -27,7 +27,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- school_Data -- : " , school_data , " -- End -- ")
-    return redirect(`/admin/${supadminid}/schoolLists`);
+    return redirect(`/supadmin/${supadminid}/schoolLists`);
 }
 
 export const SupcreateSchool_action= CreateSafeAction(SupSchool_Create_Schema, handler)

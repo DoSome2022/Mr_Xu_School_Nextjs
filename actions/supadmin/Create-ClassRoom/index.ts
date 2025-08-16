@@ -24,7 +24,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- room_data -- : " , room_data , " -- End -- ")
-    return redirect(`/admin/${supadminId}/classroomLists`);
+    return redirect(`/supadmin/${supadminId}/classroomLists`);
 
 }
 

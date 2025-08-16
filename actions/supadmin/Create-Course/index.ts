@@ -133,7 +133,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
     console.log("-- Course_Data -- : ", course_data, " -- End -- ");
     // revalidatePath("/admin/courseLists");
-  return redirect(`/admin/${supadminid}/courseLists`);
+  return redirect(`/supadmin/${supadminid}/courseLists`);
 };
 
 // 計算課程時長（小時）

@@ -25,7 +25,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- News_Data -- : " , news_data , " -- End -- ")
-    return redirect(`/admin/${supadminid}/newsLists`);
+    return redirect(`/supadmin/${supadminid}/newsLists`);
 }
 
 export const SupcreateNews_action = CreateSafeAction(SupNews_Create_Schema, handler)

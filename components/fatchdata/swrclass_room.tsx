@@ -1,44 +1,54 @@
 "use client";
 
-
-
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select";
-
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import useSWR from "swr";
+import { ControllerRenderProps } from "react-hook-form";
 
-const fetcher = (...args) => fetch(...args).then((res) => res.json());
+// 定義 fetcher 的參數為元組類型
+const fetcher = (url: string, init?: RequestInit) => fetch(url, init).then((res) => res.json());
 
-export const SWR_Class_Room = ({ field }) => {
-    const { data , error , isLoading } =  useSWR('http://127.0.0.1:8000/api/course_data/courserooms/' , fetcher);
-
-    if(error) return <> error : {error} </>
-    if(isLoading) return <> 載入中 .... </>
-
-    return(
-        <>
-        <Select 
-        defaultValue={String(field.values)} 
-        onValueChange={(value) => field.onChange(value)}>
-          <SelectTrigger>
-              <SelectValue >{field.value ||"選擇課室"}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {data?.map(datas=>{
-              return(
-                <SelectItem value={datas.course_room} key={datas.id} >
-                  {datas.course_room}
-                </SelectItem>
-              )
-            })}
-          </SelectContent>
-        </Select>
-    </>
-    )
-
+interface SWRClassRoomProps {
+  field: ControllerRenderProps<any, any>;
+  className?: string;
+  disabled?: boolean;
 }
+
+interface CourseRoom {
+  id: string;
+  course_room: string;
+}
+
+export const SWR_Class_Room = ({ field, className, disabled }: SWRClassRoomProps) => {
+  const { data, error, isLoading } = useSWR<CourseRoom[]>(
+    "http://127.0.0.1:8000/api/course_data/courserooms/",
+    fetcher
+  );
+
+  if (error) return <div>錯誤: {error.message}</div>;
+  if (isLoading) return <div>載入中...</div>;
+
+  return (
+    <Select
+      defaultValue={String(field.value)}
+      onValueChange={(value) => field.onChange(value)}
+      disabled={disabled}
+    >
+      <SelectTrigger className={className}>
+        <SelectValue>{field.value || "選擇課室"}</SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {data?.map((datas) => (
+          <SelectItem value={datas.course_room} key={datas.id}>
+            {datas.course_room}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};

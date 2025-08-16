@@ -44,7 +44,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         console.log(error)
     }
     console.log("-- student_score_Data -- : " , student_score_Data , " -- End -- ")
-    return redirect (`/admin/userLists/parentsLists/${parentId}/studentLists/${student_score_id}/scoreLists/`)
+    return redirect (`/supadmin/userLists/parentsLists/${parentId}/studentLists/${student_score_id}/scoreLists/`)
 }
 
 export const SupcreateStudentScore = CreateSafeAction(Supstudent_score_Create_Schema, handler)

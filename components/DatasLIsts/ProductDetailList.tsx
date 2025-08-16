@@ -1,37 +1,31 @@
 interface Product {
-    id : string;
-    name : string;
-    description : string;
-    price : string;
+  id: string;
+  name: string;
+  description: string;
+  price: string;
 }
 
-interface ProductDetailListsProps{
-    data : Product
+interface ProductDetailListsProps {
+  data: Product;
 }
 
-//要小心留意　這是傳入來是用[] array包著　所以用.map()來解開　
-//最好用console.log 查看　，是否之後都是用[] 包進來
-const ProductDetailLists = ({ data } : ProductDetailListsProps) => {
-    return(
-        <>
-            {data.map((d)=>{
-                return(
-                    <>
-                        <br />
-                        商品名稱：{d.name}
-                        <br />
-                        商品詳程：{d.description}
+const ProductDetailLists = ({ data }: ProductDetailListsProps) => {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-700">商品名稱</h3>
+        <p className="text-gray-800">{data.name}</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-700">商品描述</h3>
+        <p className="text-gray-600">{data.description}</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-700">商品價格</h3>
+        <p className="text-gray-500">{data.price}</p>
+      </div>
+    </div>
+  );
+};
 
-                            <br />
-                        商品價錢:{d.price}
-                          
-                            <br />
-                    
-                    </>
-                )
-            })}
-        </>
-    )
-}
-
-export default ProductDetailLists
+export default ProductDetailLists;

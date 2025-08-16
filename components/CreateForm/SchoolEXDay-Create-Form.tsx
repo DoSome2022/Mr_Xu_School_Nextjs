@@ -3,195 +3,197 @@
 import { School_Ex_Day_Schema } from "@/actions/Create-School_EX_Day/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-
-import { Input } from "@/components/ui/input"; 
 import DatePicker from "react-multi-date-picker";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-import { 
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage
-} from "@/components/ui/form"
-import { FormError } from "@/components/form-error"; 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { SWR_School_Subject } from "../fatchdata/swrschool_subject";
 import { SWR_School_Grade } from "../fatchdata/swrschool_grade";
 import { SWR_School_Year } from "../fatchdata/swrschool_year";
 import { SWR_School_Quarter } from "../fatchdata/swrschool_quarter";
 import { createSchool_Ex_Day_data_action } from "@/actions/Create-School_EX_Day";
+
 const SchoolEXDayCreateForm = () => {
-    const param = useParams();
-    // console.log("param : ", param ,"-- End --");
-    const schoolId = param?.schooldetailbyID as string;
+  const params = useParams();
+  const schoolId = params?.schooldetailbyID as string;
 
-    const [ isPending , startTransition ] = useTransition();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
 
-    const schoolexday_create_form = useForm<z.infer<typeof School_Ex_Day_Schema>>({
-        resolver: zodResolver(School_Ex_Day_Schema),
-        defaultValues:{
-            school_ex_day_id:schoolId,
-            subject:"",
-            grade:0,
-            year:"",
-            quarter:0,
-            EX_Day:"",
-            title:"",
+  const schoolexday_create_form = useForm<z.infer<typeof School_Ex_Day_Schema>>({
+    resolver: zodResolver(School_Ex_Day_Schema),
+    defaultValues: {
+      school_ex_day_id: schoolId,
+      subject: "",
+      grade: 0,
+      year: "",
+      quarter: 0,
+      EX_Day: "",
+      title: "",
+    },
+  });
+
+  const schoolexday_create_form_onSubmit = (values: z.infer<typeof School_Ex_Day_Schema>) => {
+    setError("");
+    setSuccess("");
+    startTransition(() => {
+      createSchool_Ex_Day_data_action(values).then((data) => {
+        if (data?.success) {
+          setSuccess(data.success);
+          schoolexday_create_form.reset({ school_ex_day_id: schoolId });
+        } else {
+          setError(data?.error || "新增考試時間失敗");
         }
-    })
-
-    const schoolexday_create_form_onSubmit = (values:z.infer<typeof School_Ex_Day_Schema>) =>{
-        console.log("--  create school ex day -- : ", values ,"-- End --");
-
-        startTransition(() => {
-            createSchool_Ex_Day_data_action(values)
-        })
-
-    }
+      });
+    });
+  };
 
   return (
-    <div>
-      SchoolEXDayCreateForm
-        <Form {...schoolexday_create_form}>
-            <form
-                onSubmit={schoolexday_create_form.handleSubmit(schoolexday_create_form_onSubmit)}
-                className="space-y-6"
-            >
-
-                <div className="space-y-4">
-                <FormField
-                    control={schoolexday_create_form.control}
-                    name="title"
-                    render={({ field }) => (
+    <div className="space-y-6">
+      <h2 className="text-xl font-semibold text-gray-700">新增學校考試時間</h2>
+      <Form {...schoolexday_create_form}>
+        <form onSubmit={schoolexday_create_form.handleSubmit(schoolexday_create_form_onSubmit)} className="space-y-6">
+          <FormError message={error} />
+          <FormSuccess message={success} />
+          <div className="space-y-4">
+            <FormField
+              control={schoolexday_create_form.control}
+              name="title"
+              render={({ field }) => (
                 <FormItem>
-                    <FormLabel> 標題 </FormLabel>
-                    <FormControl>
-                    <Input 
-                        {...field}
-                        disabled={isPending}
-                        placeholder="標題"
-                        type="text"
+                  <FormLabel className="text-gray-700 font-semibold">標題</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={isPending}
+                      placeholder="輸入考試標題"
+                      type="text"
+                      className="border-gray-300 focus:border-[#e7915b] focus:ring-[#e7915b] transition-colors duration-300"
                     />
-                    </FormControl>
-                    <FormMessage />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
                 </FormItem>
-                    )}
-                />
-                </div> 
-
-                <div className="space-y-4">
-                <FormField
-                    control={schoolexday_create_form.control}
-                    name="subject"
-                    render={({ field }) => (
+              )}
+            />
+          </div>
+          <div className="space-y-4">
+            <FormField
+              control={schoolexday_create_form.control}
+              name="subject"
+              render={({ field }) => (
                 <FormItem>
-                    <FormLabel> 科目 </FormLabel>
-                    <FormControl>
-                        <SWR_School_Subject  field={field} />
-                    </FormControl>
-                    <FormMessage />
+                  <FormLabel className="text-gray-700 font-semibold">科目</FormLabel>
+                  <FormControl>
+                    <SWR_School_Subject field={field} disabled={isPending} />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
                 </FormItem>
-                    )}
-                />
-                </div> 
-
-                <div className="space-y-4">
-                <FormField
-                    control={schoolexday_create_form.control}
-                    name="grade"
-                    render={({ field }) => (
+              )}
+            />
+          </div>
+          <div className="space-y-4">
+            <FormField
+              control={schoolexday_create_form.control}
+              name="grade"
+              render={({ field }) => (
                 <FormItem>
-                    <FormLabel> 年級 </FormLabel>
-                    <FormControl>
-                        <SWR_School_Grade field={field} />
-                    </FormControl>
-                    <FormMessage />
+                  <FormLabel className="text-gray-700 font-semibold">年級</FormLabel>
+                  <FormControl>
+                    <SWR_School_Grade field={field} disabled={isPending} />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
                 </FormItem>
-                    )}
-                />
-                </div> 
-
-                <div className="space-y-4">
-                <FormField
-                    control={schoolexday_create_form.control}
-                    name="year"
-                    render={({ field }) => (
+              )}
+            />
+          </div>
+          <div className="space-y-4">
+            <FormField
+              control={schoolexday_create_form.control}
+              name="year"
+              render={({ field }) => (
                 <FormItem>
-                    <FormLabel> 年度 </FormLabel>
-                    <FormControl>
-                        <SWR_School_Year field={field} />
-                    </FormControl>
-                    <FormMessage />
+                  <FormLabel className="text-gray-700 font-semibold">年度</FormLabel>
+                  <FormControl>
+                    <SWR_School_Year field={field} />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
                 </FormItem>
-                    )}
-                />
-                </div> 
-
-
-                <div className="space-y-4">
-                <FormField
-                    control={schoolexday_create_form.control}
-                    name="quarter"
-                    render={({ field }) => (
+              )}
+            />
+          </div>
+          <div className="space-y-4">
+            <FormField
+              control={schoolexday_create_form.control}
+              name="quarter"
+              render={({ field }) => (
                 <FormItem>
-                    <FormLabel> 季度 </FormLabel>
-                    <FormControl>
-                        <SWR_School_Quarter field={field} /> 
-                    </FormControl>
-                    <FormMessage />
+                  <FormLabel className="text-gray-700 font-semibold">季度</FormLabel>
+                  <FormControl>
+                    <SWR_School_Quarter field={field} />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
                 </FormItem>
-                    )}
-                />
-                </div> 
-
-                <div className="space-y-4">
-    <FormField
-        control={schoolexday_create_form.control}
-        name="EX_Day"
-        render={({ field }) => (
-            <FormItem>
-                <FormLabel> 考試日子 </FormLabel>
-                <FormControl>
+              )}
+            />
+          </div>
+          <div className="space-y-4">
+            <FormField
+              control={schoolexday_create_form.control}
+              name="EX_Day"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700 font-semibold">考試日期</FormLabel>
+                  <FormControl>
                     <Controller
-                        name="EX_Day"
-                        control={schoolexday_create_form.control}
-                        render={({ field: { onChange, value } }) => (
-                            <DatePicker
-                                value={value ? new Date(value) : null}
-                                format="YYYY-MM-DD"
-                                onChange={(date) => {
-                                    if (date) {
-                                        const nativeDate = date.toDate(); // 将 DateObject 转换为原生 Date
-                                        onChange(nativeDate.toISOString()); // 转换为 ISO 字符串
-                                    } else {
-                                        onChange(null); // 如果日期为空，设置为 null
-                                    }
-                                }}
-                            />
-                        )}
+                      name="EX_Day"
+                      control={schoolexday_create_form.control}
+                      render={({ field: { onChange, value } }) => (
+                        <DatePicker
+                          value={value ? new Date(value) : null}
+                          format="YYYY-MM-DD"
+                          onChange={(date) => {
+                            if (date) {
+                              const nativeDate = date.toDate();
+                              onChange(nativeDate.toISOString());
+                            } else {
+                              onChange(null);
+                            }
+                          }}
+                          inputClass="w-full border-gray-300 rounded-md p-2 focus:border-[#e7915b] focus:ring-[#e7915b] transition-colors duration-300"
+                          disabled={isPending}
+                        />
+                      )}
                     />
-                </FormControl>
-                <FormMessage />
-            </FormItem>
-        )}
-    />
-</div>
-
-                <Button disabled={isPending} type="submit" >
-
-                    建立
-                </Button>
-
-            </form>
-        </Form>
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+          </div>
+          <Button
+            disabled={isPending}
+            type="submit"
+            className="w-full bg-[#e7915b] text-white hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
+          >
+            {isPending ? "正在提交..." : "建立考試時間"}
+          </Button>
+        </form>
+      </Form>
     </div>
-  )
-}
+  );
+};
 
-export default SchoolEXDayCreateForm
+export default SchoolEXDayCreateForm;

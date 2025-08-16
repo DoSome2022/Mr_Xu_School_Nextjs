@@ -247,35 +247,34 @@ const John_Student_Form = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<StudentType[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStudentData = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        const res = await fetch(`/api/student/Student_AllLists`);
-        if (!res.ok) throw new Error("無法連接到學生數據 API");
-        const result = await res.json();
-        setGetStudentData(result);
+        const [studentRes, courseRes] = await Promise.all([
+          fetch(`/api/student/Student_AllLists`),
+          fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`),
+        ]);
+
+        if (!studentRes.ok) throw new Error("無法獲取學生數據");
+        const studentResult = await studentRes.json();
+        setGetStudentData(studentResult);
+
+        if (!courseRes.ok) throw new Error("無法獲取課程數據");
+        const courseResult = await courseRes.json();
+        setGetCourseData(Array.isArray(courseResult) ? courseResult[0] : courseResult);
       } catch (error: any) {
-        console.error("獲取學生數據失敗:", error);
-        setError("無法加載學生數據");
+        console.error("數據獲取失敗:", error);
+        setError("無法加載數據");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const fetchCourseData = async (id: string) => {
-      try {
-        const res = await fetch(`/api/Course_detail_data_by_id_findMany/${id}`);
-        if (!res.ok) throw new Error("無法連接到課程數據 API");
-        const result = await res.json();
-        setGetCourseData(Array.isArray(result) ? result[0] : result);
-      } catch (error: any) {
-        console.error("獲取課程數據失敗:", error);
-        setError("無法加載課程數據");
-      }
-    };
-
-    fetchStudentData();
     if (courseId) {
-      fetchCourseData(courseId);
+      fetchData();
     }
   }, [courseId]);
 
@@ -298,25 +297,6 @@ const John_Student_Form = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof JoinStudent_Create_Schema>) => {
-    console.log("-- JoinStudent -- : ", values, "-- End --");
-    startTransition(async () => {
-      try {
-        const result = await createJoinStudent(values);
-        if (result?.error) {
-          console.error(result.error);
-          setError(result.error);
-        } else {
-          setError(null);
-          // 客戶端不會到達這裡，因為服務器端會執行重定向
-        }
-      } catch (error: any) {
-        console.error("提交失敗:", error);
-        setError("提交表單時發生錯誤");
-      }
-    });
-  };
-
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -332,9 +312,28 @@ const John_Student_Form = () => {
       console.log("搜索結果:", data);
     } catch (error: any) {
       console.error("搜尋失敗:", error);
-      setSearchResults([]);
       setError("搜尋學生失敗");
     }
+  };
+
+  const onSubmit = (values: z.infer<typeof JoinStudent_Create_Schema>) => {
+    console.log("-- JoinStudent -- : ", values, "-- End --");
+    setError(null);
+    startTransition(async () => {
+      try {
+        const result = await createJoinStudent(values);
+        if (result?.error) {
+          setError(result.error);
+        } else {
+          form.reset();
+          setSearchQuery("");
+          setSearchResults([]);
+        }
+      } catch (error: any) {
+        console.error("提交失敗:", error);
+        setError("提交表單時發生錯誤");
+      }
+    });
   };
 
   const renderCheckbox = (student: StudentType) => {
@@ -344,7 +343,7 @@ const John_Student_Form = () => {
           control={form.control}
           name="student"
           render={({ field }) => (
-            <FormItem className="flex items-center space-x-2">
+            <FormItem className="flex items-center space-x-2 py-2">
               <FormControl>
                 <Checkbox
                   checked={field.value.includes(student.name)}
@@ -362,9 +361,11 @@ const John_Student_Form = () => {
                       }
                     }
                   }}
+                  disabled={isPending}
+                  className="border-gray-300 focus:ring-[#e7915b]"
                 />
               </FormControl>
-              <FormLabel className="font-normal">{student.name}</FormLabel>
+              <FormLabel className="text-gray-600 font-normal">{student.name}</FormLabel>
             </FormItem>
           )}
         />
@@ -375,37 +376,88 @@ const John_Student_Form = () => {
 
   const displayData = searchQuery && searchResults.length > 0 ? searchResults : GetStudentData;
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-gray-600 text-lg">正在加載...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-red-500 bg-red-100 p-3 rounded-md">{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {error && <p className="text-red-500">{error}</p>}
-      <div className="flex items-center space-x-2">
-        <Input
-          type="text"
-          placeholder="輸入搜索內容..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1"
-        />
-        <Button type="button" onClick={handleSearch}>
-          搜索
-        </Button>
-      </div>
-
+      <h2 className="text-xl font-semibold text-gray-700">
+        課程名稱: {GetCourseData?.course_name || "載入中..."}
+      </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {error && (
+            <div className="text-red-500 bg-red-100 p-3 rounded-md">{error}</div>
+          )}
           <div className="space-y-4">
-            <FormLabel>學生</FormLabel>
-            {displayData.length === 0 ? (
-              <p>{searchQuery ? "沒有找到匹配的學生" : "沒有數據"}</p>
-            ) : (
-              displayData.map((student) => (
-                <div key={student.id}>{renderCheckbox(student)}</div>
-              ))
-            )}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
+              <Input
+                type="text"
+                placeholder="輸入學生姓名進行搜索..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#e7915b] transition-colors duration-300"
+                disabled={isPending}
+              />
+              <Button
+                type="button"
+                onClick={handleSearch}
+                className="bg-[#e7915b] text-white hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
+                disabled={isPending}
+              >
+                搜索
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSearchResults([]);
+                }}
+                className="bg-gray-500 text-white hover:bg-gray-600 transition-colors duration-300"
+                disabled={isPending}
+              >
+                清除
+              </Button>
+            </div>
+            <FormField
+              control={form.control}
+              name="student"
+              render={() => (
+                <FormItem>
+                  <FormLabel className="text-gray-700 font-semibold">學生</FormLabel>
+                  <div className="grid gap-2 max-h-96 overflow-y-auto p-4 bg-gray-50 rounded-md">
+                    {displayData.length === 0 ? (
+                      <p className="text-gray-600">
+                        {searchQuery ? "沒有找到匹配的學生" : "沒有可用的學生數據"}
+                      </p>
+                    ) : (
+                      displayData.map((student) => renderCheckbox(student))
+                    )}
+                  </div>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
           </div>
-
-          <Button disabled={isPending} type="submit">
-            加入
+          <Button
+            disabled={isPending}
+            type="submit"
+            className="w-full bg-[#e7915b] text-white hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
+          >
+            {isPending ? "正在加入..." : "加入學生"}
           </Button>
         </form>
       </Form>

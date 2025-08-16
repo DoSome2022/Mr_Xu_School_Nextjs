@@ -1,74 +1,86 @@
 "use client";
 
-
 import { useEffect, useState } from "react";
-import { useParams } from 'next/navigation';
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import ProductDetailLists from "@/components/DatasLIsts/ProductDetailList";
 
 const ProductDetail = () => {
+  const params = useParams();
+  const productId = params?.ProductDetailbyID as string;
 
-    const params = useParams();//plz use console.log see params name
-    const ProductId = params?.ProductDetailbyID as string;// 獲取URL中的CourseId參數
+  const [GetProductDataById, setGetProductDataById] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-
-    // 為了拿product data by id
-    const [GetProductDataById, setGetProductDataById] = useState([]);
-
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-  
-    // 拿product  data by id
-    useEffect(() =>{
-        if(ProductId) {
-            const getProductDetail = async (id: string) => {
-                try {
-                const res = await fetch(`/api/Product_detail_data_by_id/${id}`);
-                if(!res.ok) {
-                    throw new Error("斷線！");
-                }
-                const result = await res.json();
-                setGetProductDataById(result);                    
-                } catch (error) {
-                    console.error(error);
-                }
-            };
-            getProductDetail(ProductId);
+  useEffect(() => {
+    if (productId) {
+      const getProductDetail = async (id: string) => {
+        setLoading(true);
+        setError(null);
+        try {
+          const res = await fetch(`/api/Product_detail_data_by_id/${id}`);
+          if (!res.ok) {
+            throw new Error("無法載入商品資料");
+          }
+          const result = await res.json();
+          setGetProductDataById(result);
+        } catch {
+          console.error("載入錯誤:", error);
+          setError("無法載入商品資料");
+        } finally {
+          setLoading(false);
         }
-    },[ProductId] )
+      };
+      getProductDetail(productId);
+    } else {
+      setError("無效的商品ID");
+      setLoading(false);
+    }
+  }, [productId]);
 
-
-    if (!GetProductDataById) {
-        return <div>Loading...</div>;
-      }
-
-  
-
-
+  if (loading) {
     return (
-        <>
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-gray-600 text-lg">正在加載...</p>
+      </div>
+    );
+  }
 
-{GetProductDataById.map((d: any)=>{
-    return(
-        <>
-        <Link
-        href={`/admin/productLists/${d.id}/edit`}
-        className="text-2xl font-bold mb-4"
-      >
-        更改商品
-      </Link>
+  if (error || !GetProductDataById) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-red-500 bg-red-100 p-3 rounded-md">{error || "無商品資料"}</p>
+      </div>
+    );
+  }
 
+  return (
+    <div className="min-h-screen bg-gray-100 pt-20">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-[#e7915b]">商品詳情</h1>
+          <div className="flex space-x-4">
+            <Link
+              href={`/admin/productLists/${productId}/edit`}
+              className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
+            >
+              更改商品
+            </Link>
+            <Link
+              href="/admin/productLists"
+              className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
+            >
+              返回商品列表
+            </Link>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+          <ProductDetailLists data={GetProductDataById} />
+        </div>
+      </div>
+    </div>
+  );
+};
 
-            <span> 商品細節 </span>
-
-            <ProductDetailLists data={GetProductDataById} />
-        </>
-    )
-})}
-
-
-
-        </>
-    )
-}
-export default ProductDetail
+export default ProductDetail;

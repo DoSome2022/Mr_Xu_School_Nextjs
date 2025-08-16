@@ -1,73 +1,70 @@
 "use client";
 
-import { useParams } from 'next/navigation';
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
 interface SchoolData {
-  school: string
+  school: string;
 }
-const Student_BookLists_School = () =>{
 
-    const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string}>();
-    const ParentId = params?.parentdetailbyID as string;
-    const StudentID = params?.studentdetailbyID as string;
+const Student_BookLists_School = () => {
+  const params = useParams<{ parentdetailbyID: string; studentdetailbyID: string }>();
+  const ParentId = params?.parentdetailbyID as string;
+  const StudentID = params?.studentdetailbyID as string;
 
+  // 學生資料狀態
+  const [GetSutudentData, setGetSutudentData] = useState<SchoolData[]>([]);
 
-
-    //拿學生資料
-    const [GetSutudentData , setGetSutudentData] = useState<SchoolData[]>([]);
-    
-  //用ParentId去拿student DB裹的DATA
-  useEffect(()=>{
-    if(ParentId){
-      const fetchStudentData = async (parentdataid : string) => {
-        //在app/api/student/Student_Lists/[id]/route.ts
-        const res = await fetch(`/api/student/Student_Lists/${parentdataid}`);
-        if(!res){
-          throw new Error("斷線！")
+  // 獲取學生資料
+  useEffect(() => {
+    if (ParentId) {
+      const fetchStudentData = async (parentdataid: string) => {
+        try {
+          const res = await fetch(`/api/student/Student_Lists/${parentdataid}`);
+          if (!res.ok) {
+            throw new Error(`獲取學生資料失敗: ${res.statusText}`);
+          }
+          const result = await res.json();
+          setGetSutudentData(result);
+        } catch (error) {
+          console.error("錯誤:", error);
+          alert("無法獲取學生資料，請稍後重試");
         }
-        const result = await res.json();
-        setGetSutudentData(result);
-      }
-      fetchStudentData(ParentId)
+      };
+      fetchStudentData(ParentId);
     }
-  },[ParentId])
+  }, [ParentId]);
 
-  console.log("-- Student Data : --",GetSutudentData,"-- END --")
+  console.log("-- Student Data : --", GetSutudentData, "-- END --");
 
-    return(
-        <>
-            Student_BookLists_School
-            {GetSutudentData.map((d)=>{
-                return(
-                    <>
-            <br />
-
-            <Link
-              className="text-stone-950 hover:text-gray-700"
-              href={`/admin/userLists/parentsLists/${ParentId}/studentLists/${StudentID}/bookLists/upload`}
-              passHref
-            >
+  return (
+    <div className="p-5 max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold text-[#e7915b] mb-6">書單學校列表</h2>
+      {GetSutudentData.length > 0 ? (
+        <div className="space-y-4">
+          {GetSutudentData.map((d) => (
+            <div key={d.school} className="border border-gray-200 rounded p-4 bg-white shadow-sm">
+              <Link
+                href={`/admin/userLists/parentsLists/${ParentId}/studentLists/${StudentID}/bookLists/upload`}
+                className="block text-[#e7915b] hover:text-cyan-200 font-medium transition-colors duration-300 mb-2"
+              >
                 上傳書單
-            </Link>
-            <br />
+              </Link>
+              <Link
+                href={`/admin/userLists/parentsLists/${ParentId}/studentLists/${StudentID}/bookLists/${d.school}`}
+                className="block text-[#e7915b] hover:text-cyan-200 font-medium transition-colors duration-300"
+              >
+                學校: {d.school}
+              </Link>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500">無學校資料</p>
+      )}
+    </div>
+  );
+};
 
-
-                    <Link
-                    className="text-stone-950 hover:text-gray-700"
-                    href={`/admin/userLists/parentsLists/${ParentId}/studentLists/${StudentID}/bookLists/${d.school}`}
-                >
-                    
-                        school: {d.school}
-                    </Link>
-                    
-                    </>
-                )
-                
-            })}
-        </>
-    )
-}
-
-export default Student_BookLists_School
+export default Student_BookLists_School;
