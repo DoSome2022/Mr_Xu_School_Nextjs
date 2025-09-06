@@ -234,44 +234,98 @@
 
 "use client";
 
-import { Logout_Button } from "@/components/logout_button";
-import { useSession } from "next-auth/react";
-import TeacherNavber from "./_components/navbar";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter, useParams } from "next/navigation";
+import { Logout_Button } from "@/components/logout_button";
+import TeacherNavbar from "./_components/navbar"; // 修正拼寫
+
+// 定義型別
+interface SessionUser {
+  id: string;
+  role: string;
+  staff: boolean;
+  isAdmin: boolean;
+  username?: string;
+  email?: string;
+  nickname?: string;
+}
+
+interface TeacherData {
+  id: string;
+  username: string;
+  courses?: { id: string; course_name: string; course_subject: string }[];
+}
+
+interface SchoolExDay {
+  EX_Day: string;
+  subject: string;
+}
+
+interface SchoolData {
+  school_name: string;
+  school_EX_Day: SchoolExDay[];
+}
+
+interface Alert {
+  schoolName: string;
+  exDay: string;
+  subject: string;
+}
 
 const TeacherByIdComponents = () => {
-  const session = useSession();
-  const teacherId = session?.data?.user?.id;
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const params = useParams<{ teacherId: string }>();
+  const teacherId = params?.teacherId as string;
 
-  const [GetTeacherData, setGetTeacherData] = useState([]);
-  const [GetSchoolData, setGetSchoolData] = useState<any[]>([]);
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const [teacherData, setTeacherData] = useState<TeacherData[]>([]);
+  const [schoolData, setSchoolData] = useState<SchoolData[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
+  // 身份驗證檢查
   useEffect(() => {
-    if (teacherId) {
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      router.push("/stafflogin");
+    } else if (session?.user.id !== teacherId || session?.user.role !== "TEACHER") {
+      setError("無權訪問此頁面");
+      router.push("/auth/error?error=AccessDenied");
+    }
+  }, [status, session, teacherId, router]);
+
+  // 獲取教師數據
+  useEffect(() => {
+    if (teacherId && status === "authenticated" && !error) {
       const fetchTeacherData = async (id: string) => {
         try {
-          const response = await fetch(`/api/Teacher_detail_data_by_id/${id}`);
-          if (!response.ok) throw new Error("Failed to fetch teacher data");
-          const data = await response.json();
-          setGetTeacherData(data);
-        } catch (error) {
-          console.error("Error fetching teacher data:", error);
+          const response = await fetch(`/api/Teacher_detail_data_by_id/${id}`, {
+            cache: "no-store",
+          });
+          if (!response.ok) throw new Error("無法獲取教師數據");
+          const data: TeacherData[] = await response.json();
+          setTeacherData(data);
+        } catch (error: any) {
+          console.error("獲取教師數據失敗:", error.message);
+          setError("無法載入教師數據，請稍後重試");
         }
       };
       fetchTeacherData(teacherId);
     }
-  }, [teacherId]);
+  }, [teacherId, status, error]);
 
+  // 獲取學校數據
   useEffect(() => {
     const fetchSchoolData = async () => {
       try {
-        const response = await fetch(`/api/School_Lists`);
-        if (!response.ok) throw new Error("Failed to fetch school data");
-        const data = await response.json();
-        setGetSchoolData(data);
-      } catch (error) {
-        console.error("Error fetching school data:", error);
+        const response = await fetch(`/api/School_Lists`, { cache: "no-store" });
+        if (!response.ok) throw new Error("無法獲取學校數據");
+        const data: SchoolData[] = await response.json();
+        setSchoolData(data);
+      } catch (error: any) {
+        console.error("獲取學校數據失敗:", error.message);
+        setError("無法載入學校數據，請稍後重試");
       }
     };
     fetchSchoolData();
@@ -280,20 +334,20 @@ const TeacherByIdComponents = () => {
   // 計算提示欄邏輯
   useEffect(() => {
     const currentDate = new Date();
-    const fiveSecondsInMs = 5 * 1000;
+    const fiveDaysInMs = 5 * 24 * 60 * 60 * 1000; // 改為 5 天
 
-    const newAlerts = GetSchoolData.flatMap((school) =>
+    const newAlerts = schoolData.flatMap((school) =>
       school.school_EX_Day
-        .map((exDay: any) => {
+        .map((exDay: SchoolExDay) => {
           const exDayDate = new Date(exDay.EX_Day);
           const timeDiff = exDayDate.getTime() - currentDate.getTime();
 
-          if (timeDiff > fiveSecondsInMs) {
-            console.log(`EX_Day ${exDay.EX_Day} 已超過 5 秒，當前時間: ${currentDate.toLocaleString()}`);
+          if (timeDiff > fiveDaysInMs) {
+            console.log(`EX_Day ${exDay.EX_Day} 已超過 5 天，當前時間: ${currentDate.toLocaleString()}`);
+            return null;
           }
 
-          // 條件：EX_Day 在當前日期後，且在 5 秒內
-          if (timeDiff > 0 && timeDiff <= fiveSecondsInMs) {
+          if (timeDiff > 0 && timeDiff <= fiveDaysInMs) {
             const triggerTime = new Date(currentDate.getTime() + timeDiff);
             console.log(
               `提示將在 ${triggerTime.toLocaleString()} 發動，針對 EX_Day: ${exDay.EX_Day}`
@@ -306,17 +360,38 @@ const TeacherByIdComponents = () => {
           }
           return null;
         })
-        .filter(Boolean)
+        .filter((alert): alert is Alert => alert !== null)
     );
 
     setAlerts(newAlerts);
-  }, [GetSchoolData]);
+  }, [schoolData]);
+
+  if (status === "loading") {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 text-red-500">
+        <span>Teacher Dashboard</span>
+        <br />
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4 bg-white border border-blue-200 min-h-screen">
       <div className="grid grid-cols-6 gap-4">
         {/* 導航欄 */}
-        <TeacherNavber teacherId={teacherId} />
+        <TeacherNavbar teacherId={teacherId} />
 
         {/* 主要內容區域 */}
         <div className="col-span-5 bg-white border border-blue-200 rounded-md p-6">
@@ -340,13 +415,23 @@ const TeacherByIdComponents = () => {
               ))}
             </div>
           )}
+          {/* 教師數據展示 */}
+          {teacherData.length > 0 ? (
+            <div>
+              <h2 className="text-lg font-semibold">教師資訊</h2>
+              <p>用戶名: {teacherData[0].username}</p>
+              <p>課程數: {teacherData[0].courses?.length || 0}</p>
+            </div>
+          ) : (
+            <p>暫無教師數據</p>
+          )}
         </div>
       </div>
 
       {/* 登出按鈕 */}
-      {/* <div className="mt-4 flex justify-end">
+      <div className="mt-4 flex justify-end">
         <Logout_Button />
-      </div> */}
+      </div>
     </div>
   );
 };

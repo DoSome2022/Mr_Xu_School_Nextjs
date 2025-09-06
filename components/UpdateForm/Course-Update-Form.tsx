@@ -497,7 +497,7 @@ const Course_Update_Form = () => {
       course_subject: "",
       persons: 0,
       grade: 0,
-      course_level: "",
+      // course_level: "",
       teacher: "",
       course_teacher_data_id: [],
     },
@@ -509,7 +509,7 @@ const Course_Update_Form = () => {
       course_create_form.setValue("course_subject", GetCourseData.course_subject || "");
       course_create_form.setValue("persons", GetCourseData.persons || 0);
       course_create_form.setValue("grade", GetCourseData.grade || 0);
-      course_create_form.setValue("course_level", GetCourseData.course_level || "");
+      // course_create_form.setValue("course_level", GetCourseData.course_level || "");
       course_create_form.setValue("teacher", GetCourseData.teacher || "");
       course_create_form.setValue("course_teacher_data_id", GetCourseData.course_teacher_data_id || []);
     }
@@ -528,7 +528,7 @@ const Course_Update_Form = () => {
             course_subject: values.course_subject,
             persons: values.persons,
             grade: values.grade,
-            course_level: values.course_level,
+            // course_level: values.course_level,
             teacher: values.teacher,
             course_teacher_data_id: values.course_teacher_data_id,
           });
@@ -666,7 +666,7 @@ const Course_Update_Form = () => {
               )}
             />
           </div>
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <FormField
               control={course_create_form.control}
               name="course_level"
@@ -684,7 +684,7 @@ const Course_Update_Form = () => {
                 </FormItem>
               )}
             />
-          </div>
+          </div> */}
           <div className="space-y-4">
             <FormField
               control={course_create_form.control}

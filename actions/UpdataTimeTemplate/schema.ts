@@ -25,6 +25,6 @@ export const timetemplate_Updata_Schema = z.object({
     days: z.array(daySchema).min(0, '隨便選擇一個日期'),
     start_time: z.string(),
     end_time: z.string(),
-    grade: z.number(),
+    // grade: z.number(),
     lesson: z.string(),
 })

@@ -1,22 +1,14 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useEffect, useState, useTransition } from "react";
 import { useParams } from "next/navigation";
-import {
-  Form,
-  // FormControl,
-  // FormField,
-  // FormItem,
-  // FormLabel,
-  // FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { IsPay_Change_Schema } from "@/actions/Change-IsPay/schema";
 import { IsPay_Change_Action } from "@/actions/Change-IsPay";
-
 
 
 interface InvoiceData {
@@ -34,15 +26,15 @@ interface InvoiceData {
 }
 
 const InvoiceDetail = () => {
-  const param = useParams();
-  const invoiceId = param?.InvoicebyID as string;
-  const [GetInvoiceByIdData, setGetInvoiceByIdData] = useState<InvoiceData[]>([]);
+  const params = useParams();
+  const invoiceId = params?.InvoicebyID as string;
+  const supadminid = params?.supadminid as string;
+  const [GetInvoiceByIdData, setGetInvoiceByIdData] = useState<InvoiceData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [ success, setSuccess  ] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition(); // 添加 useTransition 以定義 isPending
 
-
-  // 初始化表單
   const form = useForm<z.infer<typeof IsPay_Change_Schema>>({
     resolver: zodResolver(IsPay_Change_Schema),
     defaultValues: {
@@ -74,85 +66,120 @@ const InvoiceDetail = () => {
     }
   }, [invoiceId]);
 
-  // 處理表單提交
   const onSubmit = (values: z.infer<typeof IsPay_Change_Schema>) => {
-    // try {
-    //   const response = await fetch(`/api/InvoiceLists_detail_data_by_id/${invoiceId}`, {
-    //     method: "PATCH",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({ isPayment: true }), // 更新 isPayment 為 true
-    //   });
-
-    //   if (!response.ok) {
-    //     throw new Error("更新付款狀態失敗");
-    //   }
-
-    //   // 更新本地數據
-    //   setGetInvoiceByIdData((prev) =>
-    //     prev.map((invoice) =>
-    //       invoice.id === invoiceId ? { ...invoice, isPayment: true } : invoice
-    //     )
-    //   );
-    // } catch (error: any) {
-    //   console.error("更新付款狀態失敗:", error);
-    //   setError("無法更新付款狀態");
-    // }
-    console.log("-- change data -- : ",values," -- End -- ");
     setError("");
     setSuccess("");
 
-
-        startTransition(() => {
-          IsPay_Change_Action(values)
-
-        })
+    startTransition(() => {
+      IsPay_Change_Action(values).then((data) => {
+        if (data?.error) {
+          setError(data.error);
+        } else {
+          setSuccess(data?.success || "付款狀態更新成功");
+          setGetInvoiceByIdData((prev) =>
+            prev ? { ...prev, isPayment: true } : prev
+          );
+        }
+      });
+    });
   };
 
   if (loading) {
-    return <div>載入中...</div>;
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-500 text-sm font-medium">正在載入...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <p className="text-red-500 text-sm font-medium">{error}</p>
+      </div>
+    );
   }
 
-  if (GetInvoiceByIdData.length === 0) {
-    return <div>未找到發票數據</div>;
+  if (!GetInvoiceByIdData) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-500 text-sm font-medium">未找到發票數據</p>
+      </div>
+    );
   }
 
   return (
-    <div className="p-4">
-      {GetInvoiceByIdData.map((d) => (
-        <div key={d.id} className="mb-4 border-b pb-4">
-          <h2 className="text-lg font-bold">{d.title}</h2>
-          <p><strong>學生姓名：</strong>{d.studentname}</p>
-          <p><strong>服務類型：</strong>{d.servetype}</p>
-          <p><strong>價格：</strong>{d.price}</p>
-          <p><strong>內容：</strong>{d.content.join(", ")}</p>
-          <p><strong>支付方式：</strong></p>
-          <ul className="list-disc pl-6">
-            {d.PaymentMethods.length > 0 ? (
-              d.PaymentMethods.map((pay, payIndex) => (
-                <li key={payIndex}>{pay}</li>
-              ))
-            ) : (
-              <li>無支付方式</li>
-            )}
-          </ul>
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-semibold text-blue-600 mb-6">發票詳情</h1>
+        <div className="bg-white shadow-lg rounded-lg p-6">
+          {error && (
+            <div className="text-red-500 bg-red-100 p-3 rounded-md text-sm font-medium mb-4">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="text-green-500 bg-green-100 p-3 rounded-md text-sm font-medium mb-4">
+              {success}
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-700 text-sm font-medium">
+                <span className="font-semibold">標題:</span> {GetInvoiceByIdData.title}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">學生姓名:</span> {GetInvoiceByIdData.studentname}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">服務類型:</span> {GetInvoiceByIdData.servetype}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">價格:</span> ${GetInvoiceByIdData.price}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">內容:</span>{" "}
+                {GetInvoiceByIdData.content.join(", ")}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-700 text-sm font-medium">
+                <span className="font-semibold">支付方式:</span>
+              </p>
+              <ul className="list-disc pl-6 text-gray-600 text-sm font-medium mt-2">
+                {GetInvoiceByIdData.PaymentMethods.length > 0 ? (
+                  GetInvoiceByIdData.PaymentMethods.map((pay, payIndex) => (
+                    <li key={payIndex}>{pay}</li>
+                  ))
+                ) : (
+                  <li>無支付方式</li>
+                )}
+              </ul>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">創建時間:</span> {GetInvoiceByIdData.createdAt}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">更新時間:</span> {GetInvoiceByIdData.updatedAt}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">付款狀態:</span>{" "}
+                {GetInvoiceByIdData.isPayment ? "已付款" : "未付款"}
+              </p>
+            </div>
+          </div>
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="mt-4"
-            >
-              <Button type="submit" disabled={d.isPayment}>
-                {d.isPayment ? "已付款" : "未付款" }
+            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6">
+              <Button
+                type="submit"
+                disabled={GetInvoiceByIdData.isPayment || isPending}
+                className="w-full bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200"
+              >
+                {GetInvoiceByIdData.isPayment ? "已付款" : isPending ? "正在更新..." : "標記為已付款"}
               </Button>
             </form>
           </Form>
         </div>
-      ))}
+      </div>
     </div>
   );
 };

@@ -1,38 +1,97 @@
 "use client";
 
-import { Logout_Button } from "@/components/logout_button";
-import TeacherNavber from "../_components/navbar";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { Logout_Button } from "@/components/logout_button";
+import TeacherNavbar from "../_components/navbar"; // 修正拼寫
+
+// 定義型別
+interface Class {
+  id: string;
+  title: string;
+  class_date: string;
+  attend_number: number;
+  class_time_h: number;
+}
+
+interface Course {
+  id: string;
+  course_name: string;
+  course_subject: string;
+  grade: number;
+  class: Class[];
+}
+
+interface TeacherData {
+  id: string;
+  username: string;
+  courses: Course[]; // 使用小寫以匹配 Prisma 模式
+}
+
+interface ClassRecord {
+  year: number;
+  month: number;
+  day: number;
+  courseName: string;
+  subject: string;
+  grade: number;
+  attendNumber: number;
+  className: string;
+  teachingHours: number;
+  date: string;
+}
 
 const WorkRecords = () => {
-  const param = useParams();
-  const teacherId = param?.teacherId as string;
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const params = useParams<{ teacherId: string }>();
+  const teacherId = params?.teacherId as string;
 
-  const [teacherData, setTeacherData] = useState([]);
-  const [sortField, setSortField] = useState(null);
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [filterYear, setFilterYear] = useState('');
-  const [filterMonth, setFilterMonth] = useState('');
+  const [teacherData, setTeacherData] = useState<TeacherData[]>([]);
+  const [sortField, setSortField] = useState<keyof ClassRecord | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [filterYear, setFilterYear] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
+  // 身份驗證檢查
   useEffect(() => {
-    const fetchTeacherData = async (id: string) => {
-      const res = await fetch(`/api/Teacher_detail_data_by_id/${id}`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch teacher data");
-      }
-      const result = await res.json();
-      setTeacherData(result);
-    };
-    fetchTeacherData(teacherId);
-  }, [teacherId]);
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      router.push("/stafflogin");
+    } else if (session?.user.id !== teacherId || session?.user.role !== "TEACHER") {
+      setError("無權訪問此頁面");
+      router.push("/auth/error?error=AccessDenied");
+    }
+  }, [status, session, teacherId, router]);
 
-  // 將所有class展平並添加必要資訊
-  const getAllClasses = () => {
-    if (!teacherData[0]?.Course) return [];
-    
-    return teacherData[0].Course.flatMap(course => 
-      course.class.map(cls => ({
+  // 獲取教師數據
+  useEffect(() => {
+    if (teacherId && status === "authenticated" && !error) {
+      const fetchTeacherData = async (id: string) => {
+        try {
+          const res = await fetch(`/api/Teacher_detail_data_by_id/${id}`, {
+            cache: "no-store",
+          });
+          if (!res.ok) throw new Error("無法獲取教師數據");
+          const result: TeacherData[] = await res.json();
+          setTeacherData(result);
+        } catch (error: any) {
+          console.error("獲取教師數據失敗:", error.message);
+          setError("無法載入教師數據，請稍後重試");
+        }
+      };
+      fetchTeacherData(teacherId);
+    }
+  }, [teacherId, status, error]);
+
+  // 將所有 class 展平並添加必要資訊
+  const getAllClasses = (): ClassRecord[] => {
+    if (!teacherData[0]?.courses) return [];
+
+    return teacherData[0].courses.flatMap((course) =>
+      course.class.map((cls) => ({
         year: new Date(cls.class_date).getFullYear(),
         month: new Date(cls.class_date).getMonth() + 1,
         day: new Date(cls.class_date).getDate(),
@@ -42,31 +101,31 @@ const WorkRecords = () => {
         attendNumber: cls.attend_number,
         className: cls.title,
         teachingHours: cls.class_time_h,
-        date: cls.class_date
+        date: cls.class_date,
       }))
     );
   };
 
   // 排序功能
-  const handleSort = (field) => {
+  const handleSort = (field: keyof ClassRecord) => {
     if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
   };
 
   // 篩選和排序後的課程數據
-  const getFilteredAndSortedClasses = () => {
+  const getFilteredAndSortedClasses = (): ClassRecord[] => {
     let classes = getAllClasses();
 
     // 應用年份和月份篩選
     if (filterYear) {
-      classes = classes.filter(cls => cls.year === parseInt(filterYear));
+      classes = classes.filter((cls) => cls.year === parseInt(filterYear));
     }
     if (filterMonth) {
-      classes = classes.filter(cls => cls.month === parseInt(filterMonth));
+      classes = classes.filter((cls) => cls.month === parseInt(filterMonth));
     }
 
     // 應用排序
@@ -74,7 +133,7 @@ const WorkRecords = () => {
       classes.sort((a, b) => {
         const valueA = a[sortField];
         const valueB = b[sortField];
-        if (sortOrder === 'asc') {
+        if (sortOrder === "asc") {
           return valueA > valueB ? 1 : -1;
         } else {
           return valueA < valueB ? 1 : -1;
@@ -90,49 +149,72 @@ const WorkRecords = () => {
     const classes = getFilteredAndSortedClasses();
     return {
       totalAttendance: classes.reduce((sum, cls) => sum + cls.attendNumber, 0),
-      totalHours: classes.reduce((sum, cls) => sum + cls.teachingHours, 0)
+      totalHours: classes.reduce((sum, cls) => sum + cls.teachingHours, 0),
     };
   };
 
   const classes = getFilteredAndSortedClasses();
   const totals = calculateTotals();
 
-  console.log("teacherData : ",teacherData)
+  if (status === "loading") {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 text-red-500">
+        <span>Work Records</span>
+        <br />
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto h-full w-full bg-blue-200 p-4">
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-6">
         <div className="col-span-6 flex justify-between items-center">
-          <p className="text-gray-500">Work Records</p>
+          <p className="text-gray-500 text-lg">Work Records</p>
           <div className="flex space-x-2">
             <Logout_Button />
           </div>
         </div>
-        
-        <TeacherNavber teacherId={teacherId} />
+
+        <TeacherNavbar teacherId={teacherId} />
 
         {/* 篩選區域 */}
         <div className="col-span-6 flex gap-4">
-          <input 
-            type="number" 
-            placeholder="年份" 
+          <input
+            type="number"
+            placeholder="年份"
             value={filterYear}
             onChange={(e) => setFilterYear(e.target.value)}
             className="p-2 border rounded"
           />
-          <select 
+          <select
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value)}
             className="p-2 border rounded"
           >
             <option value="">選擇月份</option>
             {Array.from({ length: 12 }, (_, i) => (
-              <option key={i} value={i + 1}>{i + 1}月</option>
+              <option key={i} value={i + 1}>
+                {i + 1}月
+              </option>
             ))}
           </select>
-          <button 
-            onClick={() => {}} // 確定按鈕只是觸發重新渲染
+          <button
+            onClick={() => {
+              setFilterYear(filterYear);
+              setFilterMonth(filterMonth);
+            }}
             className="bg-blue-400 text-white px-4 py-2 rounded"
           >
             確定
@@ -140,45 +222,51 @@ const WorkRecords = () => {
         </div>
 
         <div className="col-span-5 mt-8">
-          <table className="table-auto w-full border-collapse">
-            <thead>
-              <tr className="bg-gray-200">
+          <table className="table-auto w-full border-collapse bg-white shadow-md rounded-lg">
+            <thead className="bg-gray-200">
+              <tr>
                 {[
-                  { label: '年份', field: 'year' },
-                  { label: '月份', field: 'month' },
-                  { label: '日期', field: 'day' },
-                  { label: '課程', field: 'courseName' },
-                  { label: '科目', field: 'subject' },
-                  { label: '年級', field: 'grade' },
-                  { label: '出席人數', field: 'attendNumber' },
-                  { label: '課程名稱', field: 'className' },
-                  { label: '教授時間', field: 'teachingHours' },
+                  { label: "年份", field: "year" },
+                  { label: "月份", field: "month" },
+                  { label: "日期", field: "day" },
+                  { label: "課程", field: "courseName" },
+                  { label: "科目", field: "subject" },
+                  { label: "年級", field: "grade" },
+                  { label: "出席人數", field: "attendNumber" },
+                  { label: "課程名稱", field: "className" },
+                  { label: "教授時間", field: "teachingHours" },
                 ].map((header) => (
-                  <th 
+                  <th
                     key={header.field}
-                    onClick={() => handleSort(header.field)}
+                    onClick={() => handleSort(header.field as keyof ClassRecord)}
                     className="p-2 border cursor-pointer hover:bg-gray-300"
                   >
                     {header.label}
-                    {sortField === header.field && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                    {sortField === header.field && (sortOrder === "asc" ? " ↑" : " ↓")}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {classes.map((cls, index) => (
-                <tr key={index} className="border-b">
-                  <td className="p-2">{cls.year}</td>
-                  <td className="p-2">{cls.month}</td>
-                  <td className="p-2">{cls.day}</td>
-                  <td className="p-2">{cls.courseName}</td>
-                  <td className="p-2">{cls.subject}</td>
-                  <td className="p-2">{cls.grade}</td>
-                  <td className="p-2">{cls.attendNumber}</td>
-                  <td className="p-2">{cls.className}</td>
-                  <td className="p-2">{cls.teachingHours}</td>
+              {classes.length > 0 ? (
+                classes.map((cls, index) => (
+                  <tr key={index} className="border-b hover:bg-gray-50">
+                    <td className="p-2">{cls.year}</td>
+                    <td className="p-2">{cls.month}</td>
+                    <td className="p-2">{cls.day}</td>
+                    <td className="p-2">{cls.courseName}</td>
+                    <td className="p-2">{cls.subject}</td>
+                    <td className="p-2">{cls.grade}</td>
+                    <td className="p-2">{cls.attendNumber}</td>
+                    <td className="p-2">{cls.className || "未命名"}</td>
+                    <td className="p-2">{cls.teachingHours}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={9} className="p-2 text-center">暫無課程數據</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
 
@@ -194,7 +282,6 @@ const WorkRecords = () => {
 };
 
 export default WorkRecords;
-
 
 
 

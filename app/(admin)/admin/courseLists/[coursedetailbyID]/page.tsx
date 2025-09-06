@@ -297,12 +297,12 @@ const CourseDetail = () => {
             {GetCourseDataById.course_name}
           </h1>
           <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
-            <Link
+            {/* <Link
               href={`/admin/courseLists/${GetCourseDataById.id}/createClass`}
               className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
             >
               建立課堂
-            </Link>
+            </Link> */}
             <Link
               href={`/admin/courseLists/${GetCourseDataById.id}/edit`}
               className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"

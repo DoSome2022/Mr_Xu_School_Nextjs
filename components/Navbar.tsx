@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { Logout_Button } from "./logout_button"
 
 const HeaderLinks = [
     {

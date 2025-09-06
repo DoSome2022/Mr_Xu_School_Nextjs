@@ -34,6 +34,13 @@ interface SWRSchoolGradeProps {
   disabled?: boolean;
 }
 
+
+// // SWR_School_Grade.tsx
+// interface SWRSchoolGradeProps<T extends Record<string, any> & { grade: number }> {
+//   field: ControllerRenderProps<T, "grade" & Path<T>>;
+//   disabled?: boolean;
+// }
+
 interface SchoolGrade {
   id: string;
   school_grade: number;

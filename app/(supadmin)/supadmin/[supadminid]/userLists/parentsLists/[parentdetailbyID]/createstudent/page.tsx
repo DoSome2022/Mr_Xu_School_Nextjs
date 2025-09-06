@@ -1,11 +1,12 @@
-import Student_Create_Form from "@/components/CreateForm/Student-Create-Form"
+
+import Student_Create_Formbysupadmin from "@/components/CreateForm/SUPADMIN/Sup-Student-Create-Form"
 
 const CreateStudent = () => {
     return(
         <>
             <span>建立學生</span>
 
-            <Student_Create_Form />
+            <Student_Create_Formbysupadmin />
         </>
     )
 }

@@ -65,84 +65,109 @@
 // }
 
 
-// // actions/staffuser-login.ts
-// "use server";
-// import { signIn } from "@/auth";
-// import { getStaffUserByUserName } from "@/data/user";
-// import { staffUser_Login_Schema } from "@/schemas";
-// import { AuthError } from "next-auth";
-// import { z } from "zod";
-// import bcrypt from "bcryptjs";
+// actions/staffuser-login.ts
+"use server";
+import { signIn } from "@/auth";
+import { db } from "@/lib/db";
+import { staffUser_Login_Schema } from "@/schemas";
+import { AuthError } from "next-auth";
+import { z } from "zod";
 
-// export interface LoginResponse {
-//   error?: string;
-//   success?: string;
-//   status?: string;
-// }
+export interface LoginResponse {
+  error?: string;
+  success?: string;
+  status?: string;
+  role?: string;
+  id?: string;
+}
 
-// export const StaffUser_login_action = async (
-//   values: z.infer<typeof staffUser_Login_Schema>
-// ): Promise<LoginResponse> => {
-//   console.log("-- staffuser_login_values -- : ", values);
+export const StaffUser_login_action = async (
+  values: z.infer<typeof staffUser_Login_Schema>
+): Promise<LoginResponse> => {
+  console.log("-- staffuser_login_values -- : ", values);
 
-//   const validatedFields = staffUser_Login_Schema.safeParse(values);
-//   if (!validatedFields.success) {
-//     console.error("-- Validation failed -- : ", validatedFields.error.issues);
-//     return { error: "無效的字段，請檢查輸入", status: "error" };
-//   }
+  const validatedFields = staffUser_Login_Schema.safeParse(values);
+  if (!validatedFields.success) {
+    console.error("-- Validation failed -- : ", validatedFields.error.issues);
+    return { error: "無效的字段，請檢查輸入", status: "error" };
+  }
 
-//   const { username, password, staff, isadmin } = validatedFields.data;
+  const { username, password, staff, isadmin } = validatedFields.data;
 
-//   const existingUser = await getStaffUserByUserName(username);
-//   console.log("-- Existing user -- : ", existingUser);
-//   console.log("-- validatedFields.data -- : ", username);
-//   if (!existingUser ) {
-//     console.log("-- User not found -- : ", { username });
-//     return { error: "用戶名不存在", status: "error" };
-//   }
+  if (!staff && !isadmin) {
+    console.error("-- Invalid staff/isadmin selection -- : ", { staff, isadmin });
+    return { error: "必須選擇職員或管理員身份", status: "error" };
+  }
 
-//   if (staff !== existingUser.Staff || isadmin !== existingUser.ISADMIN) {
-//     console.log("-- Permissions mismatch -- : ", {
-//       inputStaff: staff,
-//       dbStaff: existingUser.Staff,
-//       inputIsAdmin: isadmin,
-//       dbIsAdmin: existingUser.ISADMIN,
-//     });
-//     return { error: "用戶權限不匹配", status: "error" };
-//   }
+  try {
+    console.log("-- Attempting signIn -- : ", { username, staff, isadmin });
+    const result = await signIn("credentials", {
+      username,
+      password,
+      staff, // 直接傳遞布林值
+      isadmin, // 直接傳遞布林值
+      redirect: false,
+    });
+    console.log("-- signIn result -- : ", result);
 
-//   const passwordMatch = await bcrypt.compare(password, existingUser.password);
-//   if (!passwordMatch) {
-//     console.log("-- Password mismatch -- : ", { username });
-//     return { error: "密碼錯誤", status: "error" };
-//   }
+    // 獲取用戶資訊
+    const user = await db.staffUser.findUnique({
+      where: { username },
+      select: { id: true, role: true, Staff: true, ISADMIN: true },
+    });
+    console.log("-- Staff user fetched -- : ", user);
 
-//   try {
-//     await signIn("credentials", {
-//       username,
-//       password,
-//       staff,
-//       isadmin,
-//       redirect: false,
-//     });
-//     console.log("-- Login success -- : ", { username });
-//     return { success: "登錄成功！", status: "success" };
-//   } catch (error) {
-//     if (error instanceof AuthError) {
-//       console.error("-- AuthError -- : ", error.type, error.message);
-//       switch (error.type) {
-//         case "CredentialsSignin":
-//           return { error: "無效的憑證，請檢查用戶名、密碼或權限", status: "error" };
-//         default:
-//           return { error: "登錄時發生錯誤", status: "error" };
-//       }
-//     }
-//     console.error("-- Unknown error -- : ", error);
-//     return { error: "未知錯誤，請稍後重試", status: "error" };
-//   }
-// };
+    if (!user) {
+      console.error("-- User not found after signIn -- : ", { username });
+      return { error: "用戶不存在", status: "error" };
+    }
 
+    if (user.Staff !== staff || user.ISADMIN !== isadmin) {
+      console.error("-- Staff or isadmin mismatch -- : ", {
+        dbStaff: user.Staff,
+        inputStaff: staff,
+        dbIsAdmin: user.ISADMIN,
+        inputIsAdmin: isadmin,
+      });
+      return { error: "職員或管理員身份選擇錯誤", status: "error" };
+    }
 
+    if (user.Staff && user.ISADMIN) {
+      if (user.role !== "ADMIN" && user.role !== "SUPADMIN") {
+        console.error("-- Role mismatch for admin -- : ", { role: user.role });
+        return { error: "角色與管理員身份不匹配", status: "error" };
+      }
+    } else if (user.Staff && !user.ISADMIN) {
+      if (user.role !== "TEACHER") {
+        console.error("-- Role mismatch for teacher -- : ", { role: user.role });
+        return { error: "角色與職員身份不匹配", status: "error" };
+      }
+    } else {
+      console.error("-- Invalid staff/isadmin combination -- : ", { staff, isadmin });
+      return { error: "無效的職員或管理員身份組合", status: "error" };
+    }
+
+    console.log("-- Login success -- : ", { username, role: user.role });
+    return {
+      success: "登錄成功！",
+      status: "success",
+      role: user.role,
+      id: user.id,
+    };
+  } catch (error) {
+    console.error("-- Login error -- : ", error);
+    if (error instanceof AuthError) {
+      console.error("-- AuthError -- : ", error.type, error.message, error.cause);
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { error: "無效的憑證，請檢查用戶名、密碼或權限", status: "error" };
+        default:
+          return { error: `登錄失敗：${error.message}`, status: "error" };
+      }
+    }
+    return { error: "未知錯誤，請稍後重試", status: "error" };
+  }
+};
 
 //13-08-2025原本
 
@@ -199,74 +224,76 @@
 // };
 
 
+
+//18-08-2025 upadate-
 // actions/staffuser-login.ts
-"use server";
-import { signIn } from "@/auth";
-import { db } from "@/lib/db";
-import { staffUser_Login_Schema } from "@/schemas";
-import { AuthError } from "next-auth";
-import { z } from "zod";
+// "use server";
+// import { signIn } from "@/auth";
+// import { db } from "@/lib/db";
+// import { staffUser_Login_Schema } from "@/schemas";
+// import { AuthError } from "next-auth";
+// import { z } from "zod";
 
-export interface LoginResponse {
-  error?: string;
-  success?: string;
-  status?: string;
-  role?: string; // 新增 role 欄位
-  id?: string; // 新增 id 欄位
-}
+// export interface LoginResponse {
+//   error?: string;
+//   success?: string;
+//   status?: string;
+//   role?: string; // 新增 role 欄位
+//   id?: string; // 新增 id 欄位
+// }
 
-export const StaffUser_login_action = async (
-  values: z.infer<typeof staffUser_Login_Schema>
-): Promise<LoginResponse> => {
-  console.log("-- staffuser_login_values -- : ", values);
+// export const StaffUser_login_action = async (
+//   values: z.infer<typeof staffUser_Login_Schema>
+// ): Promise<LoginResponse> => {
+//   console.log("-- staffuser_login_values -- : ", values);
 
-  const validatedFields = staffUser_Login_Schema.safeParse(values);
-  if (!validatedFields.success) {
-    console.error("-- Validation failed -- : ", validatedFields.error.issues);
-    return { error: "無效的字段，請檢查輸入", status: "error" };
-  }
+//   const validatedFields = staffUser_Login_Schema.safeParse(values);
+//   if (!validatedFields.success) {
+//     console.error("-- Validation failed -- : ", validatedFields.error.issues);
+//     return { error: "無效的字段，請檢查輸入", status: "error" };
+//   }
 
-  const { username, password, staff, isadmin } = validatedFields.data;
+//   const { username, password, staff, isadmin } = validatedFields.data;
 
-  try {
-    console.log("-- Attempting signIn -- : ", { username, staff, isadmin });
-    const result = await signIn("credentials", {
-      username,
-      password,
-      staff: staff?.toString() ?? "",
-      isadmin: isadmin?.toString() ?? "",
-      redirect: false,
-    });
+//   try {
+//     console.log("-- Attempting signIn -- : ", { username, staff, isadmin });
+//     const result = await signIn("credentials", {
+//       username,
+//       password,
+//       staff: staff?.toString() ?? "",
+//       isadmin: isadmin?.toString() ?? "",
+//       redirect: false,
+//     });
 
-    // 獲取用戶資訊
-    const user = await db.staffUser.findUnique({
-      where: { username },
-      select: { id: true, role: true },
-    });
+//     // 獲取用戶資訊
+//     const user = await db.staffUser.findUnique({
+//       where: { username },
+//       select: { id: true, role: true },
+//     });
 
-    if (!user) {
-      console.error("-- User not found after signIn -- : ", { username });
-      return { error: "用戶不存在", status: "error" };
-    }
+//     if (!user) {
+//       console.error("-- User not found after signIn -- : ", { username });
+//       return { error: "用戶不存在", status: "error" };
+//     }
 
-    console.log("-- Login success -- : ", { username, role: user.role });
-    return {
-      success: "登錄成功！",
-      status: "success",
-      role: user.role,
-      id: user.id,
-    };
-  } catch (error) {
-    console.error("-- Login error -- : ", error);
-    if (error instanceof AuthError) {
-      console.error("-- AuthError -- : ", error.type, error.message);
-      switch (error.type) {
-        case "CredentialsSignin":
-          return { error: "無效的憑證，請檢查用戶名、密碼或權限", status: "error" };
-        default:
-          return { error: "登錄時發生錯誤", status: "error" };
-      }
-    }
-    return { error: "未知錯誤，請稍後重試", status: "error" };
-  }
-};
+//     console.log("-- Login success -- : ", { username, role: user.role });
+//     return {
+//       success: "登錄成功！",
+//       status: "success",
+//       role: user.role,
+//       id: user.id,
+//     };
+//   } catch (error) {
+//     console.error("-- Login error -- : ", error);
+//     if (error instanceof AuthError) {
+//       console.error("-- AuthError -- : ", error.type, error.message);
+//       switch (error.type) {
+//         case "CredentialsSignin":
+//           return { error: "無效的憑證，請檢查用戶名、密碼或權限", status: "error" };
+//         default:
+//           return { error: "登錄時發生錯誤", status: "error" };
+//       }
+//     }
+//     return { error: "未知錯誤，請稍後重試", status: "error" };
+//   }
+// };

@@ -126,7 +126,7 @@ const Class_Updata_Custom_Form_v1 = () => {
       class_start_time: "",
       class_end_time: "",
       class_time_h: 0,
-      classroom: "",
+      // classroom: "",
       class_lesson: "",
       class_course_id: courseId,
       attend_number: 0,
@@ -144,7 +144,7 @@ const Class_Updata_Custom_Form_v1 = () => {
       const classData = GetClassData;
       class_updata_custom_form.setValue("title", classData.title || "");
       class_updata_custom_form.setValue("class_lesson", classData.class_lesson || "");
-      class_updata_custom_form.setValue("classroom", classData.classroom || "");
+      // class_updata_custom_form.setValue("classroom", classData.classroom || "");
       class_updata_custom_form.setValue("teacher", classData.teacher || "");
       class_updata_custom_form.setValue("class_start_time", classData.class_start_time || "");
       class_updata_custom_form.setValue("class_end_time", classData.class_end_time || "");
@@ -418,7 +418,7 @@ const Class_Updata_Custom_Form_v1 = () => {
                   )}
                 />
               </div>
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <FormField
                   control={class_updata_custom_form.control}
                   name="classroom"
@@ -436,7 +436,7 @@ const Class_Updata_Custom_Form_v1 = () => {
                     </FormItem>
                   )}
                 />
-              </div>
+              </div> */}
               <div className="space-y-4">
                 <FormField
                   control={class_updata_custom_form.control}

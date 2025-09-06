@@ -1,14 +1,15 @@
 "use client";
 
-import VoidCreateForm from "@/components/CreateForm/Void-Create-Form";
+import VoidCreateFormbysupadmin from "@/components/CreateForm/SUPADMIN/Sup-Void-Create-Form";
 
-const createVoidPage = () => {
+
+const createVoidPagebyadmin = () => {
     return(
         <div>
             <h1>createVoidPage</h1>
-            <VoidCreateForm />
+            <VoidCreateFormbysupadmin />
         </div>
     )
 }
 
-export default createVoidPage;
+export default createVoidPagebyadmin;

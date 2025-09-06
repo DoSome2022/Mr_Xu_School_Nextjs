@@ -114,6 +114,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { FormError } from "@/components/form-error";
+import { FormSuccess } from "@/components/form-success";
 import { VoidCreateSchema } from "@/actions/Create-Void/schema";
 import { CreateVoid_action } from "@/actions/Create-Void";
 
@@ -138,17 +140,29 @@ const VoidCreateForm = () => {
     setSuccess("");
 
     startTransition(() => {
-      CreateVoid_action(data);
+      CreateVoid_action(data).then((result) => {
+        if (result?.success) {
+          setSuccess(result.success);
+          void_create_form.reset();
+        } else {
+          setError(result?.error || "建立補單失敗");
+        }
+      });
     });
   };
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="w-full max-w-md mx-auto">
+      <h2 className="text-xl font-bold tracking-tight text-[#e7915b] mb-6">
+        建立新補單
+      </h2>
       <Form {...void_create_form}>
         <form
           onSubmit={void_create_form.handleSubmit(void_create_form_onSubmit)}
           className="space-y-6"
         >
+          <FormError message={error} />
+          <FormSuccess message={success} />
           <FormField
             control={void_create_form.control}
             name="title"
@@ -163,7 +177,7 @@ const VoidCreateForm = () => {
                     {...field}
                     type="text"
                     disabled={isPending}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#e7915b] transition-colors duration-300"
+                    className="w-full border-[#e7915b] rounded-md px-3 py-2 text-gray-900 focus:ring-[#e7915b] focus:border-[#e7915b] transition-colors duration-300"
                   />
                 </FormControl>
                 <FormMessage className="text-red-500" />
@@ -184,7 +198,8 @@ const VoidCreateForm = () => {
                     {...field}
                     type="number"
                     disabled={isPending}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#e7915b] transition-colors duration-300"
+                    className="w-full border-[#e7915b] rounded-md px-3 py-2 text-gray-900 focus:ring-[#e7915b] focus:border-[#e7915b] transition-colors duration-300"
+                    value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
                         e.target.value ? Number(e.target.value) : 0
@@ -199,12 +214,10 @@ const VoidCreateForm = () => {
           <Button
             disabled={isPending}
             type="submit"
-            className="w-full bg-[#e7915b] text-white font-medium hover:bg-cyan-200 hover:text-[#e7915b] transition-colors duration-300"
+            className="w-full bg-[#e7915b] text-white font-medium hover:bg-cyan-200 hover:text-gray-900 transition-colors duration-300 disabled:opacity-50"
           >
-            建立
+            {isPending ? "正在提交..." : "建立"}
           </Button>
-          {error && <p className="text-red-500 mt-4">{error}</p>}
-          {success && <p className="text-green-500 mt-4">{success}</p>}
         </form>
       </Form>
     </div>

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const Student_Create_Schema = z.object({
+export const Student_Update_Schema = z.object({
     name: z.string().min(1,"最少1個值"),
     school: z.string().min(1,"最少1個值"),
     grade: z.number().min(1,"最少1個值"),
@@ -10,6 +10,8 @@ export const Student_Create_Schema = z.object({
     pay : z.boolean(),
     student_parent_data_id : z.string().min(0,"最少1個值"),
     student_class_id : z.string().min(0,"最少1個值"),
-    student_teacher_data_id : z.string().min(0,"最少1個值")
-
+    student_teacher_data_id : z.string().min(0,"最少1個值"),
+    chine_ex_day: z.string().min(0,"最少1個值"),
+    math_ex_day: z.string().min(0,"最少1個值"),
+    eng_ex_day: z.string().min(0,"最少1個值"),
 })

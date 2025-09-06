@@ -461,6 +461,7 @@ import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { SWR_School_Subject } from "../fatchdata/swrschool_subject";
 import { SWR_School_Grade } from "../fatchdata/swrschool_grade";
+import { useRouter } from "next/navigation";
 
 interface TimeTemplate {
   id: string;
@@ -496,6 +497,8 @@ const Course_Create_Form = () => {
   const [selectedLCSData, setSelectedLCSData] = useState<TimeTemplate | null>(null);
   const [GetClassRoomData, setGetClassRoomData] = useState<ClassRooomData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -596,17 +599,21 @@ const Course_Create_Form = () => {
     }
   };
 
-  const course_create_form_onSubmit = (values: z.infer<typeof Course_Create_Schema>) => {
+const course_create_form_onSubmit = (values: z.infer<typeof Course_Create_Schema>) => {
     console.log("-- create course輸入 -- : ", JSON.stringify(values, null, 2), "-- End --");
     setError("");
     setSuccess("");
     startTransition(() => {
       create_Course(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
+        if (data?.error) {
+          setError(data.error);
+        } else if (data?.success) {
+          setSuccess(data.success);
+          router.push("/admin/courseLists"); // 客戶端重定向
+        }
       });
     });
-  };
+};
 
   if (isLoading) {
     return (

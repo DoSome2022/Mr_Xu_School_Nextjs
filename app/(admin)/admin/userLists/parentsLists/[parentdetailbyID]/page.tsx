@@ -173,6 +173,9 @@ const ParentDetail = () => {
                 key={student.id}
                 className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
               >
+
+
+
                 <Link
                   href={`/admin/userLists/parentsLists/${parentId}/studentLists/${student.id}`}
                   className="block text-[#e7915b] hover:text-cyan-200 transition-colors duration-300"

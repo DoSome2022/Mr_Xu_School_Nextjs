@@ -32,7 +32,6 @@ export async function GET (
           {year: yearId}  ,
           {grade: Number(GradeId)},
           {quarter: Number(quarter)},
-          {subject: subject},
           {id:id}
             ]
 

@@ -111,8 +111,8 @@ interface ReceiptData {
   total: number;
   servetype: string;
   studentname: string;
-  PaymentMethods: [];
-  content: [];
+  PaymentMethods: string[];
+  content: string[];
 }
 
 interface VoidData {
@@ -123,73 +123,104 @@ interface VoidData {
 const ReceiptListsPage = () => {
   const [GetReceiptData, setGetReceiptData] = useState<ReceiptData[]>([]);
   const [GetVoidData, setGetVoidData] = useState<VoidData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | undefined>("");
 
   useEffect(() => {
     const fetchReceiptData = async () => {
-      const res = await fetch("/api/Receipt_Lists");
-      if (!res.ok) {
-        throw new Error("斷線！");
+      try {
+        const res = await fetch("/api/Receipt_Lists");
+        if (!res.ok) {
+          throw new Error("無法載入收據資料");
+        }
+        const result = await res.json();
+        setGetReceiptData(Array.isArray(result) ? result : []);
+      } catch (err: any) {
+        console.error("載入錯誤:", err);
+        setError("無法載入收據資料");
       }
-      const result = await res.json();
-      setGetReceiptData(result);
     };
 
     const fetchVoidData = async () => {
-      const res = await fetch("/api/Void_Lists");
-      if (!res.ok) {
-        throw new Error("斷線！");
+      try {
+        const res = await fetch("/api/Void_Lists");
+        if (!res.ok) {
+          throw new Error("無法載入補單資料");
+        }
+        const result = await res.json();
+        setGetVoidData(Array.isArray(result) ? result : []);
+      } catch (err: any) {
+        console.error("載入錯誤:", err);
+        setError("無法載入補單資料");
       }
-      const result = await res.json();
-      setGetVoidData(result);
     };
 
-    fetchReceiptData();
-    fetchVoidData();
+    Promise.all([fetchReceiptData(), fetchVoidData()]).finally(() => {
+      setLoading(false);
+    });
   }, []);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#e7915b] flex justify-center items-center pt-20">
+        <p className="text-[#e7915b] text-lg">正在加載...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#e7915b] flex justify-center items-center pt-20">
+        <p className="text-red-500 bg-white p-3 rounded-md">{error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="bg-white shadow-lg rounded-md p-6">
-        <h1 className="text-2xl font-semibold text-[#e7915b] mb-6">
-          收據列表
-        </h1>
-        <Link
-          href="/admin/ReceiptLists/createvoid"
-          className="inline-block bg-[#e7915b] text-white px-4 py-2 rounded-md font-medium hover:bg-cyan-200 hover:text-[#e7915b] transition-colors duration-300 mb-6"
-        >
-          建立補單
-        </Link>
+    <div className="min-h-screen bg-[#e7915b] flex flex-col items-center px-4 sm:px-6 lg:px-8 pt-20">
+      <div className="w-full max-w-7xl bg-white rounded-lg shadow-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-xl font-bold tracking-tight text-[#e7915b]">
+            收據列表
+          </h1>
+          <Link
+            href="/admin/ReceiptLists/createvoid"
+            className="inline-block px-3 py-2 text-[#e7915b] hover:text-cyan-200 transition-colors duration-300 text-sm font-medium"
+          >
+            建立補單
+          </Link>
+        </div>
         <div className="space-y-6">
           {GetReceiptData.length > 0 ? (
             GetReceiptData.map((d) => (
               <Link
                 key={d.id}
                 href={`/admin/ReceiptLists/${d.id}`}
-                className="block bg-gray-50 p-4 rounded-md hover:bg-gray-100 transition-colors duration-300"
+                className="block bg-white border border-[#e7915b]/20 p-4 rounded-md hover:bg-[#e7915b]/10 transition-colors duration-300"
               >
-                <p className="text-[#e7915b] font-medium">{d.title}</p>
-                <p className="text-gray-700">服務類型: {d.servetype}</p>
-                <p className="text-gray-700">學生姓名: {d.studentname}</p>
+                <p className="text-[#e7915b] font-medium">{d.title || "無標題"}</p>
+                <p className="text-gray-900">服務類型: {d.servetype || "無"}</p>
+                <p className="text-gray-900">學生姓名: {d.studentname || "無"}</p>
               </Link>
             ))
           ) : (
-            <p className="text-gray-500">無收據資料</p>
+            <p className="text-gray-900">無收據資料</p>
           )}
-          <h2 className="text-xl font-semibold text-[#e7915b] mt-8">
+          <h2 className="text-xl font-bold tracking-tight text-[#e7915b] mt-8">
             補單列表
           </h2>
           {GetVoidData.length > 0 ? (
             GetVoidData.map((d, index) => (
               <div
                 key={index}
-                className="bg-gray-50 p-4 rounded-md hover:bg-gray-100 transition-colors duration-300"
+                className="bg-white border border-[#e7915b]/20 p-4 rounded-md hover:bg-[#e7915b]/10 transition-colors duration-300"
               >
-                <p className="text-[#e7915b] font-medium">{d.title}</p>
-                <p className="text-gray-700">價錢: {d.price}</p>
+                <p className="text-[#e7915b] font-medium">{d.title || "無標題"}</p>
+                <p className="text-gray-900">價錢: {d.price ?? "無"}</p>
               </div>
             ))
           ) : (
-            <p className="text-gray-500">無補單資料</p>
+            <p className="text-gray-900">無補單資料</p>
           )}
         </div>
       </div>

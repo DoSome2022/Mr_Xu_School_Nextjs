@@ -65,9 +65,9 @@ interface StudentClass {
 }
 
 const StudentDetailbysupadmin = () => {
-  const params = useParams<{ parentdetailbyID: string; studentdetailbyID: string ; supadminId: string}>();
+  const params = useParams<{ parentdetailbyID: string; studentdetailbyID: string ; supadminid: string}>();
   const ParentId = params?.parentdetailbyID as string;
-  const supadminId = params?.supadminId as string;
+  const supadminId = params?.supadminid as string;
 
   // 學生資料狀態
   const [GetStudentData, setGetStudentData] = useState<StudentData[]>([]);

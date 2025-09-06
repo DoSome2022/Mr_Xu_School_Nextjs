@@ -10,6 +10,6 @@ export const Teacher_upload_node_Create_Schema = z.object({
     lesson : z.string(),
     grade : z.number(),
     language : z.string(),
-    teacher : z.string(),
+    teacherId : z.string(),
 
 })

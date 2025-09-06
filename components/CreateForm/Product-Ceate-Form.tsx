@@ -314,24 +314,18 @@ const Product_Create_Form = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
-        <p className="text-gray-600 text-lg">正在加載...</p>
-      </div>
-    );
+    return <p className="text-[#e7915b] text-lg">正在加載...</p>;
   }
 
   if (error && !GetCourseData.length) {
-    return (
-      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
-        <p className="text-red-500 bg-red-100 p-3 rounded-md">{error}</p>
-      </div>
-    );
+    return <p className="text-red-500 bg-white p-3 rounded-md">{error}</p>;
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-700">建立新商品</h2>
+    <div className="w-full max-w-md mx-auto">
+      <h2 className="text-xl font-bold tracking-tight text-[#e7915b] mb-6">
+        建立新商品
+      </h2>
       <Form {...product_register_form}>
         <form onSubmit={product_register_form.handleSubmit(product_register_form_onSubmit)} className="space-y-6">
           <FormError message={error} />
@@ -342,7 +336,7 @@ const Product_Create_Form = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-semibold">商品名稱</FormLabel>
+                  <FormLabel className="text-[#e7915b] font-medium">商品名稱</FormLabel>
                   <FormControl>
                     <Select
                       onValueChange={(value) => {
@@ -352,7 +346,7 @@ const Product_Create_Form = () => {
                       defaultValue={field.value}
                       disabled={isPending || GetCourseData.length === 0}
                     >
-                      <SelectTrigger className="border-gray-300 focus:border-[#e7915b] focus:ring-[#e7915b] transition-colors duration-300">
+                      <SelectTrigger className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300">
                         <SelectValue placeholder="選擇課程作為商品名稱" />
                       </SelectTrigger>
                       <SelectContent>
@@ -405,13 +399,13 @@ const Product_Create_Form = () => {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-semibold">商品描述</FormLabel>
+                  <FormLabel className="text-[#e7915b] font-medium">商品描述</FormLabel>
                   <FormControl>
                     <textarea
                       {...field}
                       disabled={isPending}
                       placeholder="輸入商品描述"
-                      className="w-full border-gray-300 rounded-md p-2 focus:border-[#e7915b] focus:ring-[#e7915b] transition-colors duration-300 min-h-[100px]"
+                      className="w-full border-[#e7915b] rounded-md p-2 focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300 min-h-[100px]"
                     />
                   </FormControl>
                   <FormMessage className="text-red-500" />
@@ -425,7 +419,7 @@ const Product_Create_Form = () => {
               name="stock"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-semibold">商品數量</FormLabel>
+                  <FormLabel className="text-[#e7915b] font-medium">商品數量</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -434,7 +428,7 @@ const Product_Create_Form = () => {
                       type="number"
                       value={field.value ?? ""}
                       onChange={(e) => field.onChange(Number(e.target.value))}
-                      className="border-gray-300 focus:border-[#e7915b] focus:ring-[#e7915b] transition-colors duration-300"
+                      className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300"
                     />
                   </FormControl>
                   <FormMessage className="text-red-500" />
@@ -448,7 +442,7 @@ const Product_Create_Form = () => {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-semibold">價格</FormLabel>
+                  <FormLabel className="text-[#e7915b] font-medium">價格</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -457,7 +451,7 @@ const Product_Create_Form = () => {
                       type="number"
                       value={field.value ?? ""}
                       onChange={(e) => field.onChange(Number(e.target.value))}
-                      className="border-gray-300 focus:border-[#e7915b] focus:ring-[#e7915b] transition-colors duration-300"
+                      className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300"
                     />
                   </FormControl>
                   <FormMessage className="text-red-500" />
@@ -468,7 +462,7 @@ const Product_Create_Form = () => {
           <Button
             disabled={isPending}
             type="submit"
-            className="w-full bg-[#e7915b] text-white hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
+            className="w-full bg-[#e7915b] text-white hover:bg-cyan-200 hover:text-gray-900 transition-colors duration-300 disabled:opacity-50"
           >
             {isPending ? "正在提交..." : "建立商品"}
           </Button>

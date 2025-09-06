@@ -120,19 +120,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ClassRoomCalendar from "@/components/calendar/classroomCalendar";
-
-// 定義類型
-interface CalendarEvent {
-  id: number;
-  title: string;
-  start: string;
-  end: string;
-}
-
-interface ClassRoom {
-  id: number;
-  name: string;
-}
+import { CalendarEvent, ClassRoom } from "@/lib/types";
 
 const AdminComponents = () => {
   const { data: session, status } = useSession();
@@ -154,8 +142,15 @@ const AdminComponents = () => {
         if (!res.ok) {
           throw new Error("無法獲取課程數據");
         }
-        const result: CalendarEvent[] = await res.json();
-        setEvents(result);
+        const result = await res.json();
+        // 確保 API 返回的資料符合 CalendarEvent 類型
+        const formattedEvents: CalendarEvent[] = result.map((item: any) => ({
+          id: String(item.id), // 將 id 轉為 string
+          title: item.title,
+          start: item.start,
+          end: item.end,
+        }));
+        setEvents(formattedEvents);
       } catch (err) {
         setError(err instanceof Error ? err.message : "未知錯誤");
       }
@@ -167,7 +162,8 @@ const AdminComponents = () => {
         if (!res.ok) {
           throw new Error("無法獲取教室數據");
         }
-        const result: ClassRoom[] = await res.json();
+        const result = await res.json();
+        // 確保 API 返回的資料符合 ClassRoom 類型
         setGetClassRoom(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : "未知錯誤");

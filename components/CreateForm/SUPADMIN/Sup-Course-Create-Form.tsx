@@ -1,4 +1,495 @@
+// "use client";
+// import * as z from "zod";
+// import { useState, useEffect, useTransition } from "react";
+// import { useForm } from "react-hook-form";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import { Input } from "@/components/ui/input";
+// import { Button } from "@/components/ui/button";
+// import {
+//   Form,
+//   FormControl,
+//   FormField,
+//   FormItem,
+//   FormLabel,
+//   FormMessage,
+// } from "@/components/ui/form";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+
+
+// import { FormError } from "@/components/form-error";
+// import { FormSuccess } from "@/components/form-success";
+// import { SWR_School_Grade } from "@/components/fatchdata/swrschool_grade";
+// import { SWR_School_Subject } from "@/components/fatchdata/swrschool_subject";
+// import { useParams } from "next/navigation";
+// import { SupCourse_Create_Schema } from "@/actions/supadmin/Create-Course/schema";
+// import { Supcreate_Course } from "@/actions/supadmin/Create-Course";
+
+
+// interface User {
+//   id: string;
+//   username: string;
+//   role: "PARENT" | "TEACHER" | "ADMIN" | "SUPADMIN";
+// }
+
+// interface TimeTemplate {
+//   id: string;
+//   title: string;
+//   day_start: string;
+//   day_end: string;
+//   start_time: string;
+//   end_time: string;
+//   days: { date: string; start_time: string; end_time: string; lesson: string }[];
+//   weekdays: { date: string; start_time: string; end_time: string; lesson: string }[];
+//   publicholiday_model: string[];
+//   grade: string;
+// }
+
+// interface ClassroomData {
+//   id: string;
+//   room: string;
+// }
+
+// const Course_Create_Form_bysupadmin = () => {
+// const param = useParams();
+//   const supadminid = param?.supadminid as string;
+//   const [isPending, startTransition] = useTransition();
+//   const [error, setError] = useState<string | undefined>("");
+//   const [success, setSuccess] = useState<string | undefined>("");
+//   const [GetTeacherData, setGetTeacherData] = useState<User[]>([]);
+//   const [GetSelectedTeacherID, setGetSelectedTeacherID] = useState<string[]>([]);
+//   const [GetTimeTemplateData, setGetTimeTemplateData] = useState<TimeTemplate[]>([]);
+//   const [selectedLCSData, setSelectedLCSData] = useState<TimeTemplate | null>(null);
+//   const [GetClassroomData, setGetClassroomData] = useState<ClassroomData[]>([]);
+
+//   useEffect(() => {
+//     const getTeacherData = async () => {
+//       const res = await fetch("/api/Course_data_teacher");
+//       if (!res.ok) throw new Error("斷線！");
+//       const result = await res.json();
+//       setGetTeacherData(result);
+//     };
+//     getTeacherData();
+
+//     const getClassRoomData = async () => {
+//       const res = await fetch("/api/ClassRoom_Lists");
+//       if (!res.ok) throw new Error("斷線！");
+//       const result = await res.json();
+//       setGetClassroomData(result);
+//     };
+//     getClassRoomData();
+//   }, []);
+
+//   useEffect(() => {
+//     const getTTdata = async () => {
+//       const res = await fetch("/api/TimeTemplate_Lists");
+//       if (!res.ok) {
+//         throw new Error("斷線！");
+//       }
+//       const result = await res.json();
+//       const normalizedData = result.map((item: any) => ({
+//         ...item,
+//         weekdays: Array.isArray(item.weekdays)
+//           ? item.weekdays.map((w: any) => ({
+//               date: w.date || "",
+//               start_time: w.start_time || item.start_time || "",
+//               end_time: w.end_time || item.end_time || "",
+//               lesson: w.lesson || "",
+//             }))
+//           : [],
+//         days: Array.isArray(item.days)
+//           ? item.days.map((d: any) => ({
+//               date: d.date || "",
+//               start_time: d.start_time || item.start_time || "",
+//               end_time: d.end_time || item.end_time || "",
+//               lesson: d.lesson || "",
+//             }))
+//           : [],
+//       }));
+//       console.log("Normalized TimeTemplate Data:", JSON.stringify(normalizedData, null, 2));
+//       setGetTimeTemplateData(normalizedData);
+//     };
+//     getTTdata();
+//   }, []);
+
+//   // const course_create_form = useForm<z.infer<typeof SupCourse_Create_Schema>>({
+//   //   resolver: zodResolver(SupCourse_Create_Schema),
+//   //   defaultValues: {
+//   //     course_name: "",
+//   //     course_subject: "",
+//   //     persons: 0,
+//   //     grade: 0,
+//   //     teacher: "",
+//   //     course_teacher_data_id: [],
+//   //     TimeTemplateID: "",
+//   //     classroom: "",
+//   //     day_start: "",
+//   //     day_end: "",
+//   //     start_time: "",
+//   //     end_time: "",
+//   //     days: [],
+//   //     weekdays: [],
+//   //     publicholiday: [],
+//   //     supadminid: supadminid,
+//   //   },
+//   // });
+
+
+
+//   const course_create_form = useForm<z.infer<typeof SupCourse_Create_Schema>>({
+//     resolver: zodResolver(SupCourse_Create_Schema),
+//     defaultValues: {
+//       course_name: "",
+//       course_subject: "",
+//       persons: 0,
+//       grade: 0,
+//       teacher: "",
+//       course_teacher_data_id: [],
+//       TimeTemplateID: "",
+//       classroom: "",
+//       day_start: "",
+//       day_end: "",
+//       start_time: "",
+//       end_time: "",
+//       days: [],
+//       weekdays: [],
+//       publicholiday: [], // 修正拼寫
+//       supadminid: supadminid,
+//     },
+//   });
+
+//   // const handleTimeTemplateChange = (value: string) => {
+//   //   const selectedData = GetTimeTemplateData.find((data: TimeTemplate) => data.title === value);
+//   //   setSelectedLCSData(selectedData || null);
+//   //   if (selectedData) {
+//   //     course_create_form.setValue("TimeTemplateID", selectedData.id, { shouldValidate: true });
+//   //     course_create_form.setValue("day_start", selectedData.day_start, { shouldValidate: true });
+//   //     course_create_form.setValue("day_end", selectedData.day_end, { shouldValidate: true });
+//   //     course_create_form.setValue("start_time", selectedData.start_time, { shouldValidate: true });
+//   //     course_create_form.setValue("end_time", selectedData.end_time, { shouldValidate: true });
+//   //     course_create_form.setValue("days", selectedData.days, { shouldValidate: true });
+//   //     course_create_form.setValue("weekdays", selectedData.weekdays, { shouldValidate: true });
+//   //     course_create_form.setValue("publicholiday", selectedData.publicholiday_model, {
+//   //       shouldValidate: true,
+//   //     });
+//   //   }
+//   // };
+
+
+//   const handleTimeTemplateChange = (value: string) => {
+//     const selectedData = GetTimeTemplateData.find((data) => data.title === value);
+//     setSelectedLCSData(selectedData || null);
+//     if (selectedData) {
+//       course_create_form.setValue("TimeTemplateID", selectedData.id, { shouldValidate: true });
+//       course_create_form.setValue("day_start", selectedData.day_start, { shouldValidate: true });
+//       course_create_form.setValue("day_end", selectedData.day_end, { shouldValidate: true });
+//       course_create_form.setValue("start_time", selectedData.start_time, { shouldValidate: true });
+//       course_create_form.setValue("end_time", selectedData.end_time, { shouldValidate: true });
+//       course_create_form.setValue("days", selectedData.days, { shouldValidate: true });
+//       course_create_form.setValue("weekdays", selectedData.weekdays, { shouldValidate: true });
+//       course_create_form.setValue("publicholiday", selectedData.publicholiday_model, {
+//         shouldValidate: true,
+//       });
+//     }
+//   };
+
+//   const course_create_form_onSubmit = (values: z.infer<typeof SupCourse_Create_Schema>) => {
+//     console.log("-- create course輸入 -- : ", JSON.stringify(values, null, 2), "-- End --");
+//     setError("");
+//     setSuccess("");
+//     startTransition(()=>{
+//       Supcreate_Course(values);
+//     }
+//     );
+//   };
+
+//   console.log(" -- Bug -- : ", course_create_form.formState.errors, "-- END --");
+
+//   return (
+//     <Form {...course_create_form}>
+//       <form onSubmit={course_create_form.handleSubmit(course_create_form_onSubmit)} className="space-y-6">
+//         <div className="space-y-4">
+//           <FormField
+//             control={course_create_form.control}
+//             name="course_name"
+//             render={({ field }) => (
+//               <FormItem>
+//                 <FormLabel>課程名稱/課程ID</FormLabel>
+//                 <FormControl>
+//                   <Input {...field} disabled={isPending} placeholder="輸入課程名稱/課程ID" type="text" />
+//                 </FormControl>
+//                 <FormMessage />
+//               </FormItem>
+//             )}
+//           />
+//         </div>
+
+//         <FormField
+//           control={course_create_form.control}
+//           name="grade"
+//           render={({ field }) => (
+//             <FormItem>
+//               <FormLabel>年級</FormLabel>
+//               <FormControl>
+//                 <SWR_School_Grade field={field} />
+//               </FormControl>
+//               <FormMessage />
+//             </FormItem>
+//           )}
+//         />
+
+//         <div className="space-y-4" hidden>
+//           <FormField
+//             control={course_create_form.control}
+//             name="TimeTemplateID"
+//             render={({ field }) => (
+//               <FormItem>
+//                 <FormLabel>TimeTemplateID</FormLabel>
+//                 <FormControl>
+//                   <Input {...field} disabled={true} value={selectedLCSData ? selectedLCSData.id : ""} />
+//                 </FormControl>
+//                 <FormMessage />
+//               </FormItem>
+//             )}
+//           />
+//         </div>
+
+//         <div className="space-y-4">
+//           <FormField
+//             control={course_create_form.control}
+//             name="TimeTemplate"
+//             render={({ field }) => (
+//               <FormItem>
+//                 <FormLabel>時間模組</FormLabel>
+//                 <FormControl>
+//                   <Select
+//                     onValueChange={(value) => {
+//                       field.onChange(value);
+//                       handleTimeTemplateChange(value);
+//                     }}
+//                   >
+//                     <SelectTrigger>
+//                       <SelectValue placeholder="選擇" />
+//                     </SelectTrigger>
+//                     <SelectContent>
+//                       {GetTimeTemplateData.map((data) => (
+//                         <SelectItem value={data.title} key={data.id}>
+//                           標題: {data.title}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectContent>
+//                   </Select>
+//                 </FormControl>
+//                 <FormMessage />
+//               </FormItem>
+//             )}
+//           />
+//         </div>
+
+//         <div className="space-y-4">
+//           <FormField
+//             control={course_create_form.control}
+//             name="course_subject"
+//             render={({ field }) => (
+//               <FormItem>
+//                 <FormLabel>課程科目</FormLabel>
+//                 <FormControl>
+//                   <SWR_School_Subject field={field} />
+//                 </FormControl>
+//                 <FormMessage />
+//               </FormItem>
+//             )}
+//           />
+//         </div>
+
+//         <div className="space-y-4">
+//           <FormField
+//             control={course_create_form.control}
+//             name="teacher"
+//             render={({ field }) => (
+//               <FormItem>
+//                 <FormLabel>老師</FormLabel>
+//                 <FormControl>
+//                   <Select
+//                     defaultValue={field.value}
+//                     onValueChange={(value) => {
+//                       field.onChange(value);
+//                       const SelectedTeacher = GetTeacherData.find((data) => data.username === value);
+//                       if (SelectedTeacher?.id) {
+//                         const updatedIDs = [...GetSelectedTeacherID, SelectedTeacher.id];
+//                         setGetSelectedTeacherID(updatedIDs);
+//                         course_create_form.setValue("course_teacher_data_id", updatedIDs);
+//                       }
+//                     }}
+//                   >
+//                     <SelectTrigger>
+//                       <SelectValue placeholder="選擇老師" />
+//                     </SelectTrigger>
+//                     <SelectContent>
+//                       {GetTeacherData.map((data) => {
+//                         if (data.role === "TEACHER") {
+//                           return (
+//                             <SelectItem value={data.username} key={data.id}>
+//                               名：{data.username}
+//                             </SelectItem>
+//                           );
+//                         }
+//                       })}
+//                     </SelectContent>
+//                   </Select>
+//                 </FormControl>
+//                 <FormMessage />
+//               </FormItem>
+//             )}
+//           />
+//         </div>
+
+//         <div className="space-y-4" hidden>
+//           <FormField
+//             control={course_create_form.control}
+//             name="course_teacher_data_id"
+//             render={({ field }) => (
+//               <FormItem>
+//                 <FormControl>
+//                   <Input {...field} type="text" value={GetSelectedTeacherID.join(", ")} disabled />
+//                 </FormControl>
+//                 <FormMessage />
+//               </FormItem>
+//             )}
+//           />
+//         </div>
+
+//         <div className="space-y-4">
+//           <FormField
+//             control={course_create_form.control}
+//             name="persons"
+//             render={({ field }) => (
+//               <FormItem>
+//                 <FormLabel>人數</FormLabel>
+//                 <FormControl>
+//                   <Input
+//                     {...field}
+//                     disabled={isPending}
+//                     placeholder="輸入人數"
+//                     type="number"
+//                     onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+//                   />
+//                 </FormControl>
+//                 <FormMessage />
+//               </FormItem>
+//             )}
+//           />
+//         </div>
+
+//         <div className="space-y-4">
+//           <FormField
+//             control={course_create_form.control}
+//             name="classroom"
+//             render={({ field }) => (
+//               <FormItem>
+//                 <FormLabel>課室</FormLabel>
+//                 <FormControl>
+//                   <Select
+//                     defaultValue={field.value}
+//                     onValueChange={(value) => field.onChange(value)}
+//                   >
+//                     <SelectTrigger>
+//                       <SelectValue placeholder="選擇課室" />
+//                     </SelectTrigger>
+//                     <SelectContent>
+//                       {GetClassRoomData?.map((datas) => (
+//                         <SelectItem value={datas.id} key={datas.id}>
+//                           {datas.room}
+//                         </SelectItem>
+//                       ))}
+//                     </SelectContent>
+//                   </Select>
+//                 </FormControl>
+//                 <FormMessage />
+//               </FormItem>
+//             )}
+//           />
+//         </div>
+
+//         {/* 隱藏字段 */}
+//         <FormField
+//           control={course_create_form.control}
+//           name="day_start"
+//           render={({ field }) => (
+//             <FormItem hidden>
+//               <FormControl>
+//                 <Input {...field} type="hidden" />
+//               </FormControl>
+//             </FormItem>
+//           )}
+//         />
+//         <FormField
+//           control={course_create_form.control}
+//           name="day_end"
+//           render={({ field }) => (
+//             <FormItem hidden>
+//               <FormControl>
+//                 <Input {...field} type="hidden" />
+//               </FormControl>
+//             </FormItem>
+//           )}
+//         />
+//         <FormField
+//           control={course_create_form.control}
+//           name="start_time"
+//           render={({ field }) => (
+//             <FormItem hidden>
+//               <FormControl>
+//                 <Input {...field} type="hidden" />
+//               </FormControl>
+//             </FormItem>
+//           )}
+//         />
+//         <FormField
+//           control={course_create_form.control}
+//           name="end_time"
+//           render={({ field }) => (
+//             <FormItem hidden>
+//               <FormControl>
+//                 <Input {...field} type="hidden" />
+//               </FormControl>
+//             </FormItem>
+//           )}
+//         />
+//         <FormField
+//           control={course_create_form.control}
+//           name="publicholiday"
+//           render={({ field }) => (
+//             <FormItem hidden>
+//               <FormControl>
+//                 <Input {...field} type="hidden" />
+//               </FormControl>
+//             </FormItem>
+//           )}
+//         />
+
+//         <FormError message={error} />
+//         <FormSuccess message={success} />
+//         <Button disabled={isPending} type="submit">
+//           建立
+//         </Button>
+//       </form>
+//     </Form>
+//   );
+// };
+
+// export default Course_Create_Form_bysupadmin;
+
+
+
+
 "use client";
+
 import * as z from "zod";
 import { useState, useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -20,8 +511,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { SWR_School_Grade } from "@/components/fatchdata/swrschool_grade";
@@ -30,6 +519,11 @@ import { useParams } from "next/navigation";
 import { SupCourse_Create_Schema } from "@/actions/supadmin/Create-Course/schema";
 import { Supcreate_Course } from "@/actions/supadmin/Create-Course";
 
+interface User {
+  id: string;
+  username: string;
+  role: "PARENT" | "TEACHER" | "ADMIN" | "SUPADMIN";
+}
 
 interface TimeTemplate {
   id: string;
@@ -40,80 +534,86 @@ interface TimeTemplate {
   end_time: string;
   days: { date: string; start_time: string; end_time: string; lesson: string }[];
   weekdays: { date: string; start_time: string; end_time: string; lesson: string }[];
-  publicholiday_model: string[];
+  publicHoliday_model: string[]; // 修正拼寫
   grade: string;
 }
 
-interface ClassRooomData {
+interface ClassroomData {
   id: string;
   room: string;
 }
 
-const Course_Create_Form_bysupadmin = () => {
-      const param = useParams();
-    console.log("param :",  param ,"--end --"  )
-    const supadminid = param?.supadminid as string;
-    console.log("supadminid :", supadminid);
+const SupCourseCreateForm = () => {
+  const param = useParams();
+  const supadminid = param?.supadminid as string;
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
-  const [GetTeacherData, setGetTeacherData] = useState<any[]>([]);
+  const [GetTeacherData, setGetTeacherData] = useState<User[]>([]);
   const [GetSelectedTeacherID, setGetSelectedTeacherID] = useState<string[]>([]);
   const [GetTimeTemplateData, setGetTimeTemplateData] = useState<TimeTemplate[]>([]);
   const [selectedLCSData, setSelectedLCSData] = useState<TimeTemplate | null>(null);
-  const [GetClassRoomData, setGetClassRoomData] = useState<ClassRooomData[]>([]);
+  const [GetClassroomData, setGetClassroomData] = useState<ClassroomData[]>([]);
 
   useEffect(() => {
     const getTeacherData = async () => {
-      const res = await fetch("/api/Course_data_teacher");
-      if (!res.ok) throw new Error("斷線！");
-      const result = await res.json();
-      setGetTeacherData(result);
-    };
-    getTeacherData();
-
-    const getClassRoomData = async () => {
-      const res = await fetch("/api/ClassRoom_Lists");
-      if (!res.ok) throw new Error("斷線！");
-      const result = await res.json();
-      setGetClassRoomData(result);
-    };
-    getClassRoomData();
-  }, []);
-
-  useEffect(() => {
-    const getTTdata = async () => {
-      const res = await fetch("/api/TimeTemplate_Lists");
-      if (!res.ok) {
-        throw new Error("斷線！");
+      try {
+        const res = await fetch("/api/Course_data_teacher");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const result: User[] = await res.json();
+        setGetTeacherData(result);
+      } catch (error) {
+        console.error("獲取教師數據失敗:", error);
       }
-      const result = await res.json();
-      const normalizedData = result.map((item: any) => ({
-        ...item,
-        weekdays: Array.isArray(item.weekdays)
-          ? item.weekdays.map((w: any) => ({
-              date: w.date || "",
-              start_time: w.start_time || item.start_time || "",
-              end_time: w.end_time || item.end_time || "",
-              lesson: w.lesson || "",
-            }))
-          : [],
-        days: Array.isArray(item.days)
-          ? item.days.map((d: any) => ({
-              date: d.date || "",
-              start_time: d.start_time || item.start_time || "",
-              end_time: d.end_time || item.end_time || "",
-              lesson: d.lesson || "",
-            }))
-          : [],
-      }));
-      console.log("Normalized TimeTemplate Data:", JSON.stringify(normalizedData, null, 2));
-      setGetTimeTemplateData(normalizedData);
     };
+
+    const getClassroomData = async () => {
+      try {
+        const res = await fetch("/api/ClassRoom_Lists");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const result: ClassroomData[] = await res.json();
+        setGetClassroomData(result);
+      } catch (error) {
+        console.error("獲取教室數據失敗:", error);
+      }
+    };
+
+    const getTTdata = async () => {
+      try {
+        const res = await fetch("/api/TimeTemplate_Lists");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const result = await res.json();
+        const normalizedData = result.map((item: any) => ({
+          ...item,
+          weekdays: Array.isArray(item.weekdays)
+            ? item.weekdays.map((w: any) => ({
+                date: w.date || "",
+                start_time: w.start_time || item.start_time || "",
+                end_time: w.end_time || item.end_time || "",
+                lesson: w.lesson || "",
+              }))
+            : [],
+          days: Array.isArray(item.days)
+            ? item.days.map((d: any) => ({
+                date: d.date || "",
+                start_time: d.start_time || item.start_time || "",
+                end_time: d.end_time || item.end_time || "",
+                lesson: d.lesson || "",
+              }))
+            : [],
+        }));
+        setGetTimeTemplateData(normalizedData);
+      } catch (error) {
+        console.error("獲取時間模組失敗:", error);
+      }
+    };
+
+    getTeacherData();
+    getClassroomData();
     getTTdata();
   }, []);
 
-  const course_create_form = useForm<z.infer<typeof SupCourse_Create_Schema>>({
+  const courseCreateForm = useForm<z.infer<typeof SupCourse_Create_Schema>>({
     resolver: zodResolver(SupCourse_Create_Schema),
     defaultValues: {
       course_name: "",
@@ -130,25 +630,35 @@ const Course_Create_Form_bysupadmin = () => {
       end_time: "",
       days: [],
       weekdays: [],
-      publicholiday: [],
+      publicholiday: [], // 修正拼寫
       supadminid: supadminid,
     },
   });
 
   const handleTimeTemplateChange = (value: string) => {
-    const selectedData = GetTimeTemplateData.find((data: TimeTemplate) => data.title === value);
+    const selectedData = GetTimeTemplateData.find((data) => data.title === value);
     setSelectedLCSData(selectedData || null);
     if (selectedData) {
-      course_create_form.setValue("TimeTemplateID", selectedData.id, { shouldValidate: true });
-      course_create_form.setValue("day_start", selectedData.day_start, { shouldValidate: true });
-      course_create_form.setValue("day_end", selectedData.day_end, { shouldValidate: true });
-      course_create_form.setValue("start_time", selectedData.start_time, { shouldValidate: true });
-      course_create_form.setValue("end_time", selectedData.end_time, { shouldValidate: true });
-      course_create_form.setValue("days", selectedData.days, { shouldValidate: true });
-      course_create_form.setValue("weekdays", selectedData.weekdays, { shouldValidate: true });
-      course_create_form.setValue("publicholiday", selectedData.publicholiday_model, {
+      courseCreateForm.setValue("TimeTemplateID", selectedData.id, { shouldValidate: true });
+      courseCreateForm.setValue("day_start", selectedData.day_start, { shouldValidate: true });
+      courseCreateForm.setValue("day_end", selectedData.day_end, { shouldValidate: true });
+      courseCreateForm.setValue("start_time", selectedData.start_time, { shouldValidate: true });
+      courseCreateForm.setValue("end_time", selectedData.end_time, { shouldValidate: true });
+      courseCreateForm.setValue("days", selectedData.days, { shouldValidate: true });
+      courseCreateForm.setValue("weekdays", selectedData.weekdays, { shouldValidate: true });
+      courseCreateForm.setValue("publicholiday", selectedData.publicHoliday_model, {
         shouldValidate: true,
       });
+    } else {
+      // 重置字段
+      courseCreateForm.setValue("TimeTemplateID", "", { shouldValidate: true });
+      courseCreateForm.setValue("day_start", "", { shouldValidate: true });
+      courseCreateForm.setValue("day_end", "", { shouldValidate: true });
+      courseCreateForm.setValue("start_time", "", { shouldValidate: true });
+      courseCreateForm.setValue("end_time", "", { shouldValidate: true });
+      courseCreateForm.setValue("days", [], { shouldValidate: true });
+      courseCreateForm.setValue("weekdays", [], { shouldValidate: true });
+      courseCreateForm.setValue("publicholiday", [], { shouldValidate: true });
     }
   };
 
@@ -156,20 +666,23 @@ const Course_Create_Form_bysupadmin = () => {
     console.log("-- create course輸入 -- : ", JSON.stringify(values, null, 2), "-- End --");
     setError("");
     setSuccess("");
-    startTransition(()=>{
-      Supcreate_Course(values);
-    }
-    );
+    startTransition(() => {
+      Supcreate_Course(values).then((result) => {
+        if (result?.error) {
+          setError(result.error);
+        } else if (result?.success) {
+          setSuccess(result.success);
+        }
+      });
+    });
   };
 
-  console.log(" -- Bug -- : ", course_create_form.formState.errors, "-- END --");
-
   return (
-    <Form {...course_create_form}>
-      <form onSubmit={course_create_form.handleSubmit(course_create_form_onSubmit)} className="space-y-6">
+    <Form {...courseCreateForm}>
+      <form onSubmit={courseCreateForm.handleSubmit(course_create_form_onSubmit)} className="space-y-6 max-w-lg mx-auto p-4 bg-white rounded-md shadow">
         <div className="space-y-4">
           <FormField
-            control={course_create_form.control}
+            control={courseCreateForm.control}
             name="course_name"
             render={({ field }) => (
               <FormItem>
@@ -183,29 +696,15 @@ const Course_Create_Form_bysupadmin = () => {
           />
         </div>
 
-        <FormField
-          control={course_create_form.control}
-          name="grade"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>年級</FormLabel>
-              <FormControl>
-                <SWR_School_Grade field={field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="space-y-4" hidden>
+        <div className="space-y-4">
           <FormField
-            control={course_create_form.control}
-            name="TimeTemplateID"
+            control={courseCreateForm.control}
+            name="grade"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>TimeTemplateID</FormLabel>
+                <FormLabel>年級</FormLabel>
                 <FormControl>
-                  <Input {...field} disabled={true} value={selectedLCSData ? selectedLCSData.id : ""} />
+                  <SWR_School_Grade field={field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -215,8 +714,8 @@ const Course_Create_Form_bysupadmin = () => {
 
         <div className="space-y-4">
           <FormField
-            control={course_create_form.control}
-            name="TimeTemplate"
+            control={courseCreateForm.control}
+            name="TimeTemplateID"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>時間模組</FormLabel>
@@ -226,16 +725,24 @@ const Course_Create_Form_bysupadmin = () => {
                       field.onChange(value);
                       handleTimeTemplateChange(value);
                     }}
+                    defaultValue={field.value}
+                    disabled={isPending}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="選擇" />
+                      <SelectValue placeholder="選擇時間模組" />
                     </SelectTrigger>
                     <SelectContent>
-                      {GetTimeTemplateData.map((data) => (
-                        <SelectItem value={data.title} key={data.id}>
-                          標題: {data.title}
+                      {GetTimeTemplateData.length > 0 ? (
+                        GetTimeTemplateData.map((data) => (
+                          <SelectItem value={data.title} key={data.id}>
+                            標題: {data.title}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          無時間模組可用
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -247,7 +754,7 @@ const Course_Create_Form_bysupadmin = () => {
 
         <div className="space-y-4">
           <FormField
-            control={course_create_form.control}
+            control={courseCreateForm.control}
             name="course_subject"
             render={({ field }) => (
               <FormItem>
@@ -263,7 +770,7 @@ const Course_Create_Form_bysupadmin = () => {
 
         <div className="space-y-4">
           <FormField
-            control={course_create_form.control}
+            control={courseCreateForm.control}
             name="teacher"
             render={({ field }) => (
               <FormItem>
@@ -277,23 +784,30 @@ const Course_Create_Form_bysupadmin = () => {
                       if (SelectedTeacher?.id) {
                         const updatedIDs = [...GetSelectedTeacherID, SelectedTeacher.id];
                         setGetSelectedTeacherID(updatedIDs);
-                        course_create_form.setValue("course_teacher_data_id", updatedIDs);
+                        courseCreateForm.setValue("course_teacher_data_id", updatedIDs, {
+                          shouldValidate: true,
+                        });
                       }
                     }}
+                    disabled={isPending}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="選擇老師" />
                     </SelectTrigger>
                     <SelectContent>
-                      {GetTeacherData.map((data) => {
-                        if (data.role === "TEACHER") {
-                          return (
+                      {GetTeacherData.length > 0 ? (
+                        GetTeacherData.map((data) =>
+                          data.role === "TEACHER" ? (
                             <SelectItem value={data.username} key={data.id}>
                               名：{data.username}
                             </SelectItem>
-                          );
-                        }
-                      })}
+                          ) : null
+                        )
+                      ) : (
+                        <SelectItem value="" disabled>
+                          無教師可用
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -305,7 +819,7 @@ const Course_Create_Form_bysupadmin = () => {
 
         <div className="space-y-4" hidden>
           <FormField
-            control={course_create_form.control}
+            control={courseCreateForm.control}
             name="course_teacher_data_id"
             render={({ field }) => (
               <FormItem>
@@ -320,7 +834,7 @@ const Course_Create_Form_bysupadmin = () => {
 
         <div className="space-y-4">
           <FormField
-            control={course_create_form.control}
+            control={courseCreateForm.control}
             name="persons"
             render={({ field }) => (
               <FormItem>
@@ -331,7 +845,7 @@ const Course_Create_Form_bysupadmin = () => {
                     disabled={isPending}
                     placeholder="輸入人數"
                     type="number"
-                    onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -342,7 +856,7 @@ const Course_Create_Form_bysupadmin = () => {
 
         <div className="space-y-4">
           <FormField
-            control={course_create_form.control}
+            control={courseCreateForm.control}
             name="classroom"
             render={({ field }) => (
               <FormItem>
@@ -351,16 +865,23 @@ const Course_Create_Form_bysupadmin = () => {
                   <Select
                     defaultValue={field.value}
                     onValueChange={(value) => field.onChange(value)}
+                    disabled={isPending}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="選擇課室" />
                     </SelectTrigger>
                     <SelectContent>
-                      {GetClassRoomData?.map((datas) => (
-                        <SelectItem value={datas.id} key={datas.id}>
-                          {datas.room}
+                      {GetClassroomData.length > 0 ? (
+                        GetClassroomData.map((data) => (
+                          <SelectItem value={data.id} key={data.id}>
+                            {data.room}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          無課室可用
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -371,61 +892,63 @@ const Course_Create_Form_bysupadmin = () => {
         </div>
 
         {/* 隱藏字段 */}
-        <FormField
-          control={course_create_form.control}
-          name="day_start"
-          render={({ field }) => (
-            <FormItem hidden>
-              <FormControl>
-                <Input {...field} type="hidden" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={course_create_form.control}
-          name="day_end"
-          render={({ field }) => (
-            <FormItem hidden>
-              <FormControl>
-                <Input {...field} type="hidden" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={course_create_form.control}
-          name="start_time"
-          render={({ field }) => (
-            <FormItem hidden>
-              <FormControl>
-                <Input {...field} type="hidden" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={course_create_form.control}
-          name="end_time"
-          render={({ field }) => (
-            <FormItem hidden>
-              <FormControl>
-                <Input {...field} type="hidden" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={course_create_form.control}
-          name="publicholiday"
-          render={({ field }) => (
-            <FormItem hidden>
-              <FormControl>
-                <Input {...field} type="hidden" />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        <div hidden>
+          <FormField
+            control={courseCreateForm.control}
+            name="day_start"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input {...field} type="hidden" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={courseCreateForm.control}
+            name="day_end"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input {...field} type="hidden" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={courseCreateForm.control}
+            name="start_time"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input {...field} type="hidden" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={courseCreateForm.control}
+            name="end_time"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input {...field} type="hidden" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={courseCreateForm.control}
+            name="publicholiday"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input {...field} type="hidden" value={field.value.join(", ")} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormError message={error} />
         <FormSuccess message={success} />
@@ -437,4 +960,4 @@ const Course_Create_Form_bysupadmin = () => {
   );
 };
 
-export default Course_Create_Form_bysupadmin;
+export default SupCourseCreateForm;

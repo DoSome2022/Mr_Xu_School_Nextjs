@@ -15,7 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { CreateClassRoomSchema } from "@/actions/Create-ClassRoom/schema";
-import { SWR_Class_Room } from "../fatchdata/swrclass_room";
 import { CreateClassRoomAction } from "@/actions/Create-ClassRoom";
 
 const CreateClassRoomForm = () => {

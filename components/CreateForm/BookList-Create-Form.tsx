@@ -352,6 +352,10 @@ const BookList_Create_Form = ({ SchoolId, data }: BookList_Create_FormProps) => 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        setError("圖片大小不能超過 5MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onload = () => {
         const base64String = reader.result as string;
@@ -379,7 +383,7 @@ const BookList_Create_Form = ({ SchoolId, data }: BookList_Create_FormProps) => 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-xl font-semibold text-gray-700">上傳書單 - {data?.school_name || "學校"}</h2>
       <Form {...booklist_create_form}>
         <form onSubmit={booklist_create_form.handleSubmit(booklist_create_form_onSubmit)} className="space-y-6">
@@ -431,7 +435,7 @@ const BookList_Create_Form = ({ SchoolId, data }: BookList_Create_FormProps) => 
                 <FormItem>
                   <FormLabel className="text-gray-700 font-semibold">年份</FormLabel>
                   <FormControl>
-                    <SWR_School_Year field={field}  />
+                    <SWR_School_Year field={field} disabled={isPending} />
                   </FormControl>
                   <FormMessage className="text-red-500" />
                 </FormItem>

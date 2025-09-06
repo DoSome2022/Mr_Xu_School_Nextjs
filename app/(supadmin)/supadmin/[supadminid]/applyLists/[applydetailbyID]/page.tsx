@@ -14,15 +14,12 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { AcceptApplyClass } from "@/actions/Apply-Accept";
-import { RejectApplyClass } from "@/actions/Apply-Reject";
-import WhatsAppButton from "@/components/whatappsButton/whatappsbtn";
 import { Sup_Apply_Accept_Schema } from "@/actions/supadmin/Apply-Accept/schema";
 import { Sup_Apply_Reject_Schema } from "@/actions/supadmin/Apply-Reject/schema";
 import { SupAcceptApplyClass } from "@/actions/supadmin/Apply-Accept";
 import { SupRejectApplyClass } from "@/actions/supadmin/Apply-Reject";
+import WhatsAppButton from "@/components/whatappsButton/whatappsbtn";
 
-// 定義 ApplyData 的類型，根據 API 回傳數據
 interface ApplyData {
   id: string;
   title: string;
@@ -48,11 +45,9 @@ interface ApplyData {
   updatedAt: string;
 }
 
-// 定義 ParentData 的類型，根據 API 回傳數據
 interface ParentData {
   id: string;
   phone: string;
-  // 根據實際 API 回傳添加其他屬性
 }
 
 const ApplyDetailbysupadmin = () => {
@@ -60,13 +55,10 @@ const ApplyDetailbysupadmin = () => {
   const applydetailbyID = params.applydetailbyID as string;
   const supadminid = params.supadminid as string;
 
-
-  // 使用正確的初始狀態和類型
   const [GetApplyByIdData, setGetApplyByIdData] = useState<ApplyData | null>(null);
-  const [GetParentDatabyid, setGetParentDatabyid] = useState<ParentData[]>([]);
+  const [GetParentDatabyid, setGetParentDatabyid] = useState<ParentData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 獲取申請數據
   useEffect(() => {
     const fetchApplyByIdData = async (id: string) => {
       try {
@@ -86,7 +78,6 @@ const ApplyDetailbysupadmin = () => {
     }
   }, [applydetailbyID]);
 
-  // 獲取家長數據，僅在 parentId 存在時觸發
   useEffect(() => {
     const fetchParentByIdData = async (id: string) => {
       try {
@@ -106,7 +97,6 @@ const ApplyDetailbysupadmin = () => {
     }
   }, [GetApplyByIdData?.parent_id]);
 
-  // 表單設置
   const apply_status_Accept = useForm<z.infer<typeof Sup_Apply_Accept_Schema>>({
     resolver: zodResolver(Sup_Apply_Accept_Schema),
     defaultValues: {
@@ -123,9 +113,7 @@ const ApplyDetailbysupadmin = () => {
     },
   });
 
-  // 提交處理
   const apply_status_Accept_onSubmit = (values: z.infer<typeof Sup_Apply_Accept_Schema>) => {
-    console.log("-- apply_status_Accept_onSubmit-sup -- : ", values, "-- End --");
     startTransition(async () => {
       try {
         const result = await SupAcceptApplyClass(values);
@@ -143,7 +131,6 @@ const ApplyDetailbysupadmin = () => {
   };
 
   const apply_status_Reject_onSubmit = (values: z.infer<typeof Sup_Apply_Reject_Schema>) => {
-    console.log("-- apply_status_Reject_onSubmit-sup -- : ", values, "-- End --");
     startTransition(async () => {
       try {
         const result = await SupRejectApplyClass(values);
@@ -160,56 +147,116 @@ const ApplyDetailbysupadmin = () => {
     });
   };
 
-  // 載入中或錯誤狀態
   if (!GetApplyByIdData) {
-    return <div className="p-4">載入中...</div>;
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-500 text-sm font-medium">載入中...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <p className="text-red-500 text-sm font-medium">{error}</p>
+      </div>
+    );
   }
 
-  console.log("-- GetApplyByIdData -- : ", GetApplyByIdData, "-- End --");
-
-  console.log("-- GetParentDatabyid -- : ", GetParentDatabyid, "-- End --");
-
-
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold">申請詳情</h1>
-      <p>標題: {GetApplyByIdData.title}</p>
-      <p>主題: {GetApplyByIdData.subject}</p>
-      <p>內容: {GetApplyByIdData.content}</p>
-      <p>申請狀態: {GetApplyByIdData.apply ? "申請中" : "未申請"}</p>
-      <p>處理狀態: {GetApplyByIdData.isapply ? "已處理" : "未處理"}</p>
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-semibold text-blue-600 mb-6">申請詳情</h1>
+        <div className="bg-white shadow-lg rounded-lg p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-700 text-sm font-medium">
+                <span className="font-semibold">標題:</span> {GetApplyByIdData.title}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">主題:</span> {GetApplyByIdData.subject}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">內容:</span> {GetApplyByIdData.content}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">申請狀態:</span>{" "}
+                {GetApplyByIdData.apply ? "申請中" : "未申請"}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">處理狀態:</span>{" "}
+                {GetApplyByIdData.isapply ? "已處理" : "未處理"}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">課程名稱:</span> {GetApplyByIdData.course_name}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">申請學生:</span> {GetApplyByIdData.student.name}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">學校:</span> {GetApplyByIdData.student.school}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">年級:</span> {GetApplyByIdData.student.grade}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-700 text-sm font-medium">
+                <span className="font-semibold">申請時間:</span> {GetApplyByIdData.craetedAt}
+              </p>
+              <p className="text-gray-700 text-sm font-medium mt-2">
+                <span className="font-semibold">更新時間:</span> {GetApplyByIdData.updatedAt}
+              </p>
+              {GetParentDatabyid ? (
+                <div className="mt-4">
+                  <p className="text-gray-700 text-sm font-medium">
+                    <span className="font-semibold">家長電話:</span> {GetParentDatabyid.phone}
+                  </p>
+                  <div className="mt-2">
+                    <WhatsAppButton whatappmessage={GetParentDatabyid.phone} />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm font-medium mt-2">載入家長資料中...</p>
+              )}
+            </div>
+          </div>
 
-      {GetParentDatabyid ? (
-        <WhatsAppButton whatappmessage={GetParentDatabyid[0]?.phone} />
-      ) : (
-        <p>載入家長資料中...</p>
-      )}
-
-      {GetApplyByIdData.isapply ? (
-        <p className="text-green-600 font-semibold">已處理</p>
-      ) : (
-        <div className="mt-4 space-y-4">
-          <Form {...apply_status_Accept}>
-            <form onSubmit={apply_status_Accept.handleSubmit(apply_status_Accept_onSubmit)}>
-              <Button type="submit" variant="default">
-                接受
-              </Button>
-            </form>
-          </Form>
-
-          <Form {...apply_status_Reject}>
-            <form onSubmit={apply_status_Reject.handleSubmit(apply_status_Reject_onSubmit)}>
-              <Button type="submit" variant="destructive">
-                拒絕
-              </Button>
-            </form>
-          </Form>
+          {GetApplyByIdData.isapply ? (
+            <p className="text-green-600 font-semibold mt-6">申請已處理</p>
+          ) : (
+            <div className="mt-6 flex space-x-4">
+              <Form {...apply_status_Accept}>
+                <form
+                  onSubmit={apply_status_Accept.handleSubmit(apply_status_Accept_onSubmit)}
+                  className="flex-1"
+                >
+                  <Button
+                    type="submit"
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white"
+                  >
+                    接受申請
+                  </Button>
+                </form>
+              </Form>
+              <Form {...apply_status_Reject}>
+                <form
+                  onSubmit={apply_status_Reject.handleSubmit(apply_status_Reject_onSubmit)}
+                  className="flex-1"
+                >
+                  <Button
+                    type="submit"
+                    variant="destructive"
+                    className="w-full bg-red-600 hover:bg-red-500 text-white"
+                  >
+                    拒絕申請
+                  </Button>
+                </form>
+              </Form>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

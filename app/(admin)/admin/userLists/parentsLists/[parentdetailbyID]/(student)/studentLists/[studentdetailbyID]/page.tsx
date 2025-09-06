@@ -1050,7 +1050,7 @@ import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { SWR_Payment_Methods_checkbox } from "@/components/fatchdata/swrpayment_methods";
 import { SWR_Server_Type } from "@/components/fatchdata/swrserver_type";
-import { Logout_Button } from "@/components/logout_button";
+
 
 // 定義年級對應對象
 const gradeMapping: { [key: string]: string } = {
@@ -1123,6 +1123,8 @@ const StudentDetail = () => {
   const [isPending, startTransition] = useTransition();
   const [showInvoiceForm, setShowInvoiceForm] = useState<boolean>(false);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  console.log("params : ", params , "-- END --")
 
   // 切換移動端菜單
   const toggleMobileMenu = () => {
@@ -1322,6 +1324,9 @@ const StudentDetail = () => {
       {/* 主要內容 */}
       <div className="p-5 max-w-4xl mx-auto pt-20">
         <h2 className="text-2xl font-bold mb-4">Student Detail</h2>
+
+
+
         {GetStudentData &&
           GetStudentData.map((student) => {
             const { years, months } = getUniqueYearsAndMonths(student.course);
@@ -1329,6 +1334,14 @@ const StudentDetail = () => {
 
             return (
               <div key={student.id} className="mb-8">
+
+                <Link  
+                  href={`/admin/userLists/parentsLists/${ParentId}/studentLists/${student.id}/edit`}
+                  className="block text-[#e7915b] hover:text-cyan-200 transition-colors duration-300"
+                >
+                修改學生
+                </Link>
+
                 <p className="font-semibold"><strong>學生名:</strong> {student.name}</p>
                 <p className="font-semibold"><strong>學校:</strong> {student.school}</p>
                 <p className="font-semibold"><strong>年級:</strong> {gradeMapping[student.grade]}</p>

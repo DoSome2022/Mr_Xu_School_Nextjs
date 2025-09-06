@@ -21,8 +21,6 @@ import { createInvoice_action } from "@/actions/Create-Invoice";
 import { SWR_Payment_Methods_checkbox } from "../fatchdata/swrpayment_methods";
 import { SWR_Server_Type } from "../fatchdata/swrserver_type";
 
-
-
 interface ProductData {
   id: string;
   description: string;
@@ -54,44 +52,41 @@ const Invoice_Create_Form = () => {
   const [GetStudent, setGetStudent] = useState<StudentData[]>([]);
   const [showStudentList, setShowStudentList] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Fetch product data
+  // Fetch product and student data
   useEffect(() => {
-    const fetchProductData = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const response = await fetch("/api/Product_Lists");
-        if (!response.ok) {
-          throw new Error("Failed to fetch product data");
+        const [productResponse, studentResponse] = await Promise.all([
+          fetch("/api/Product_Lists"),
+          fetch("/api/student/Student_AllLists"),
+        ]);
+
+        if (!productResponse.ok) {
+          throw new Error("無法載入產品資料");
         }
-        const data = await response.json();
-        // 將 price 轉為數字
-        const transformedData = data.map((product: ProductData) => ({
+        const productData = await productResponse.json();
+        const transformedProductData = productData.map((product: ProductData) => ({
           ...product,
           price: Number(product.price),
         }));
-        setGetproductData(transformedData);
-      } catch (error) {
-        console.error("Error fetching product data:", error);
-      }
-    };
-    fetchProductData();
-  }, []);
+        setGetproductData(transformedProductData);
 
-  // Fetch student data
-  useEffect(() => {
-    const fetchStudentData = async () => {
-      try {
-        const response = await fetch("/api/student/Student_AllLists");
-        if (!response.ok) {
-          throw new Error("Failed to fetch student data");
+        if (!studentResponse.ok) {
+          throw new Error("無法載入學生資料");
         }
-        const data = await response.json();
-        setGetStudent(data);
+        const studentData = await studentResponse.json();
+        setGetStudent(studentData);
       } catch (error) {
-        console.error("Error fetching student data:", error);
+        console.error("載入錯誤:", error);
+        setError("無法載入資料");
+      } finally {
+        setLoading(false);
       }
     };
-    fetchStudentData();
+    fetchData();
   }, []);
 
   const invoice_create_form = useForm<z.infer<typeof Invoice_Create_Schema>>({
@@ -105,13 +100,13 @@ const Invoice_Create_Form = () => {
       PaymentMethods: [],
       Invoice_id: "",
       servetype: "",
-      DB:0,
-      adminFee:0,
+      DB: 0,
+      adminFee: 0,
     },
   });
 
   // Calculate total price
-  const totalPrice = selectedProducts.reduce((sum, product) => sum + product.price, 0);
+  const totalPrice = selectedProducts.reduce((sum, product) => sum + Number(product.price), 0);
 
   // Update form content and price
   useEffect(() => {
@@ -158,355 +153,364 @@ const Invoice_Create_Form = () => {
     setSuccess("");
     startTransition(() => {
       createInvoice_action(values).then((data) => {
-        setError(data?.error ?? undefined);
-        setSuccess(data?.success ?? undefined);
+        if (data?.success) {
+          setSuccess(data.success);
+          invoice_create_form.reset();
+        } else {
+          setError(data?.error || "創建發票失敗");
+        }
       });
     });
   };
 
-  console.log("Bug : ", invoice_create_form.formState.errors, "-- Bug --");
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center">
+        <p className="text-[#e7915b] text-lg">正在加載...</p>
+      </div>
+    );
+  }
 
- return (
-    <div className="pt-16 min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <div className="p-6">
-            <h1 className="text-2xl font-bold text-[#e7915b] mb-6">創建發票</h1>
-            
-            <Form {...invoice_create_form}>
-              <form
-                onSubmit={invoice_create_form.handleSubmit(invoice_create_form_onSubmit)}
-                className="space-y-6"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* 標題 */}
-                  <FormField
-                    control={invoice_create_form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700">標題</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            disabled={isPending}
-                            placeholder="發票標題"
-                            className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+  if (error && !GetproductData.length && !GetStudent.length) {
+    return (
+      <div className="flex justify-center items-center">
+        <p className="text-red-500 bg-white p-3 rounded-md">{error}</p>
+      </div>
+    );
+  }
 
-                  {/* 商品code碼 */}
-                  <FormField
-                    control={invoice_create_form.control}
-                    name="Invoice_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700">商品code碼</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            disabled={isPending}
-                            placeholder="商品識別碼"
-                            className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* 服務類型 */}
-                  <FormField
-                    control={invoice_create_form.control}
-                    name="servetype"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700">服務類型</FormLabel>
-                        <FormControl>
-                          <SWR_Server_Type field={field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* 學生選擇 */}
-                  <div className="relative">
-                    <FormField
-                      control={invoice_create_form.control}
-                      name="studentname"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700">學生名稱</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              disabled={isPending}
-                              placeholder="點擊選擇學生"
-                              onClick={() => setShowStudentList(true)}
-                              readOnly
-                              className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b]"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      <h2 className="text-xl font-bold tracking-tight text-[#e7915b] mb-6">
+        創建新發票
+      </h2>
+      <Form {...invoice_create_form}>
+        <form
+          onSubmit={invoice_create_form.handleSubmit(invoice_create_form_onSubmit)}
+          className="space-y-6"
+        >
+          <FormError message={error} />
+          <FormSuccess message={success} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 標題 */}
+            <FormField
+              control={invoice_create_form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#e7915b] font-medium">標題</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={isPending}
+                      placeholder="輸入發票標題"
+                      className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300"
                     />
-                    {showStudentList && (
-                      <div className="absolute z-10 mt-2 w-full bg-white border border-[#e7915b] rounded-lg shadow-lg max-h-96 overflow-y-auto">
-                        <div className="p-3">
-                          <Input
-                            type="text"
-                            placeholder="搜尋學生 (姓名、學校、年級、父母用戶名或暱稱)"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b]"
-                          />
-                        </div>
-                        {filteredStudents.length > 0 ? (
-                          <div className="overflow-x-auto">
-                            <table className="w-full border-collapse">
-                              <thead>
-                                <tr className="bg-[#e7915b] text-white">
-                                  <th className="p-3 text-left">姓名</th>
-                                  <th className="p-3 text-left">學校</th>
-                                  <th className="p-3 text-left">年級</th>
-                                  <th className="p-3 text-left">父母用戶名</th>
-                                  <th className="p-3 text-left">父母暱稱</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {filteredStudents.map((student) => (
-                                  <tr
-                                    key={student.id}
-                                    className="border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
-                                    onClick={() => handleSelectStudent(student)}
-                                  >
-                                    <td className="p-3">{student.name}</td>
-                                    <td className="p-3">{student.school}</td>
-                                    <td className="p-3">{student.grade}</td>
-                                    <td className="p-3">{student.Parent_data?.username || "N/A"}</td>
-                                    <td className="p-3">{student.Parent_data?.nickname || "N/A"}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        ) : (
-                          <p className="p-3 text-gray-500 text-center">無匹配學生</p>
-                        )}
-                      </div>
-                    )}
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+            {/* 商品code碼 */}
+            <FormField
+              control={invoice_create_form.control}
+              name="Invoice_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#e7915b] font-medium">商品識別碼</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={isPending}
+                      placeholder="輸入商品識別碼"
+                      className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+            {/* 服務類型 */}
+            <FormField
+              control={invoice_create_form.control}
+              name="servetype"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#e7915b] font-medium">服務類型</FormLabel>
+                  <FormControl>
+                    <SWR_Server_Type field={field} />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+            {/* 學生選擇 */}
+            <div className="relative">
+              <FormField
+                control={invoice_create_form.control}
+                name="studentname"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[#e7915b] font-medium">學生名稱</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={isPending}
+                        placeholder="點擊選擇學生"
+                        onClick={() => setShowStudentList(true)}
+                        readOnly
+                        className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-500" />
+                  </FormItem>
+                )}
+              />
+              {showStudentList && (
+                <div className="absolute z-10 mt-2 w-full bg-white border border-[#e7915b] rounded-lg shadow-lg max-h-96 overflow-y-auto">
+                  <div className="p-3">
+                    <Input
+                      type="text"
+                      placeholder="搜尋學生（姓名、學校、年級、父母用戶名或暱稱）"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300"
+                    />
                   </div>
-                </div>
-
-                {/* 價格相關字段 */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={invoice_create_form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700">價錢</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            value={field.value ?? ""}
-                            placeholder="輸入價格"
-                            type="number"
-                            className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={invoice_create_form.control}
-                    name="DB"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700">折扣價錢</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            value={field.value ?? ""}
-                            placeholder="輸入折扣"
-                            type="number"
-                            className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={invoice_create_form.control}
-                    name="adminFee"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700">雜項/行政費</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            value={field.value ?? ""}
-                            placeholder="輸入費用"
-                            type="number"
-                            className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* 已選產品 */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-[#e7915b]">
-                  <h3 className="text-lg font-semibold text-[#e7915b] mb-3">已選產品</h3>
-                  {selectedProducts.length > 0 ? (
+                  {filteredStudents.length > 0 ? (
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="bg-[#e7915b] text-white">
-                            <th className="p-3 text-left">產品名稱</th>
-                            <th className="p-3 text-left">價格</th>
-                            <th className="p-3 text-left">庫存</th>
-                            <th className="p-3 text-left">操作</th>
+                            <th className="p-3 text-left">姓名</th>
+                            <th className="p-3 text-left">學校</th>
+                            <th className="p-3 text-left">年級</th>
+                            <th className="p-3 text-left">父母用戶名</th>
+                            <th className="p-3 text-left">父母暱稱</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {selectedProducts.map((product) => (
-                            <tr key={product.id} className="border-b border-gray-200">
-                              <td className="p-3">{product.name}</td>
-                              <td className="p-3">{product.price}</td>
-                              <td className="p-3">{product.stock}</td>
-                              <td className="p-3">
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  onClick={() => handleRemoveProduct(product.id)}
-                                  disabled={isPending}
-                                  className="bg-red-500 hover:bg-red-600"
-                                >
-                                  移除
-                                </Button>
-                              </td>
+                          {filteredStudents.map((student) => (
+                            <tr
+                              key={student.id}
+                              className="border-b border-[#e7915b]/20 hover:bg-[#e7915b]/10 cursor-pointer"
+                              onClick={() => handleSelectStudent(student)}
+                            >
+                              <td className="p-3 text-gray-900">{student.name || "無"}</td>
+                              <td className="p-3 text-gray-900">{student.school || "無"}</td>
+                              <td className="p-3 text-gray-900">{student.grade || "無"}</td>
+                              <td className="p-3 text-gray-900">{student.Parent_data?.username || "無"}</td>
+                              <td className="p-3 text-gray-900">{student.Parent_data?.nickname || "無"}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   ) : (
-                    <p className="text-gray-500">尚未選擇產品</p>
+                    <p className="p-3 text-gray-900 text-center">無匹配學生</p>
                   )}
                 </div>
-
-                {/* 支付方式 */}
-                <div className="bg-white p-4 rounded-lg border border-[#e7915b]">
-                  <h3 className="text-lg font-semibold text-[#e7915b] mb-3">支付方式</h3>
-                  <FormField
-                    control={invoice_create_form.control}
-                    name="PaymentMethods"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <SWR_Payment_Methods_checkbox
-                            field={{
-                              control: invoice_create_form.control,
-                              name: "PaymentMethods",
-                              disabled: isPending,
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* 產品列表 */}
-                <div className="bg-white p-4 rounded-lg border border-[#e7915b]">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-semibold text-[#e7915b]">產品列表</h3>
-                    <Button
-                      type="button"
-                      onClick={() => setShowProductList(!showProductList)}
-                      disabled={isPending}
-                      className="bg-[#e7915b] hover:bg-[#d9824c] text-white"
-                    >
-                      {showProductList ? "隱藏列表" : "顯示產品列表"}
-                    </Button>
-                  </div>
-
-                  {showProductList && GetproductData.length > 0 && (
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse">
-                        <thead>
-                          <tr className="bg-[#e7915b] text-white">
-                            <th className="p-3 text-left">名稱</th>
-                            <th className="p-3 text-left">價格</th>
-                            <th className="p-3 text-left">庫存</th>
-                            <th className="p-3 text-left">操作</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {GetproductData.map((product) => (
-                            <tr key={product.id} className="border-b border-gray-200">
-                              <td className="p-3">{product.name}</td>
-                              <td className="p-3">{product.price}</td>
-                              <td className="p-3">{product.stock}</td>
-                              <td className="p-3">
-                                <Button
-                                  type="button"
-                                  onClick={() => handleAddProduct(product)}
-                                  disabled={
-                                    isPending ||
-                                    selectedProducts.some((p) => p.id === product.id)
-                                  }
-                                  className="bg-[#e7915b] hover:bg-[#d9824c] text-white"
-                                >
-                                  加入
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-
-                {/* 表單消息和提交按鈕 */}
-                <div className="flex flex-col space-y-4">
-                  <FormError message={error} />
-                  <FormSuccess message={success} />
-                  <Button
-                    disabled={isPending}
-                    type="submit"
-                    className="bg-[#e7915b] hover:bg-[#d9824c] text-white w-full md:w-auto self-end"
-                  >
-                    {isPending ? "處理中..." : "創建發票"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
+          {/* 價格相關字段 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={invoice_create_form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#e7915b] font-medium">價錢</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      disabled
+                      placeholder="自動計算價格"
+                      type="number"
+                      className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={invoice_create_form.control}
+              name="DB"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#e7915b] font-medium">折扣價錢</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      placeholder="輸入折扣"
+                      type="number"
+                      disabled={isPending}
+                      className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300"
+                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={invoice_create_form.control}
+              name="adminFee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#e7915b] font-medium">雜項/行政費</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      placeholder="輸入費用"
+                      type="number"
+                      disabled={isPending}
+                      className="border-[#e7915b] focus:border-[#e7915b] focus:ring-[#e7915b] text-gray-900 transition-colors duration-300"
+                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+          </div>
+          {/* 已選產品 */}
+          <div className="bg-white p-4 rounded-lg border border-[#e7915b]/20">
+            <h3 className="text-lg font-semibold text-[#e7915b] mb-3">已選產品</h3>
+            {selectedProducts.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-[#e7915b] text-white">
+                      <th className="p-3 text-left">產品名稱</th>
+                      <th className="p-3 text-left">價格</th>
+                      <th className="p-3 text-left">庫存</th>
+                      <th className="p-3 text-left">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedProducts.map((product) => (
+                      <tr key={product.id} className="border-b border-[#e7915b]/20">
+                        <td className="p-3 text-gray-900">{product.name || "無"}</td>
+                        <td className="p-3 text-gray-900">{product.price ?? "無"}</td>
+                        <td className="p-3 text-gray-900">{product.stock ?? "無"}</td>
+                        <td className="p-3">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={() => handleRemoveProduct(product.id)}
+                            disabled={isPending}
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                          >
+                            移除
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-900">尚未選擇產品</p>
+            )}
+          </div>
+          {/* 支付方式 */}
+          <div className="bg-white p-4 rounded-lg border border-[#e7915b]/20">
+            <h3 className="text-lg font-semibold text-[#e7915b] mb-3">支付方式</h3>
+            <FormField
+              control={invoice_create_form.control}
+              name="PaymentMethods"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <SWR_Payment_Methods_checkbox
+                      field={{
+                        control: invoice_create_form.control,
+                        name: "PaymentMethods",
+                        disabled: isPending,
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+          </div>
+          {/* 產品列表 */}
+          <div className="bg-white p-4 rounded-lg border border-[#e7915b]/20">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-semibold text-[#e7915b]">產品列表</h3>
+              <Button
+                type="button"
+                onClick={() => setShowProductList(!showProductList)}
+                disabled={isPending}
+                className="bg-[#e7915b] hover:bg-cyan-200 hover:text-gray-900 text-white transition-colors duration-300"
+              >
+                {showProductList ? "隱藏列表" : "顯示產品列表"}
+              </Button>
+            </div>
+            {showProductList && GetproductData.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-[#e7915b] text-white">
+                      <th className="p-3 text-left">名稱</th>
+                      <th className="p-3 text-left">價格</th>
+                      <th className="p-3 text-left">庫存</th>
+                      <th className="p-3 text-left">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {GetproductData.map((product) => (
+                      <tr key={product.id} className="border-b border-[#e7915b]/20">
+                        <td className="p-3 text-gray-900">{product.name || "無"}</td>
+                        <td className="p-3 text-gray-900">{product.price ?? "無"}</td>
+                        <td className="p-3 text-gray-900">{product.stock ?? "無"}</td>
+                        <td className="p-3">
+                          <Button
+                            type="button"
+                            onClick={() => handleAddProduct(product)}
+                            disabled={
+                              isPending ||
+                              selectedProducts.some((p) => p.id === product.id)
+                            }
+                            className="bg-[#e7915b] hover:bg-cyan-200 hover:text-gray-900 text-white transition-colors duration-300"
+                          >
+                            加入
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : showProductList ? (
+              <p className="text-gray-900">無可用產品</p>
+            ) : null}
+          </div>
+          {/* 表單消息和提交按鈕 */}
+          <div className="flex flex-col space-y-4">
+            <FormError message={error} />
+            <FormSuccess message={success} />
+            <Button
+              disabled={isPending}
+              type="submit"
+              className="bg-[#e7915b] hover:bg-cyan-200 hover:text-gray-900 text-white w-full md:w-auto self-end transition-colors duration-300 disabled:opacity-50"
+            >
+              {isPending ? "正在提交..." : "創建發票"}
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
-
 };
 
 export default Invoice_Create_Form;
-
 
 // "use client";
 

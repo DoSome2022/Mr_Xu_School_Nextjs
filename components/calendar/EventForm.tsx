@@ -1,38 +1,33 @@
-import DatePicker from "react-multi-date-picker"
+"use client";
+
+import { useEffect, useState } from "react";
+import DatePicker, { DateObject } from "react-multi-date-picker";
 import DatePanel from "react-multi-date-picker/plugins/date_panel";
-import { useEffect, useState } from "react"
 
+// 定義組件的 props 介面
+interface DatePickerComponentProps {
+  onChange: (dates: DateObject[]) => void;
+}
 
+const DatePickerComponent = ({ onChange }: DatePickerComponentProps) => {
+  const [values, setValues] = useState<DateObject[]>([]);
 
+  const handleChange = (newValues: DateObject[]) => {
+    setValues(newValues);
+    onChange(newValues);
+    console.log("Selected dates:", newValues);
+  };
 
-const DatePickerComponent = ({onChange}) => {
-
-const [values, setValues] = useState([]);
-
-
-    const handleChange = (newvalues) => {
-      setValues(newvalues);
-      onChange(newvalues);
-      console.log(newvalues);
-    }
-
-return(
-  <DatePicker 
-  multiple
-  plugins={[
-    <DatePanel />
-  ]}
-  numberOfMonths={3}
-  showOtherDays
-  value={values}
-  onChange={
-    handleChange
-  }
-/>  
-
-) ;
+  return (
+    <DatePicker
+      multiple
+      plugins={[<DatePanel key="date-panel" />]}
+      numberOfMonths={3}
+      showOtherDays
+      value={values}
+      onChange={handleChange}
+    />
+  );
 };
 
-export default DatePickerComponent
-
-
+export default DatePickerComponent;

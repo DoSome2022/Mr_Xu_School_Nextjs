@@ -46,7 +46,7 @@ interface BookList_Create_FormProps{
 
 
 const BookList_Create_Form_bysupadmin = ({SchoolId , data}: BookList_Create_FormProps) =>{
-        const params = useParams<{ProductDetailbyID: string}>();
+        const params = useParams<{ProductDetailbyID: string ,supadminid: string }>();
         const supadminid = params?.supadminid as string;
     console.log("supadminid :", supadminid);
 

@@ -14,6 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { FormError } from "@/components/form-error";
+import { FormSuccess } from "@/components/form-success";
 import { Ex_pager_Create_Schema } from "@/actions/Create-Ex_pager/schema";
 import { SWR_School_Subject } from "../fatchdata/swrschool_subject";
 import { SWR_School_Year } from "../fatchdata/swrschool_year";
@@ -36,22 +38,14 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
-  const [PreviewImage, setPreviewImage] = useState<string | null>(null);
-  const [SchoolName, setSchoolName] = useState("");
-
-  useEffect(() => {
-    if (data && data[0] && data[0].school_name) {
-      setSchoolName(data[0].school_name);
-      ex_pager_create_form.setValue("school_name", data[0].school_name);
-    }
-  }, [data]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const ex_pager_create_form = useForm<z.infer<typeof Ex_pager_Create_Schema>>({
     resolver: zodResolver(Ex_pager_Create_Schema),
     defaultValues: {
       name: "",
       school_ex_pager_id: SchoolId,
-      school_name: SchoolName,
+      school_name: data[0]?.school_name || "",
       subject: "",
       year: "",
       grade: 0,
@@ -60,9 +54,19 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
     },
   });
 
+  useEffect(() => {
+    if (data[0]?.school_name) {
+      ex_pager_create_form.setValue("school_name", data[0].school_name);
+    }
+  }, [data, ex_pager_create_form]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        setError("圖片大小不能超過 5MB");
+        return;
+      }
       const reader = new FileReader();
       reader.onload = () => {
         const base64String = reader.result as string;
@@ -73,29 +77,32 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
     }
   };
 
-  const ex_pager_create_form_onSubmit = (
-    values: z.infer<typeof Ex_pager_Create_Schema>
-  ) => {
+  const ex_pager_create_form_onSubmit = (values: z.infer<typeof Ex_pager_Create_Schema>) => {
     setError("");
     setSuccess("");
     startTransition(() => {
       createExPager(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
+        if (data?.success) {
+          setSuccess(data.success);
+          ex_pager_create_form.reset();
+          setPreviewImage(null);
+        } else {
+          setError(data?.error || "創建試卷失敗");
+        }
       });
     });
   };
 
   return (
-    <div className="space-y-6">
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      {success && <div className="text-green-500 text-sm">{success}</div>}
-
+    <div className="space-y-6 max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold text-gray-700">上傳試卷 - {data[0]?.school_name || "學校"}</h2>
       <Form {...ex_pager_create_form}>
         <form
           onSubmit={ex_pager_create_form.handleSubmit(ex_pager_create_form_onSubmit)}
           className="space-y-6"
         >
+          <FormError message={error} />
+          <FormSuccess message={success} />
           <FormField
             control={ex_pager_create_form.control}
             name="name"
@@ -114,30 +121,24 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
               </FormItem>
             )}
           />
-
-          {data.map((d) => (
-            <FormField
-              key={d.id}
-              control={ex_pager_create_form.control}
-              name="school_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 font-medium">學校名稱</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder={d.school_name}
-                      defaultValue={d.school_name}
-                      disabled
-                      className="border-gray-300 bg-gray-50 rounded-md"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-
+          <FormField
+            control={ex_pager_create_form.control}
+            name="school_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700 font-medium">學校名稱</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled
+                    placeholder={data[0]?.school_name || "學校名稱"}
+                    className="border-gray-300 bg-gray-50 rounded-md"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={ex_pager_create_form.control}
             name="subject"
@@ -145,13 +146,12 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
               <FormItem>
                 <FormLabel className="text-gray-700 font-medium">科目</FormLabel>
                 <FormControl>
-                  <SWR_School_Subject field={field} />
+                  <SWR_School_Subject field={field} disabled={isPending} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={ex_pager_create_form.control}
             name="year"
@@ -159,13 +159,12 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
               <FormItem>
                 <FormLabel className="text-gray-700 font-medium">年份</FormLabel>
                 <FormControl>
-                  <SWR_School_Year field={field} />
+                  <SWR_School_Year field={field} disabled={isPending} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={ex_pager_create_form.control}
             name="grade"
@@ -173,13 +172,12 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
               <FormItem>
                 <FormLabel className="text-gray-700 font-medium">年級</FormLabel>
                 <FormControl>
-                  <SWR_School_Grade field={field} />
+                  <SWR_School_Grade field={field} disabled={isPending} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={ex_pager_create_form.control}
             name="quarter"
@@ -187,13 +185,12 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
               <FormItem>
                 <FormLabel className="text-gray-700 font-medium">季度</FormLabel>
                 <FormControl>
-                  <SWR_School_Quarter field={field} />
+                  <SWR_School_Quarter field={field} disabled={isPending} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={ex_pager_create_form.control}
             name="img"
@@ -212,24 +209,34 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
               </FormItem>
             )}
           />
-
+          <FormField
+            control={ex_pager_create_form.control}
+            name="school_ex_pager_id"
+            render={({ field }) => (
+              <FormItem className="hidden">
+                <FormControl>
+                  <Input {...field} type="hidden" value={SchoolId} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <Button
             disabled={isPending}
             type="submit"
-            className="bg-[#e7915b] hover:bg-[#d17a4a] text-white rounded-md px-6 py-2"
+            className="w-full bg-[#e7915b] hover:bg-[#d17a4a] text-white rounded-md px-6 py-2"
           >
-            建立
+            {isPending ? "正在提交..." : "建立"}
           </Button>
         </form>
       </Form>
-
-      {PreviewImage && (
+      {previewImage && (
         <div className="mt-6">
           <h3 className="text-gray-700 font-medium mb-2">圖片預覽</h3>
           <Image
             width={500}
             height={500}
-            src={PreviewImage}
+            src={previewImage}
             alt="試卷預覽"
             className="rounded-md shadow-md"
           />

@@ -54,6 +54,6 @@ export const Login_Schema = z.object({
 export const staffUser_Login_Schema = z.object({
   username: z.string().min(1, "用戶名稱為必填項"),
   password: z.string().min(1, "密碼為必填項"),
-  staff: z.boolean().optional(),
-  isadmin: z.boolean().optional(),
+  staff: z.boolean(),
+  isadmin: z.boolean(),
 });

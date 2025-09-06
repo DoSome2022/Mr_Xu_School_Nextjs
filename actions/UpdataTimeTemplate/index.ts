@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
-import { timetemplate_create_Schema } from "./schema";
+import { timetemplate_Updata_Schema } from "./schema";
 import { redirect } from "next/navigation";
 
 const generateWeekdays = (
@@ -61,7 +61,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         days,
         start_time,
         end_time,
-        grade,
+        // grade,
         lesson,
     } = data;
 
@@ -88,8 +88,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
             return parsedDate;
         }).filter((d:any) => d !== null); // 過濾無效日期
 
-        const generatedWeekdays = generateWeekdays(parsedDayStart, parsedDayEnd, start_time, end_time, lesson);
-        const generatedDays = generateDays(parsedDays, start_time, end_time, lesson);
+        // const generatedWeekdays = generateWeekdays(parsedDayStart, parsedDayEnd, start_time, end_time, lesson);
+        // const generatedDays = generateDays(parsedDays, start_time, end_time, lesson);
 
         timetemplate_data = await db.timetemplate.create({
             data: {
@@ -99,7 +99,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
                 publicholiday_model: publicholiday,
                 weekdays: weekdays,
                 days: days, // 保留原始 days 格式，因為 schema 要求對象陣列
-                grade,
+                // grade,
                 lesson,
                 start_time,
                 end_time,
@@ -117,4 +117,4 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     return redirect("/admin/timetemplateLists");
 };
 
-export const edittimetemplate = CreateSafeAction(timetemplate_create_Schema, handler);
+export const edittimetemplate = CreateSafeAction(timetemplate_Updata_Schema, handler);

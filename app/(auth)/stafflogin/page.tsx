@@ -251,6 +251,7 @@ import { staffUser_Login_Schema } from "@/schemas";
 import { StaffUser_login_action } from "@/actions/staffuser-login";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
+import Link from "next/link";
 
 const Staff_User_login = () => {
   const searchParams = useSearchParams();
@@ -270,38 +271,94 @@ const Staff_User_login = () => {
     },
   });
 
-  const login_form_onSubmit = (values: z.infer<typeof staffUser_Login_Schema>) => {
-    console.log("-- 職員用戶輸入 -- : ", values);
-    setError("");
-    setSuccess("");
+  // Staff_User_login.tsx (部分程式碼)
+const login_form_onSubmit = (values: z.infer<typeof staffUser_Login_Schema>) => {
+  console.log("-- 職員用戶輸入 -- : ", values);
+  setError("");
+  setSuccess("");
 
-    startTransition(() => {
-      StaffUser_login_action(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
-        if (data?.success && data?.role && data?.id) {
-          // 根據角色進行重定向
+  // 确保转换为布尔值
+  const formValues = {
+    ...values,
+    staff: Boolean(values.staff),
+    isadmin: Boolean(values.isadmin)
+  };
+
+
+  if (!values.staff && !values.isadmin) {
+    setError("必須至少選擇職員或管理員身份");
+    return;
+  }
+
+//   startTransition(() => {
+//  StaffUser_login_action(formValues).then((data) => {
+//       console.log("-- StaffUser_login_action response -- : ", data);
+//       setError(data?.error);
+//       setSuccess(data?.success);
+//       if (data?.success && data?.role && data?.id) {
+//         switch (data.role) {
+//           case "ADMIN":
+//             router.push("/admin");
+//             break;
+//           case "SUPADMIN":
+//             router.push(`/supadmin/${data.id}`);
+//             break;
+//           case "TEACHER":
+//             router.push(`/teacher/${data.id}`);
+//             break;
+//           default:
+//             setError("無效的角色");
+//             break;
+//         }
+//       }
+//     });
+//   });
+
+
+startTransition(() => {
+    StaffUser_login_action(formValues).then((data) => {
+      setError(data?.error);
+      setSuccess(data?.success);
+      
+      // 添加重定向前的日志
+      console.log("登录结果:", {
+        success: data?.success,
+        role: data?.role,
+        id: data?.id,
+        error: data?.error
+      });
+
+      if (data?.success && data?.role && data?.id) {
+        // 添加重定向前的小延迟确保session已更新
+        setTimeout(() => {
           switch (data.role) {
             case "ADMIN":
-              router.push("/admin");
+              window.location.href = "/admin"; // 使用window.location确保完全刷新
               break;
             case "SUPADMIN":
-              router.push(`/supadmin/${data.id}`);
+              window.location.href = `/supadmin/${data.id}`;
               break;
             case "TEACHER":
-              router.push(`/teacher/${data.id}`);
+              window.location.href = `/teacher/${data.id}`;
               break;
             default:
               setError("無效的角色");
               break;
           }
-        }
-      });
+        }, 100);
+      }
     });
-  };
+  });
+
+
+
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#e7915b] p-4">
+      <Link href="/" className="absolute top-4 left-4 text-white">
+        返回
+      </Link>
       <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-lg p-8 shadow-lg">
         <h1 className="text-3xl font-bold text-white text-center mb-6">職員登入頁面</h1>
         <Form {...login_form}>
@@ -467,7 +524,6 @@ const Staff_User_login = () => {
 };
 
 export default Staff_User_login;
-
 
 
 

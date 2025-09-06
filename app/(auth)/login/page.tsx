@@ -114,7 +114,6 @@
 // export default userlogin
 
 
-
 // User_login.tsx
 "use client";
 
@@ -134,9 +133,10 @@ import {
 } from "@/components/ui/form";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Login_Schema } from "@/schemas";
-
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
+
+import Link from "next/link";
 import { User_login_action } from "@/actions/user-login ";
 
 const User_login = () => {
@@ -165,7 +165,6 @@ const User_login = () => {
         setError(data?.error);
         setSuccess(data?.success);
         if (data?.success && data?.role && data?.id) {
-          // 根據角色進行重定向
           switch (data.role) {
             case "PARENT":
               router.push(`/parent/${data.id}`);
@@ -182,8 +181,15 @@ const User_login = () => {
     });
   };
 
+  const handleForgotPassword = () => {
+    router.push("/forgot-password");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#e7915b] p-4">
+      <Link href="/" className="absolute top-4 left-4 text-white">
+        返回
+      </Link>
       <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-lg p-8 shadow-lg">
         <h1 className="text-3xl font-bold text-white text-center mb-6">用戶登入頁面</h1>
         <Form {...login_form}>
@@ -262,6 +268,18 @@ const User_login = () => {
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="link"
+                className="text-white hover:text-cyan-200"
+                onClick={handleForgotPassword}
+                disabled={isPending}
+              >
+                忘記密碼？
+              </Button>
             </div>
 
             <FormError message={error || urlError} />

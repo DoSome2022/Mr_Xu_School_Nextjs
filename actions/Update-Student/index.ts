@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { InputType , ReturnType } from "./types"; 
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
-import { Student_Create_Schema } from "./schema";
+import { Student_Update_Schema } from "./schema";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -36,7 +36,9 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 student_id : student_id,
                 student_parent_data_id : student_parent_data_id,
                 teachers : teachers,
-                pay : pay 
+                pay : pay ,
+                ismember: false,
+                issurvive : false
             }
         });
     } catch (error) {
@@ -46,4 +48,4 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
      return { data: Student_data }
 }
 
-export const create_Student = CreateSafeAction(Student_Create_Schema, handler)
+export const Update_Student = CreateSafeAction(Student_Update_Schema, handler)

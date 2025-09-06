@@ -74,50 +74,73 @@ interface InvoiceData {
 
 const InvoiceListsPage = () => {
   const [GetInvoiceData, setGetInvoiceData] = useState<InvoiceData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | undefined>("");
 
   useEffect(() => {
     const fetchInvoiceData = async () => {
+      setLoading(true);
       try {
         const res = await fetch("/api/Invoice_Lists");
         if (!res.ok) {
-          throw new Error("斷線！");
+          throw new Error("無法載入單據資料");
         }
         const result = await res.json();
-        setGetInvoiceData(result);
-      } catch (error) {
+        setGetInvoiceData(Array.isArray(result) ? result : []);
+      } catch (error: any) {
         console.error("Error fetching invoice data:", error);
-        setGetInvoiceData([]);
+        setError("無法載入單據資料");
+      } finally {
+        setLoading(false);
       }
     };
     fetchInvoiceData();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#e7915b] flex justify-center items-center pt-20">
+        <p className="text-[#e7915b] text-lg">正在加載...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#e7915b] flex justify-center items-center pt-20">
+        <p className="text-red-500 bg-white p-3 rounded-md">{error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="bg-white shadow-lg rounded-md p-6">
-        <h1 className="text-2xl font-semibold text-[#e7915b] mb-6">
-          單據列表
-        </h1>
-        <Link
-          href="/admin/InvoiceLists/createInvoice"
-          className="inline-block bg-[#e7915b] text-white px-4 py-2 rounded-md font-medium hover:bg-cyan-200 hover:text-[#e7915b] transition-colors duration-300 mb-6"
-        >
-          建立單據
-        </Link>
-        <div className="space-y-4">
+    <div className="min-h-screen bg-[#e7915b] flex flex-col items-center px-4 sm:px-6 lg:px-8 pt-20">
+      <div className="w-full max-w-7xl bg-white rounded-lg shadow-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-xl font-bold tracking-tight text-[#e7915b]">
+            單據列表
+          </h1>
+          <Link
+            href="/admin/InvoiceLists/createInvoice"
+            className="inline-block px-3 py-2 text-[#e7915b] hover:text-cyan-200 transition-colors duration-300 text-sm font-medium"
+          >
+            建立單據
+          </Link>
+        </div>
+        <div className="space-y-6">
           {GetInvoiceData.length > 0 ? (
             GetInvoiceData.map((d) => (
               <Link
                 key={d.id}
                 href={`/admin/InvoiceLists/${d.id}`}
-                className="block bg-gray-50 p-4 rounded-md hover:bg-gray-100 transition-colors duration-300"
+                className="block bg-white border border-[#e7915b]/20 p-4 rounded-md hover:bg-[#e7915b]/10 transition-colors duration-300"
               >
-                <p className="text-[#e7915b] font-medium">標題: {d.title}</p>
-                <p className="text-gray-700">服務類型: {d.servetype}</p>
+                <p className="text-[#e7915b] font-medium">{d.title || "無標題"}</p>
+                <p className="text-gray-900">服務類型: {d.servetype || "無"}</p>
               </Link>
             ))
           ) : (
-            <p className="text-gray-500">無單據資料</p>
+            <p className="text-gray-900">無單據資料</p>
           )}
         </div>
       </div>

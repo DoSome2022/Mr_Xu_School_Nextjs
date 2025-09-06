@@ -1,127 +1,175 @@
-"use client"
-import { Button } from "@/components/ui/button";
-import Link from "next/link"
-import { useParams } from "next/navigation";
+"use client";
+
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 
-const schoolListsbysupadmin = () => {
-        const param = useParams();
-        console.log("param :",  param ,"--end --"  )
-        const supadminid = param?.supadminid as string;
-        console.log("supadminid :", supadminid);
-
-
-        //為了拿 school data
-        const [ GetSchoolsData , setgetSchoolsData ] = useState([]);
-
-        const [ searchQuery , setSearchQuery ] = useState("");
-        const [searchResults, setSearchResults] = useState([]);
-        const [ searchField , setSearchField ] = useState("all");
-
-        //拿 school data
-        useEffect(() => {
-            const fetchschoolsData = async () =>{
-                //在app/api/Ｎews_Lists/route.ts
-                const res = await fetch('/api/School_Lists');
-                if(!res){
-                    throw new Error("斷線！")
-                }
-                
-               const result = await res.json()
-    
-               setgetSchoolsData(result)
-    
-            }
-            fetchschoolsData()
-        },[])
-    
-        const handleSearch =  async (event: React.ChangeEvent<HTMLInputElement>) => {
-            try {
-              const response = await fetch(`/api/SchoolLists_search?query=${searchQuery}&field=${searchField}`);
-              const data = await response.json();
-              setSearchResults(data);
-            } catch (error) {
-              console.error("搜尋失敗:", error)
-            }
-          };
-    
-    
-
-
-
-    return(
-        <>
-            <span>
-                <Link className="text-stone-950 hover:text-gray-700" href={`/supadmin/${supadminid}/schoolLists/createschool`}>
-                    建立學校
-                </Link>
-                <br />
-                
-
-                <br />
-        <div className="flex items-center space-x-2">
-                          <input 
-                            type="text" 
-                            placeholder="輸入搜索內容..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="flex-1"
-                          />
-                                <select
-                                  value={searchField}
-                                  onChange={(e) => setSearchField(e.target.value)}
-                                >
-                                  <option value="all">所有字段</option>
-                                  <option value="school_name">學校列表</option>
-
-                                </select>
-
-                          <Button onClick={handleSearch} > 搜索 </Button>
-                        </div>
-                        <p>結果</p>
-                        {searchResults?.map((s:any)=>{
-                      return(
-                        
-                        <div  >
-                        
-                        <div key={s.id} >
-                        學校 : {s.school_name}, 
-
-
-                           
-
-                        </div>
-                        </div>
-
-                      )
-                    })}
-        <br />
-
-                <span>學校列表</span>
-               
-                {
-                    GetSchoolsData.map((data: any)=>{
-                        return(
-                        <>
-                <div className="bg-slate-100" key={data.id}>
-
-                            <Link className="text-stone-950 hover:text-gray-700" href={`/supadmin/${supadminid}/schoolLists/${data.id}`}>
-                                <br />
-                                學校: {data.school_name}
-                            </Link>
-                </div>
-
-                        </>
-                        )
-                    })
-                }
-
-                
-            </span>
-
-        </>
-    )
+interface School {
+  id: string;
+  school_name: string;
 }
 
-export default schoolListsbysupadmin
+const SchoolListsbysupadmin = () => {
+  const params = useParams();
+  const supadminid = params?.supadminid as string;
+  const [schoolsData, setSchoolsData] = useState<School[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<School[]>([]);
+  const [searchField, setSearchField] = useState("all");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSchoolsData = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/School_Lists");
+        if (!res.ok) {
+          throw new Error("無法獲取學校列表數據");
+        }
+        const result: School[] = await res.json();
+        setSchoolsData(result);
+      } catch (error: any) {
+        console.error("獲取學校數據失敗:", error);
+        setError("無法載入學校列表");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSchoolsData();
+  }, []);
+
+  const handleSearch = async () => {
+    try {
+      const response = await fetch(
+        `/api/SchoolLists_search?query=${encodeURIComponent(
+          searchQuery
+        )}&field=${searchField}`
+      );
+      if (!response.ok) {
+        throw new Error("搜尋失敗");
+      }
+      const data: School[] = await response.json();
+      setSearchResults(data);
+    } catch (error: any) {
+      console.error("搜尋失敗:", error);
+      setError("搜尋學校失敗");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-500 text-sm font-medium">正在載入...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <p className="text-red-500 text-sm font-medium">{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-semibold text-blue-600">學校列表</h1>
+          <Link
+            href={`/supadmin/${supadminid}/schoolLists/createschool`}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-500 transition-colors duration-200 text-sm font-medium"
+          >
+            建立學校
+          </Link>
+        </div>
+        <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
+          <div className="flex items-center space-x-4 mb-4">
+            <Input
+              type="text"
+              placeholder="輸入搜尋內容..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 border-gray-300 focus:border-blue-600 focus:ring-blue-600 transition-colors duration-200"
+            />
+            <Select
+              value={searchField}
+              onValueChange={setSearchField}
+            >
+              <SelectTrigger className="w-40 border-gray-300 focus:border-blue-600 focus:ring-blue-600 transition-colors duration-200">
+                <SelectValue placeholder="選擇欄位" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">所有欄位</SelectItem>
+                <SelectItem value="school_name">學校名稱</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={handleSearch}
+              className="bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200"
+            >
+              搜尋
+            </Button>
+          </div>
+          {searchResults.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold text-blue-600 mb-2">搜尋結果</h2>
+              <div className="space-y-4">
+                {searchResults.map((school) => (
+                  <div
+                    key={school.id}
+                    className="bg-gray-50 p-4 rounded-md hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    <Link
+                      href={`/supadmin/${supadminid}/schoolLists/${school.id}`}
+                      className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+                    >
+                      學校: {school.school_name}
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="bg-white shadow-lg rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-blue-600 mb-4">所有學校</h2>
+          {schoolsData.length > 0 ? (
+            <div className="space-y-4">
+              {schoolsData.map((school) => (
+                <div
+                  key={school.id}
+                  className="bg-gray-50 p-4 rounded-md hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <Link
+                    href={`/supadmin/${supadminid}/schoolLists/${school.id}`}
+                    className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+                  >
+                    學校: {school.school_name}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm">無學校數據</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SchoolListsbysupadmin;
