@@ -25,8 +25,9 @@ interface CourseLevel {
 }
 
 export const SWR_Course_Level = ({ field, className, disabled }: SWRCourseLevelProps) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR<CourseLevel[]>(
-    "http://127.0.0.1:8000/api/course_data/courselevels",
+    `${apiUrl}/api/course_data/courselevels`,
     fetcher
   );
 

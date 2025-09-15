@@ -56,7 +56,7 @@ export default auth(async (req) => {
     if (role === "ADMIN") {
       return NextResponse.next();
     }
-    return NextResponse.redirect(new URL("/unauthorized", nextUrl.origin));
+         return NextResponse.redirect(new URL("/unauthorized", nextUrl.origin));
   }
 
   // 检查教师路由
@@ -64,7 +64,7 @@ export default auth(async (req) => {
     if (role === "TEACHER") {
       return NextResponse.next();
     }
-    return NextResponse.redirect(new URL("/unauthorized", nextUrl.origin));
+     return NextResponse.redirect(new URL("/unauthorized", nextUrl.origin));
   }
 
   // 检查超级管理员路由
@@ -72,7 +72,7 @@ export default auth(async (req) => {
     if (role === "SUPADMIN") {
       return NextResponse.next();
     }
-    return NextResponse.redirect(new URL("/unauthorized", nextUrl.origin));
+     return NextResponse.redirect(new URL("/unauthorized", nextUrl.origin));
   }
 
   // 默认放行其他已认证请求

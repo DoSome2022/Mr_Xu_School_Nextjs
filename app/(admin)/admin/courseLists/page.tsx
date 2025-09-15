@@ -104,6 +104,8 @@ const CourseLists = () => {
     );
   }
 
+  console.log("getCourseData : ", getCourseData)
+
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
       <div className="max-w-7xl mx-auto px-4 py-8">

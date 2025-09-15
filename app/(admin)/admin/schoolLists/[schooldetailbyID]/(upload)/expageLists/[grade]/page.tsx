@@ -18,7 +18,7 @@ const ExPageLists_year_grade = () => {
   const params = useParams();
   const schoolId = params?.schooldetailbyID as string;
   const gradeId = params?.grade as string;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR(`${apiUrl}/api/School_data/schoolyears/`, fetcher);
 
   // 定義年級對應對象，與 ExPageLists 和 BookLists_grade_Links 一致

@@ -599,7 +599,7 @@ export default function ClassRoomCalendar({ events, classRooms }: ClassRoomCalen
   const [success, setSuccess] = useState<string | null>(null);
   const router = useRouter(); // 初始化 useRouter
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const apiUrl_next = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://127.0.0.1:3000";
 
   // SWR 獲取 coursetimes

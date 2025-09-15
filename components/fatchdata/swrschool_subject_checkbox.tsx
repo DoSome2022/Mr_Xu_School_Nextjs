@@ -28,7 +28,7 @@ const fetcher = (url: string, ...args: any[]): Promise<SchoolSubject[]> =>
   fetch(url, ...args).then((res) => res.json());
 
 export const SWR_School_Subject_checkbox = ({ teacher_data }: SWRSchoolSubjectCheckboxProps) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR<SchoolSubject[], Error>(
     `${apiUrl}/api/School_data/schoolsubjects`,
     fetcher

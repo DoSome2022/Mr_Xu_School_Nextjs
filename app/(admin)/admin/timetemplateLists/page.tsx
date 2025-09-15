@@ -208,7 +208,7 @@ const TimeTemplateLists: React.FC = () => {
                                         <div className="mt-2 text-sm">
                                             <p>開始日子: {d.day_start}</p>
                                             <p>結束日期: {d.day_end}</p>
-                                            <p>適用年級: {d.grade}</p>
+                                            {/* <p>適用年級: {d.grade}</p> */}
                                         </div>
                                     </Link>
                                 ))}

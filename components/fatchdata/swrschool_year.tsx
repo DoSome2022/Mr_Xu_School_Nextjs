@@ -95,7 +95,7 @@ export const SWR_School_Year = <T extends Record<string, any> & { year: string }
   field,
   disabled,
 }: SWRSchoolYearProps<T>) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR<SchoolYear[], Error>(
     `${apiUrl}/api/School_data/schoolyears`,
     fetcher

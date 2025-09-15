@@ -11,9 +11,11 @@ interface SchoolDetailListsProps {
 }
 
 const SchoolDetailLists = ({ data }: SchoolDetailListsProps) => {
+
+  console.log(" schoolDetailData : ",data);
   return (
     <div>
-      <p>學校名稱: {data.school_name}</p>
+      <p>學校名稱: {data[0].school_name}</p>
       <div className="space-y-2">
         <Link
           className="block text-stone-950 hover:text-gray-700"

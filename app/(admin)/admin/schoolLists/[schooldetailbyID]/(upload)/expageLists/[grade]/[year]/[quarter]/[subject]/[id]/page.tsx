@@ -115,7 +115,7 @@ const ExPageLists_grade_year_quarter_subject_expagelists_by_id = () => {
     : "";
   const exPageListId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR(
     schoolId && gradeId && yearId && quarterId && subjectId && exPageListId
       ? `${apiUrl}/api/Expagelists_detail_data_by_id/${schoolId}/${gradeId}/${yearId}/${quarterId}/${subjectId}/${exPageListId}`
