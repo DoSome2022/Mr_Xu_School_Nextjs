@@ -1,0 +1,58 @@
+// import {z} from "zod";
+
+// export type FieldErrors<T> = {
+//     [K in keyof T]?: string[];
+// }
+
+// export type ActionState<TInput, TOutput> = {
+//     fieldErrors?: FieldErrors<TInput>;
+//     error?: string | undefined;
+//     data?: TOutput;
+//     success?: string | undefined;
+// }
+
+// export const CreateSafeAction = <TInput, TOutput>(
+//     schema: z.Schema<TInput>,
+//     handler: (validateData:TInput) => Promise<ActionState<TInput,TOutput>>
+// ) => {
+//     return async (data: TInput) : Promise<ActionState<TInput, TOutput>> => {
+//         const validationResult = schema.safeParse(data);
+//         if(!validationResult.success) {
+//             return {
+//                 fieldErrors: validationResult.error.flatten().fieldErrors as FieldErrors<TInput>,
+//             }
+//         }
+//         return handler(validationResult.data)
+//     }
+// } 
+
+
+import { z } from "zod";
+
+export type FieldErrors<T> = {
+  [K in keyof T]?: string[];
+};
+
+export type ActionState<TInput, TOutput> = {
+  fieldErrors?: FieldErrors<TInput>;
+  error?: string | undefined;
+  data?: TOutput;
+  success?: boolean | string | undefined; // 修改為支持 boolean | string
+  parentid?: string | undefined; // 添加 parentid
+  student_booklist_id?: string | undefined; // 添加 student_booklist_id
+};
+
+export const CreateSafeAction = <TInput, TOutput>(
+  schema: z.Schema<TInput>,
+  handler: (validatedData: TInput) => Promise<ActionState<TInput, TOutput>>
+) => {
+  return async (data: TInput): Promise<ActionState<TInput, TOutput>> => {
+    const validationResult = schema.safeParse(data);
+    if (!validationResult.success) {
+      return {
+        fieldErrors: validationResult.error.flatten().fieldErrors as FieldErrors<TInput>,
+      };
+    }
+    return handler(validationResult.data);
+  };
+};

@@ -1,0 +1,11 @@
+import { db } from "@/lib/db";
+import { NextResponse } from "next/server";
+
+// all products 
+export async function GET (req : Request) {
+    if(req.method === "GET") {
+    const res = await db.product.findMany();
+    return NextResponse.json(res)
+    }
+
+}

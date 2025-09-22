@@ -1,0 +1,16 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+curl: (7) Failed to connect to localhost port 3000 after 0 ms: Couldn't connect to server
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100     1    0     1    0     0      1      0 --:--:-- --:--:-- --:--:--     1100     1    0     1    0     0      1      0 --:--:-- --:--:-- --:--:--     1
+/  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100     1    0     1    0     0     69      0 --:--:-- --:--:-- --:--:--    71
+/  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0[18/9/2025 下午3:21:41] 更新學生年級開始
+[18/9/2025 下午3:21:41] 非 9 月 1 日，跳過更新
+100    72    0    72    0     0    252      0 --:--:-- --:--:-- --:--:--   252
+{"message":"[18/9/2025 下午3:21:41] 非 9 月 1 日，跳過更新\n"}

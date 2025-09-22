@@ -1,0 +1,10 @@
+import { z } from "zod";
+import { Ex_pager_Create_Schema } from "./schema";
+import { ActionState } from "@/lib/create-safe-action";
+import { Ex_pager } from "@prisma/client";
+
+export type InputType = z.infer<typeof Ex_pager_Create_Schema>;
+
+export type ReturnType = ActionState<InputType, Ex_pager> & {
+  school_ex_pager_id?: string;
+};
