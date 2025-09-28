@@ -41,7 +41,12 @@ const ParentsListsbysupadmin: React.FC = () => {
     const fetchParentsData = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/Parents_Lists");
+        const res = await fetch("/api/Parents_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取家長數據");
         }

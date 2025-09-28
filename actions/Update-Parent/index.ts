@@ -5,6 +5,7 @@ import { InputType , ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Parent_Update_Schema } from "./schema";
+import { redirect } from "next/navigation";
 
 
 
@@ -36,7 +37,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
             }
         })
 
-
+    revalidatePath(`/admin/usersLists`)
+    redirect(`/admin/usersLists`)
     } catch (error) {
         console.log(error)
     }

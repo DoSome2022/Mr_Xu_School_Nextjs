@@ -1,10 +1,9 @@
-// components/CreateForm/SUPADMIN/UpdateForm/Sup-Class-Update-Form.tsx
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation"; // 添加 useRouter
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,13 +60,26 @@ interface Class {
   persons: number;
   node: number;
   class_date: string;
+  class_subject: string;
+  class_course_id: string;
+  freq: string;
+  cram: string;
+  attend_number: number;
+  allDay: boolean;
+  isSubmittedform: boolean;
+  isshow: boolean;
+  attend_name: string[];
+  addClass: any[];
+  student: any[];
 }
 
 const Class_Updata_Custom_Form_v1bysupadmin = () => {
   const [isPending, startTransition] = useTransition();
   const params = useParams();
+  const router = useRouter(); // 添加 useRouter
   const courseId = params?.coursedetailbyID as string;
   const classId = params?.classdetailbyID as string;
+  const supadminId = params?.supadminid as string;
   const [selectedDates, setSelectedDates] = useState<Date | null>(null);
   const [countvalue, setCountvalue] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -75,7 +87,7 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
 
   const [GetTeacherData, setGetTeacherData] = useState<Teacher[]>([]);
   const [GetCourseData, setGetCourseData] = useState<Course | null>(null);
-  const [GetClassData, setGetClassData] = useState<Class | null>(null);
+  const [GetClassData, setGetClassData] = useState<Class[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,9 +95,18 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
       setError(null);
       try {
         const [teacherRes, courseRes, classRes] = await Promise.all([
-          fetch("/api/Course_data_teacher"),
-          fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`),
-          fetch(`/api/Class_detail_data_by_id/${classId}`),
+          fetch("/api/Course_data_teacher", {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" },
+          }),
+          fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" },
+          }),
+          fetch(`/api/Class_detail_data_by_id/${classId}`, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" },
+          }),
         ]);
 
         if (!teacherRes.ok) throw new Error("無法獲取教師數據");
@@ -98,7 +119,7 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
 
         if (!classRes.ok) throw new Error("無法獲取課堂數據");
         const classResult = await classRes.json();
-        setGetClassData(classResult);
+        setGetClassData(Array.isArray(classResult) ? classResult : [classResult]);
       } catch (error: any) {
         console.error("數據獲取失敗:", error);
         setError("無法載入數據");
@@ -126,7 +147,7 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
       class_start_time: "",
       class_end_time: "",
       class_time_h: 0,
-      classroom: [], // 初始化為空陣列
+      classroom: "",
       class_lesson: "",
       class_course_id: courseId,
       attend_number: 0,
@@ -140,11 +161,11 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
   });
 
   useEffect(() => {
-    if (GetClassData) {
-      const classData = GetClassData;
+    if (GetClassData.length > 0) {
+      const classData = GetClassData[0];
       class_updata_custom_form.setValue("title", classData.title || "");
       class_updata_custom_form.setValue("class_lesson", classData.class_lesson || "");
-      class_updata_custom_form.setValue("classroom", classData.classroom ? [classData.classroom] : []);
+      class_updata_custom_form.setValue("classroom", classData.classroom || "");
       class_updata_custom_form.setValue("teacher", classData.teacher || "");
       class_updata_custom_form.setValue("class_start_time", classData.class_start_time || "");
       class_updata_custom_form.setValue("class_end_time", classData.class_end_time || "");
@@ -219,6 +240,26 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
     }
   }, [allDay, startTime, endTime, class_updata_custom_form]);
 
+  const onSubmit = async (values: z.infer<typeof SupClass_Update_Schema>) => {
+    console.log("表單提交數據:", values); // 除錯用
+    startTransition(async () => {
+      try {
+        const result = await SupupdateClass(values);
+        if (result?.error) {
+          setError(result.error);
+        } else {
+          class_updata_custom_form.reset();
+          router.push(`/supadmin/${supadminId}/courseLists/${courseId}/classLists/${classId}`); // 客戶端重定向
+        }
+      } catch (error: any) {
+        if (error.message !== "NEXT_REDIRECT") {
+          setError("更新班級失敗，請檢查輸入數據");
+          console.error("表單提交錯誤:", error);
+        }
+      }
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
@@ -265,20 +306,53 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
         <h2 className="text-3xl font-bold text-[#e7915b] mb-6">
           課程名稱: {GetCourseData?.course_name || "載入中..."}
         </h2>
+        {GetClassData.length > 0 && (
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h3 className="text-xl font-semibold text-gray-700 mb-4">當前課堂詳情</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-600">
+                  <span className="font-semibold">標題：</span>
+                  {GetClassData[0].title}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">科目：</span>
+                  {GetClassData[0].class_subject}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">日期：</span>
+                  {formatDate(GetClassData[0].class_date)}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">老師：</span>
+                  {GetClassData[0].teacher}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600">
+                  <span className="font-semibold">開始時間：</span>
+                  {GetClassData[0].class_start_time}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">結束時間：</span>
+                  {GetClassData[0].class_end_time}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">課堂時數：</span>
+                  {GetClassData[0].class_time_h} 小時
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-semibold">人數：</span>
+                  {GetClassData[0].persons}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
           <Form {...class_updata_custom_form}>
             <form
-              onSubmit={class_updata_custom_form.handleSubmit((values) => {
-                startTransition(() => {
-                  SupupdateClass(values).then((result) => {
-                    if (result?.error) {
-                      setError(result.error);
-                    } else {
-                      class_updata_custom_form.reset();
-                    }
-                  });
-                });
-              })}
+              onSubmit={class_updata_custom_form.handleSubmit(onSubmit)} // 使用新的 onSubmit 函數
               className="space-y-6"
             >
               {error && (
@@ -488,7 +562,7 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
                           {...field}
                           placeholder="輸入課堂人數"
                           type="number"
-                          onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                          onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
                           className="border-gray-300 focus:border-[#e7915b] focus:ring-[#e7915b] transition-colors duration-300"
                           disabled={isPending}
                         />
@@ -510,7 +584,7 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
                           {...field}
                           placeholder="輸入筆記數量"
                           type="number"
-                          onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                          onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
                           className="border-gray-300 focus:border-[#e7915b] focus:ring-[#e7915b] transition-colors duration-300"
                           disabled={isPending}
                         />
@@ -537,13 +611,19 @@ const Class_Updata_Custom_Form_v1bysupadmin = () => {
                             <SelectValue placeholder="選擇老師" />
                           </SelectTrigger>
                           <SelectContent>
-                            {GetTeacherData.map(
-                              (data) =>
-                                data.role === "TEACHER" && (
-                                  <SelectItem key={data.id} value={data.username}>
-                                    {data.username}
-                                  </SelectItem>
-                                )
+                            {GetTeacherData.length > 0 ? (
+                              GetTeacherData.map(
+                                (data) =>
+                                  data.role === "TEACHER" && (
+                                    <SelectItem key={data.id} value={data.username}>
+                                      {data.username}
+                                    </SelectItem>
+                                  )
+                              )
+                            ) : (
+                              <SelectItem value="none" disabled>
+                                無教師可用
+                              </SelectItem>
                             )}
                           </SelectContent>
                         </Select>

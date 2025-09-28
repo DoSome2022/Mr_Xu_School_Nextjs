@@ -1,10 +1,16 @@
+// pages/admin/courseLists/[coursedetailbyID]/classLists/[classdetailbyID]/index.tsx
 "use client";
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// 定義 Class 和 Student 的介面
+// 定義 Classroom、Student 和 Class 的介面
+interface Classroom {
+  id: string;
+  room: string;
+}
+
 interface Student {
   id: string;
   name: string;
@@ -12,7 +18,7 @@ interface Student {
 
 interface Class {
   id: string;
-  classroom: string;
+  classroom: Classroom[];
   class_lesson: string;
   persons: number;
   teacher: string;
@@ -20,6 +26,22 @@ interface Class {
   node: number;
   class_date: string;
   grade: number;
+  class_subject: string;
+  class_start_time: string;
+  class_end_time: string;
+  class_time_h: number;
+  class_course_id: string;
+  craetedAt: string; // 與 API 保持一致
+  updatedAt: string;
+  title: string;
+  freq: string;
+  cram: string;
+  isshow: boolean;
+  isSubmittedform: boolean;
+  attend_name: string[];
+  attend_number: number;
+  allDay: boolean;
+  addClass: any[]; // 可根據實際數據結構進一步定義
 }
 
 // 定義年級對應對象
@@ -61,7 +83,7 @@ const ClassDetail = () => {
   const CourseId = params?.coursedetailbyID as string;
   const ClassId = params?.classdetailbyID as string;
 
-  const [GetClassDataById, setGetClassDataById] = useState<Class | null>(null);
+  const [GetClassDataById, setGetClassDataById] = useState<Class[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +93,12 @@ const ClassDetail = () => {
         setLoading(true);
         setError(null);
         try {
-          const res = await fetch(`/api/Class_detail_data_by_id/${id}`);
+          const res = await fetch(`/api/Class_detail_data_by_id/${id}`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          });
           if (!res.ok) {
             throw new Error("無法獲取課堂數據");
           }
@@ -91,7 +118,7 @@ const ClassDetail = () => {
     }
   }, [ClassId]);
 
-  console.log("GetClassDataById:", GetClassDataById);
+  console.log("GetClassDataById:", GetClassDataById, "-- End --");
 
   if (loading) {
     return (
@@ -109,13 +136,15 @@ const ClassDetail = () => {
     );
   }
 
-  if (!GetClassDataById) {
+  if (!GetClassDataById || GetClassDataById.length === 0) {
     return (
       <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
         <p className="text-gray-600">無課堂數據</p>
       </div>
     );
   }
+
+  const classData = GetClassDataById[0]; // 提取第一個物件
 
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
@@ -146,11 +175,12 @@ const ClassDetail = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-[#80A8BD]">
-            課堂: {GetClassDataById.class_lesson}
+            課堂: {classData.class_lesson}
           </h1>
           <Link
             href={`/admin/courseLists/${CourseId}/classLists/${ClassId}/edit`}
-            className="inline-block text-white bg-[#80A8BD] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
+            className="inline-block text-white bg-[#80A8BD] px-4 py-2 rounded-md hover钽
+            hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
           >
             更改課堂
           </Link>
@@ -160,25 +190,45 @@ const ClassDetail = () => {
           <div className="grid gap-4">
             <div>
               <h3 className="text-lg font-semibold text-gray-700">課室</h3>
-              <p className="text-gray-600">{GetClassDataById.classroom}</p>
+              <p className="text-gray-600">
+                {classData.classroom && classData.classroom.length > 0
+                  ? classData.classroom[0].room
+                  : "未指定課室"}
+              </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">課節</h3>
-              <p className="text-gray-600">{GetClassDataById.class_lesson}</p>
+              <p className="text-gray-600">{classData.class_lesson}</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">科目</h3>
+              <p className="text-gray-600">{classData.class_subject}</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">開始時間</h3>
+              <p className="text-gray-600">{classData.class_start_time}</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">結束時間</h3>
+              <p className="text-gray-600">{classData.class_end_time}</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">課程時長</h3>
+              <p className="text-gray-600">{classData.class_time_h} 小時</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">人數</h3>
-              <p className="text-gray-600">{GetClassDataById.persons}</p>
+              <p className="text-gray-600">{classData.persons}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">老師</h3>
-              <p className="text-gray-600">{GetClassDataById.teacher}</p>
+              <p className="text-gray-600">{classData.teacher}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">學生</h3>
-              {GetClassDataById.student && GetClassDataById.student.length > 0 ? (
+              {classData.student && classData.student.length > 0 ? (
                 <ul className="text-gray-600">
-                  {GetClassDataById.student.map((student: Student) => (
+                  {classData.student.map((student: Student) => (
                     <li key={student.id}>{student.name}</li>
                   ))}
                 </ul>
@@ -188,15 +238,15 @@ const ClassDetail = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">筆記數目</h3>
-              <p className="text-gray-600">{GetClassDataById.node}</p>
+              <p className="text-gray-600">{classData.node}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">日期</h3>
-              <p className="text-gray-600">{getFormattedDate(GetClassDataById.class_date)}</p>
+              <p className="text-gray-600">{getFormattedDate(classData.class_date)}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">年級</h3>
-              <p className="text-gray-600">{gradeMapping[GetClassDataById.grade] || GetClassDataById.grade}</p>
+              <p className="text-gray-600">{gradeMapping[classData.grade] || classData.grade}</p>
             </div>
             <div className="flex space-x-4">
               <Link
@@ -215,7 +265,7 @@ const ClassDetail = () => {
                 href={`/admin/courseLists/${CourseId}/classLists/${ClassId}/changeclassstudent`}
                 className="inline-block text-white bg-[#80A8BD] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
               >
-                加入掉堂學生
+                加入調堂學生
               </Link>
             </div>
           </div>

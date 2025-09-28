@@ -5,6 +5,7 @@ import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { timetemplate_create_Schema } from "./schema";
+import { revalidatePath } from "next/cache";
 
 // 驗證並格式化日期的輔助函數
 const formatDateString = (dateInput: any): string | null => {
@@ -107,7 +108,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     });
 
     // 重新驗證相關頁面
-    // revalidatePath("/admin/timetemplateLists");
+    revalidatePath("/admin/timetemplateLists");
 
     console.log("-- timetemplate_data -- : ", timetemplate_data, " -- End -- ");
 

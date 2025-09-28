@@ -5,7 +5,7 @@ import * as z from "zod";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams} from "next/navigation";
 
 import { Input } from "@/components/ui/input"; 
 
@@ -21,8 +21,9 @@ import {
  } from "@/components/ui/form"
 import { FormError } from "@/components/form-error"; 
 import { FormSuccess } from "@/components/form-success";
-import { createSchool_action } from "@/actions/Create-School";
+
 import { SupSchool_Create_Schema } from "@/actions/supadmin/Create-School/schema";
+import { SupcreateSchool_action } from "@/actions/supadmin/Create-School";
 
 const School_Create_Form_bysupadmin = () => {
 
@@ -48,7 +49,7 @@ const school_register_form_onSubmit = (values: z.infer<typeof SupSchool_Create_S
   setError("");
   setSuccess("");
   startTransition(() => {
-    createSchool_action(values).then((data) => {
+    SupcreateSchool_action(values).then((data) => {
       setError(data?.error);
       setSuccess(typeof data?.success === "string" ? data?.success : data?.success ? "學校創建成功" : undefined);
     });

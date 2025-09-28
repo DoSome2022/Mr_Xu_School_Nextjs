@@ -13,5 +13,8 @@ export async function GET(request: Request) {
       "Content-Type": response.headers.get("Content-Type") || "image/jpeg",
       "Content-Disposition": `attachment; filename="booklist-image.jpg"`,
     },
+
+    
   });
+  
 }

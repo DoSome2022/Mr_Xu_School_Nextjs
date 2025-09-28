@@ -416,7 +416,12 @@ const Add_Student_Form = () => {
     const fetchStudentData = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/student/Student_AllLists`);
+        const res = await fetch(`/api/student/Student_AllLists`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) throw new Error("無法獲取學生數據");
         const result = await res.json();
         setGetStudentData(result);
@@ -445,7 +450,12 @@ const Add_Student_Form = () => {
     }
     try {
       const response = await fetch(
-        `/api/AddStudent_Lists_search?query=${encodeURIComponent(searchQuery)}`
+        `/api/AddStudent_Lists_search?query=${encodeURIComponent(searchQuery)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
       );
       if (!response.ok) throw new Error("搜索請求失敗");
       const data = await response.json();

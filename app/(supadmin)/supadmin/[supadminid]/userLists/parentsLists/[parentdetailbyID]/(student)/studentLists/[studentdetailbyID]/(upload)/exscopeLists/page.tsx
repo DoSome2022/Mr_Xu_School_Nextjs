@@ -115,7 +115,12 @@ const ExScopebysupadmin = () => {
         setIsLoading(true);
         const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://localhost:3000";
         const res = await fetch(
-          `${apiUrl}/api/student/Student_Lists/${parentId}`
+          `${apiUrl}/api/student/Student_Lists/${parentId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
         );
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);

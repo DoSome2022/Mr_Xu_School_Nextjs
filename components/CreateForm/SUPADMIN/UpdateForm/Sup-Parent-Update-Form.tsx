@@ -241,6 +241,9 @@
 
 // export default Parent_Update_Form
 
+// app/[您的路徑]/Parent_Update_Formbysupadmin.tsx
+
+// app/[您的路徑]/Parent_Update_Formbysupadmin.tsx
 
 "use client";
 
@@ -248,8 +251,7 @@ import * as z from "zod";
 import { useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "next/navigation";
-
+import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -265,7 +267,6 @@ import { SupParent_Update_Schema } from "@/actions/supadmin/Update-Parent/schema
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 
-
 interface ParentData {
   userid: string;
   username: string;
@@ -275,13 +276,16 @@ interface ParentData {
 }
 
 const Parent_Update_Formbysupadmin = () => {
-  const params = useParams();
+  const params = useParams<{ supadminid: string; parentdetailbyID: string }>();
+  const router = useRouter();
   const parentId = params?.parentdetailbyID as string;
+  const supadminId = params?.supadminid as string;
 
   const [parentData, setParentData] = useState<ParentData | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
   const parent_update_form = useForm<z.infer<typeof SupParent_Update_Schema>>({
     resolver: zodResolver(SupParent_Update_Schema),
@@ -291,60 +295,105 @@ const Parent_Update_Formbysupadmin = () => {
       nickname: "",
       email: "",
       phone: "",
+      supadminid: supadminId || "",
     },
   });
 
   useEffect(() => {
-    if (parentId) {
-      const fetchParentData = async (userId: string) => {
-        try {
-          const res = await fetch(`/api/other/User_Parent/${userId}`);
-          if (!res.ok) {
-            throw new Error("無法連接到伺服器");
-          }
-          const result = await res.json();
-          const data = result[0]; // 假設 API 返回數組且第一項為所需數據
-          if (data) {
-            setParentData(data);
-            parent_update_form.reset({
-              userid: parentId,
-              username: data.username || "",
-              nickname: data.nickname || "",
-              email: data.email || "",
-              phone: data.phone || "",
-            });
-          }
-        } catch (error) {
-          console.error("獲取家長數據失敗:", error);
-          setError("無法載入家長數據，請稍後再試");
-        }
-      };
-      fetchParentData(parentId);
+    if (!parentId || !supadminId) {
+      setError("無效的用戶ID或管理員ID");
+      setLoading(false);
+      return;
     }
-  }, [parentId, parent_update_form]);
 
-const parent_update_form_onSubmit = (values: z.infer<typeof SupParent_Update_Schema>) => {
-    console.log("-- 家長用戶更新輸入 -- : ", values, "-- End --");
+    const fetchParentData = async (userId: string) => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/other/User_Parent/${userId}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        });
+        if (!res.ok) {
+          throw new Error("無法連接到伺服器");
+        }
+        const result = await res.json();
+        const data = Array.isArray(result) ? result[0] : result;
+        if (data) {
+          setParentData(data);
+          parent_update_form.reset({
+            userid: parentId,
+            username: data.username || "",
+            nickname: data.nickname || "",
+            email: data.email || "",
+            phone: data.phone || "",
+            supadminid: supadminId || "",
+          });
+        } else {
+          throw new Error("未找到家長數據");
+        }
+      } catch (error: any) {
+        console.error("獲取家長數據失敗:", error);
+        setError("無法載入家長數據，請稍後再試");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchParentData(parentId);
+  }, [parentId, supadminId, parent_update_form]);
+
+  const parent_update_form_onSubmit = (values: z.infer<typeof SupParent_Update_Schema>) => {
+    console.log("-- 家長用戶更新輸入 -- : ", values, " -- End --");
     setError("");
     setSuccess("");
     startTransition(() => {
       SupupdateParent(values).then((data) => {
-        setError(data?.error);
-        setSuccess(typeof data?.success === "string" ? data?.success : data?.success ? "家長資料更新成功" : undefined);
+        if (data?.success) {
+          setSuccess("更新成功"); // 或其他默认成功信息
+          parent_update_form.reset({
+            userid: parentId,
+            username: values.username,
+            nickname: values.nickname,
+            email: values.email,
+            phone: values.phone,
+            supadminid: supadminId || "",
+          });
+          router.push(`/supadmin/${supadminId}/userLists/parentsLists/${parentId}`);
+        } else {
+          setError(data?.error || "更新失敗，請重試。");
+        }
       });
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-gray-600 text-lg">正在加載...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-red-500 bg-red-100 p-3 rounded-md">{error}</p>
+      </div>
+    );
+  }
+
+  console.log("Bug : ", parent_update_form.formState.errors, " -- End --");
+
   return (
-    <Form {...parent_update_form}>
-      <form onSubmit={parent_update_form.handleSubmit(parent_update_form_onSubmit)} className="space-y-6">
-<FormError message={error} />
-        <FormSuccess
-          message={typeof success === "string" ? success : success ? "家長資料更新成功" : undefined}
-        />
-        {!parentData ? (
-          <p className="text-white text-center">正在載入數據...</p>
-        ) : (
-          <>
+    <div className="min-h-screen bg-gray-100 pt-20 flex justify-center">
+      <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
+        <h2 className="text-xl font-semibold text-[#e7915b] mb-6">編輯家長資料</h2>
+        <Form {...parent_update_form}>
+          <form onSubmit={parent_update_form.handleSubmit(parent_update_form_onSubmit)} className="space-y-6">
+            <FormError message={error} />
+            <FormSuccess message={success} />
             <FormField
               control={parent_update_form.control}
               name="userid"
@@ -361,7 +410,7 @@ const parent_update_form_onSubmit = (values: z.infer<typeof SupParent_Update_Sch
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">用戶名稱</FormLabel>
+                  <FormLabel className="text-black font-medium">用戶名稱</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -380,7 +429,7 @@ const parent_update_form_onSubmit = (values: z.infer<typeof SupParent_Update_Sch
               name="nickname"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">暱稱</FormLabel>
+                  <FormLabel className="text-black font-medium">暱稱</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -399,14 +448,14 @@ const parent_update_form_onSubmit = (values: z.infer<typeof SupParent_Update_Sch
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">電郵</FormLabel>
+                  <FormLabel className="text-black font-medium">電郵</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
                       placeholder="輸入電郵"
                       type="email"
-                      className="border-0 bg-white text-[#e7915b] placeholder:text-gold-400 focus:ring-2 focus:ring-cyan-200"
+                      className="border-0 bg-white text-[#e7915b] placeholder:text-gray-400 focus:ring-2 focus:ring-cyan-200"
                     />
                   </FormControl>
                   <FormMessage className="text-cyan-200" />
@@ -418,7 +467,7 @@ const parent_update_form_onSubmit = (values: z.infer<typeof SupParent_Update_Sch
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">電話</FormLabel>
+                  <FormLabel className="text-black font-medium">電話</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -437,12 +486,12 @@ const parent_update_form_onSubmit = (values: z.infer<typeof SupParent_Update_Sch
               type="submit"
               className="w-full bg-white text-[#e7915b] font-medium hover:bg-cyan-200 hover:text-[#e7915b] transition-colors duration-300"
             >
-              更改
+              {isPending ? "正在提交..." : "更改"}
             </Button>
-          </>
-        )}
-      </form>
-    </Form>
+          </form>
+        </Form>
+      </div>
+    </div>
   );
 };
 

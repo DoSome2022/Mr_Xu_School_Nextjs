@@ -23,7 +23,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         student_parent_data_id,
         student_teacher_data_id,
         teachers,
-        pay = false 
+        pay = false ,
+        supadminId
         } = data;
 
         console.log("-- Student_Data -- : " , data , " -- End -- ")
@@ -50,11 +51,12 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 pay : pay 
             }
         });
+        revalidatePath(`/supadmin/${supadminId}/userLists/parentsLists/${student_parent_data_id}`)
     } catch (error) {
         console.log(error)
     }
     console.log("-- Student_Data -- : " , Student_data , " -- End -- ")
-     return redirect(`/admin/userLists/parentsLists/${student_parent_data_id}`)
+     return redirect(`/supadmin/${supadminId}/userLists/parentsLists/${student_parent_data_id}`)
 }
 
 export const Supcreate_Student = CreateSafeAction(SupStudent_Create_Schema, handler)

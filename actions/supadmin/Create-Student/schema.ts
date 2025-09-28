@@ -13,6 +13,7 @@ export const SupStudent_Create_Schema = z.object({
     pay : z.boolean(),
     student_parent_data_id : z.string().min(0,"最少1個值"),
     student_class_id : z.string().min(0,"最少1個值"),
-    student_teacher_data_id : z.string().min(0,"最少1個值")
+    student_teacher_data_id : z.string().min(0,"最少1個值"),
+    supadminId:z.string(),
 
 })

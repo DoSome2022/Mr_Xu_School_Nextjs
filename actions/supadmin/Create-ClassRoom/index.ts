@@ -6,6 +6,7 @@ import { CreateSafeAction } from "@/lib/create-safe-action";
 import { redirect } from "next/navigation";
 import { InputType, ReturnType } from "./types";
 import { SupCreateClassRoomSchema } from "./schema";
+import { revalidatePath } from "next/cache";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -20,6 +21,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 room : room
             }
         });
+        revalidatePath(`/supadmin/${supadminId}/classroomLists`)
     } catch (error) {
         console.log(error)
     }

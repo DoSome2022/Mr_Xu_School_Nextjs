@@ -311,7 +311,12 @@ const Product_Create_Form = () => {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("/api/Course_Lists");
+        const res = await fetch("/api/Course_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法載入課程資料");
         }

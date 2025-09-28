@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Suppublic_holiday_create_Schema } from "./schema";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -25,6 +26,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
 
             }
         });
+        revalidatePath(`/supadmin/${supadminid}/setpublicholidaysLists`)
     } catch (error) {
         console.log(error)
     }

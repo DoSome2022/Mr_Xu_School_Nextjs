@@ -1,3 +1,4 @@
+// actions/supadmin/Leave-Student/index.ts
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -5,13 +6,12 @@ import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { SupLeave_Student_schema } from "./schema";
-import { redirect } from "next/navigation";
-import { Leave } from "@prisma/client"; // 引入 Leave 型別
+import { Leave } from "@prisma/client";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
-  const { name, class_date, date, targetclassId, currentclassId, CourseId } = data;
+  const { name, class_date, date, targetclassId, currentclassId, CourseId, supadminId } = data;
 
-  let leave_data: Leave | undefined; // 明確指定型別
+  let leave_data: Leave | undefined;
 
   try {
     // 驗證 targetclassId 是否存在
@@ -68,16 +68,17 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     console.log("-- Leave_Data -- : ", leave_data, " -- End -- ");
 
     // 重新驗證相關頁面
-    revalidatePath(`/admin/courseLists/${CourseId}`);
+    revalidatePath(`/supadmin/${supadminId}/courseLists/${CourseId}`);
 
-    // 執行重定向
-    redirect(`/admin/courseLists/${CourseId}`);
-
-    return { data: leave_data, success: "請假記錄創建成功" };
-  } catch (error) {
-    console.error("創建請假記錄失敗:", error);
+    // 返回成功結果
     return {
-      error: "創建請假記錄失敗，請稍後重試",
+      data: leave_data,
+      success: "請假記錄創建成功",
+    };
+  } catch (error: any) {
+    console.error("創建請假記錄失敗:", error.message, error.stack);
+    return {
+      error: "創建請假記錄失敗，請檢查輸入數據",
     };
   }
 };

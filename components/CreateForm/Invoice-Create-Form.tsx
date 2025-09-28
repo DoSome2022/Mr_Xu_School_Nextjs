@@ -60,8 +60,18 @@ const Invoice_Create_Form = () => {
       setLoading(true);
       try {
         const [productResponse, studentResponse] = await Promise.all([
-          fetch("/api/Product_Lists"),
-          fetch("/api/student/Student_AllLists"),
+          fetch("/api/Product_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
+          fetch("/api/student/Student_AllLists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
         ]);
 
         if (!productResponse.ok) {

@@ -8,4 +8,5 @@ export const SupAddClass_Create_Schema = z.object({
     name : z.string(),
     student_class_date : z.string(),
     courseId: z.string(),
+    supadminId: z.string(),
 })

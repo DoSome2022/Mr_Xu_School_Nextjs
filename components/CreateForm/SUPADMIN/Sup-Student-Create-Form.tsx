@@ -393,6 +393,7 @@ const Student_Create_Formbysupadmin = () => {
   const [isPending, startTransition] = useTransition();
   const params = useParams();
   const parentId = params?.parentdetailbyID as string;
+  const supadminId = params?.supadminid as string;
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [schoolsData, setSchoolsData] = useState<SchoolData[]>([]);
@@ -413,6 +414,7 @@ const Student_Create_Formbysupadmin = () => {
       student_parent_data_id: parentId,
       student_class_id: "",
       student_teacher_data_id: "",
+      supadminId: supadminId,
     },
   });
 
@@ -420,7 +422,12 @@ const Student_Create_Formbysupadmin = () => {
     const fetchSchoolsData = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/School_Lists");
+        const res = await fetch("/api/School_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法連接到伺服器");
         }
@@ -456,7 +463,7 @@ const student_register_form_onSubmit = (values: z.infer<typeof SupStudent_Create
           message={typeof success === "string" ? success : success ? "學生創建成功" : undefined}
         />
         {isLoading ? (
-          <p className="text-white text-center">正在載入數據...</p>
+          <p className="text-black text-center">正在載入數據...</p>
         ) : (
           <>
             <FormField
@@ -464,7 +471,7 @@ const student_register_form_onSubmit = (values: z.infer<typeof SupStudent_Create
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">姓名</FormLabel>
+                  <FormLabel className="text-black font-medium">姓名</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -483,7 +490,7 @@ const student_register_form_onSubmit = (values: z.infer<typeof SupStudent_Create
               name="school"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">學校</FormLabel>
+                  <FormLabel className="text-black font-medium">學校</FormLabel>
                   <FormControl>
                     <Select disabled={isPending} defaultValue={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="border-0 bg-white text-[#e7915b] focus:ring-2 focus:ring-cyan-200">
@@ -507,7 +514,7 @@ const student_register_form_onSubmit = (values: z.infer<typeof SupStudent_Create
               name="grade"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">年級</FormLabel>
+                  <FormLabel className="text-black font-medium">年級</FormLabel>
                   <FormControl>
                     <SWR_School_Grade field={field} />
                   </FormControl>
@@ -520,7 +527,7 @@ const student_register_form_onSubmit = (values: z.infer<typeof SupStudent_Create
               name="chine_ex_day"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">中文考試時間</FormLabel>
+                  <FormLabel className="text-black font-medium">中文考試時間</FormLabel>
                   <FormControl>
                     <Controller
                       name="chine_ex_day"
@@ -549,7 +556,7 @@ const student_register_form_onSubmit = (values: z.infer<typeof SupStudent_Create
               name="math_ex_day"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">數學考試時間</FormLabel>
+                  <FormLabel className="text-black font-medium">數學考試時間</FormLabel>
                   <FormControl>
                     <Controller
                       name="math_ex_day"
@@ -578,7 +585,7 @@ const student_register_form_onSubmit = (values: z.infer<typeof SupStudent_Create
               name="eng_ex_day"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">英文考試時間</FormLabel>
+                  <FormLabel className="text-black font-medium">英文考試時間</FormLabel>
                   <FormControl>
                     <Controller
                       name="eng_ex_day"
@@ -607,7 +614,7 @@ const student_register_form_onSubmit = (values: z.infer<typeof SupStudent_Create
               name="student_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">學生ID</FormLabel>
+                  <FormLabel className="text-black font-medium">學生ID</FormLabel>
                   <FormControl>
                     <Input
                       {...field}

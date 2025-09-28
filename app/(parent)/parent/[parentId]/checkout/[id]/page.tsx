@@ -28,7 +28,12 @@ const checkoutbyid = () => {
   useEffect(() => {
     const fetchReceiptData = async (id: string) => {
       try {
-        const response = await fetch(`/api/ReceiptLists_detail_data_by_id/${id}`);
+        const response = await fetch(`/api/ReceiptLists_detail_data_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }

@@ -33,6 +33,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 
             }
         });
+        revalidatePath(`/admin/productLists`)
     } catch (error) {
         console.log(error)
     }

@@ -200,7 +200,12 @@ const Student_Create_Parent_Form = () => {
   useEffect(() => {
     const fetchSchoolsData = async () => {
       try {
-        const res = await fetch("/api/School_Lists");
+        const res = await fetch("/api/School_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法連線！");
         }

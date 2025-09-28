@@ -56,6 +56,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 teacher_node_id: "",
             }
         });
+        revalidatePath(`/`)
     } catch (error) {
         console.log(error)
     }

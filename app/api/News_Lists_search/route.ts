@@ -80,7 +80,13 @@ export async function GET(req: Request) {
     console.log("搜索條件:", whereClauses);
     console.log("返回新聞:", news);
 
-    return NextResponse.json(news);
+    return NextResponse.json(news, {
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',  // 額外添加回應頭部，強化禁用快取
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },
+        });
   } catch (error) {
     console.error("搜尋失敗:", error);
     return NextResponse.json({ message: "內部服務器錯誤" }, { status: 500 });

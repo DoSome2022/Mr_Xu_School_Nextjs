@@ -100,7 +100,12 @@ const ShopPage = () => {
 
   const fetchProductLists = async () => {
     try {
-      const response = await fetch("/api/Product_Lists");
+      const response = await fetch("/api/Product_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
       if (!response.ok) {
         throw new Error(`無法獲取商品數據: ${response.status}`);
       }

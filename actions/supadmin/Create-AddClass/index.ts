@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { SupAddClass_Create_Schema } from "./schema";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -16,7 +17,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
             class_date,
             name,
             student_class_date,
-            courseId
+            courseId,
+            supadminId
         } = data;
 
     let addClass_data;
@@ -63,11 +65,12 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
               return AddClass;
 
         });
+        revalidatePath(`/supadmin/${supadminId}/courseLists/${courseId}/classLists/${targetclassId}`)
     } catch (error) {
         console.log(error)
     }
     console.log("-- addClass_Data -- : " , addClass_data , " -- End -- ")
-    return redirect(`/admin/courseLists/${courseId}/classLists/${targetclassId}`);
+    return redirect(`/supadmin/${supadminId}/courseLists/${courseId}/classLists/${targetclassId}`);
 }
 
 export const SupcreateAddClass = CreateSafeAction(SupAddClass_Create_Schema, handler)

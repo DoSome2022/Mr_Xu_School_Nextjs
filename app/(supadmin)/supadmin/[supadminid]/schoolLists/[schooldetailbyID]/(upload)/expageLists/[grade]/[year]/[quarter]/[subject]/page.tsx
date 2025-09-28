@@ -33,7 +33,12 @@ const ExPageLists_grade_year_quarter_subject_expagelists_bysupadmin = () => {
         if(SchoolId && YearId && GradeId && QuarterId ) {
             const getExPageListsDetail = async (SchoolId: string , GradeId:string,YearId:string ,QuarterId:string, SubjectId:string) => {
                 try {
-                const res = await fetch(`/api/Expagelists_by_id/${SchoolId}/${GradeId}/${YearId}/${QuarterId}/${SubjectId}`);
+                const res = await fetch(`/api/Expagelists_by_id/${SchoolId}/${GradeId}/${YearId}/${QuarterId}/${SubjectId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
                 if(!res.ok) {
                     throw new Error("斷線！");
                 }

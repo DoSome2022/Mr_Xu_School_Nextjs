@@ -28,7 +28,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
             }
         });
 
-        
+        revalidatePath(`/teacher/${teacher_id}/studentLists/${student_id}`)
     } catch (error) {
         console.error("建立課程錯誤:", error);
         return { error: "建立課程失敗" };

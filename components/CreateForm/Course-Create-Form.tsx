@@ -505,19 +505,34 @@ const Course_Create_Form = () => {
       setIsLoading(true);
       try {
         // 獲取老師數據
-        const teacherRes = await fetch("/api/Course_data_teacher");
+        const teacherRes = await fetch("/api/Course_data_teacher", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!teacherRes.ok) throw new Error("無法獲取老師數據");
         const teacherResult = await teacherRes.json();
         setGetTeacherData(teacherResult);
 
         // 獲取課室數據
-        const classRoomRes = await fetch("/api/ClassRoom_Lists");
+        const classRoomRes = await fetch("/api/ClassRoom_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!classRoomRes.ok) throw new Error("無法獲取課室數據");
         const classRoomResult = await classRoomRes.json();
         setGetClassRoomData(classRoomResult);
 
         // 獲取時間模組數據
-        const timeTemplateRes = await fetch("/api/TimeTemplate_Lists");
+        const timeTemplateRes = await fetch("/api/TimeTemplate_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!timeTemplateRes.ok) throw new Error("無法獲取時間模組數據");
         const timeTemplateResult = await timeTemplateRes.json();
         const normalizedData = timeTemplateResult.map((item: any) => ({

@@ -25,7 +25,12 @@ const Booklist_uploadFormbysupadmin = ({SchoolId} : Booklist_uploadFormProps) =>
                         if(SchoolId) {
                             const getSchoolDetail = async (id: string) => {
                                 try {
-                                const res = await fetch(`/api/School_detail_data_by_id/${id}`);
+                                const res = await fetch(`/api/School_detail_data_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
                                 if(!res.ok) {
                                     throw new Error("斷線！");
                                 }

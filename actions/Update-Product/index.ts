@@ -5,6 +5,7 @@ import { InputType , ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Product_Update_Schema } from "./schema";
+import { redirect } from "next/navigation";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -29,6 +30,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 price : price
             }
         });
+        revalidatePath(`/admin/productLists`)
+        redirect(`/admin/productLists`)
     } catch (error) {
         console.log(error)
     }

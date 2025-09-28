@@ -8,6 +8,7 @@ import { Admin_Update_Schema } from "./schema";
 import { UserRole } from "@prisma/client";
 import { getUserByUserName } from "@/data/user";
 import bcrypt from "bcryptjs";
+import { redirect } from "next/navigation";
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
    
@@ -43,6 +44,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 cram: cram
             }
         });
+        revalidatePath('/admin/userLists')
+         redirect('/admin/userLists')
     } catch (error) {
         console.log(error)
     }

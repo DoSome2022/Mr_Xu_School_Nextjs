@@ -142,8 +142,11 @@ const Profiles = () => {
       const fetchTeacherData = async (id: string) => {
         try {
           const response = await fetch(`/api/Teacher_detail_data_by_id/${id}`, {
-            cache: "no-store",
-          });
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!response.ok) throw new Error("無法獲取教師數據");
           const data: TeacherData[] = await response.json();
           setTeacherData(data);

@@ -31,5 +31,5 @@ export const SupCourse_Create_Schema = z.object({
             lesson: z.string(),
         })
     ),
-    publicholiday: z.array(z.string()),
+    publicHoliday_model: z.array(z.string()),
 });

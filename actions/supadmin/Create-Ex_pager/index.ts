@@ -37,6 +37,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 quarter : quarter,
             }
         });
+        revalidatePath(`/supadmin/${supadminid}/schoolLists/${school_ex_pager_id}/expageLists/`)
     } catch (error) {
         console.log(error)
     }

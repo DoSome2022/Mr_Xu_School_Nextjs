@@ -25,7 +25,12 @@ const Student_ExpageLists_upload = () => {
     if (StudentID) {
       const fetchStudentData = async (studentID: string) => {
         try {
-          const res = await fetch(`/api/student/Student_Lists_detail_data_by_id/${studentID}`);
+          const res = await fetch(`/api/student/Student_Lists_detail_data_by_id/${studentID}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error(`獲取學生資料失敗: ${res.statusText}`);
           }

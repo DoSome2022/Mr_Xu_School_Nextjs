@@ -137,7 +137,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     });
 
     if (!teacher) {
-      return NextResponse.json({ message: "未找到教師數據" }, { status: 404 });
+      return NextResponse.json({ message: "未找到教師數據" }, { status: 404 
+        ,headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',  // 額外添加回應頭部，強化禁用快取
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },});
     }
 
     return NextResponse.json(teacher as TeacherResponse);

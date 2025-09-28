@@ -69,7 +69,12 @@ const ExPageLists_Grade_Year_Quarter_Subject_Lists_By_IDbysupadmin = () => {
             SchoolName
           )}&grade=${encodeURIComponent(Grade)}&year=${encodeURIComponent(Year)}&quarter=${encodeURIComponent(
             Quarter
-          )}&subject=${encodeURIComponent(Subject)}`
+          )}&subject=${encodeURIComponent(Subject)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
         );
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);
@@ -92,7 +97,12 @@ const ExPageLists_Grade_Year_Quarter_Subject_Lists_By_IDbysupadmin = () => {
   const handleDownload = async (imgUrl: string, fileName: string) => {
     try {
     //   const response = await fetch(imgUrl, { mode: "cors" });
-    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`);
+    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
       if (!response.ok) {
         throw new Error("無法下載圖片");
       }

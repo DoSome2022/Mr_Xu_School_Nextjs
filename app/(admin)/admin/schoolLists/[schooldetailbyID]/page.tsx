@@ -48,7 +48,12 @@ const SchoolDetail = () => {
         setLoading(true);
         setError(null);
         try {
-          const res = await fetch(`/api/School_detail_data_by_id/${id}`);
+          const res = await fetch(`/api/School_detail_data_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("無法載入學校資料");
           }
@@ -62,7 +67,12 @@ const SchoolDetail = () => {
 
       const fetchSchoolExDay = async (id: string) => {
         try {
-          const res = await fetch(`/api/School_Ex_Day_by_id_Lists/${id}`);
+          const res = await fetch(`/api/School_Ex_Day_by_id_Lists/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("無法載入考試時間資料");
           }

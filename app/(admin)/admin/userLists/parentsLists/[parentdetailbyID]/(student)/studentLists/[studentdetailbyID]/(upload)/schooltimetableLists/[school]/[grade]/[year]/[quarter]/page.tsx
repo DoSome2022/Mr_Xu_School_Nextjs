@@ -39,7 +39,12 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Lists = () => {
       const getstudentschooltimetablelists = async (StudentID: string) => {
         try {
           setIsLoading(true);
-          const res = await fetch(`/api/student/Student_ScTimetable_by_id_Lists/${StudentID}`);
+          const res = await fetch(`/api/student/Student_ScTimetable_by_id_Lists/${StudentID}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("獲取資料失敗！");
           }

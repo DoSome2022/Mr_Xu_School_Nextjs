@@ -5,6 +5,7 @@ import { InputType , ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Student_Update_Schema } from "./schema";
+import { redirect } from "next/navigation";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -41,6 +42,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 issurvive : false
             }
         });
+        revalidatePath(`/admin/userLists/parentsLists/${student_parent_data_id}/profiles/${student_id}`)
+        redirect(`/admin/userLists/parentsLists/${student_parent_data_id}/profiles/${student_id}`)
     } catch (error) {
         console.log(error)
     }

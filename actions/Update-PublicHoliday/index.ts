@@ -27,6 +27,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 publicholiday:publicholiday,
             }
         });
+        revalidatePath('/admin/setpublicholidaysLists');  // 無效化客戶端頁面路徑的快取
+        revalidatePath('/api/PublicHoliday_Lists');  // 無效化 API 路由快取（雖然已動態化，但作為備援）
     } catch (error) {
         console.log(error)
     }

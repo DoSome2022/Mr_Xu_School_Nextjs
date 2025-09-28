@@ -40,7 +40,12 @@ const CourseDetailbysupadmin = () => {
         setLoading(true);
         setError(null);
         try {
-          const res = await fetch(`/api/Course_detail_data_by_id/${id}`);
+          const res = await fetch(`/api/Course_detail_data_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("無法獲取課程數據");
           }
@@ -96,7 +101,7 @@ const CourseDetailbysupadmin = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Link
-                href="/admin/courseLists"
+                href={`/supadmin/${SupAdminId}/courseLists`}
                 className="text-white hover:bg-cyan-200 hover:text-gray-800 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300"
               >
                 返回課程列表
@@ -112,12 +117,6 @@ const CourseDetailbysupadmin = () => {
             {GetCourseDataById.course_name}
           </h1>
           <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
-            <Link
-              href={`/supadmin/${SupAdminId}/courseLists/${GetCourseDataById.id}/createClass`}
-              className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
-            >
-              建立課堂
-            </Link>
             <Link
               href={`/supadmin/${SupAdminId}/courseLists/${GetCourseDataById.id}/edit`}
               className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"

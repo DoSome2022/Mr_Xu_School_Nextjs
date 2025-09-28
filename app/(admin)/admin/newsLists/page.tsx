@@ -29,7 +29,12 @@ const NewsLists = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/News_Lists");
+        const res = await fetch("/api/News_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法載入公告資料");
         }

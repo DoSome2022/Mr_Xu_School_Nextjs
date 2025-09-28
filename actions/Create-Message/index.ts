@@ -23,6 +23,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 sender :sender
             }
         });
+        revalidatePath(``)
     } catch (error) {
         console.log(error)
     }

@@ -48,7 +48,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
             }
         })
 
-
+revalidatePath('/admin/userLists/parentsLists')
     } catch (error) {
         console.log(error)
     }

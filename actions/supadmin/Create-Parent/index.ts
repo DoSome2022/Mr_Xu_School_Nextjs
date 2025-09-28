@@ -8,6 +8,7 @@ import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { getUserByUserName } from "@/data/user";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
    
@@ -18,6 +19,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         phone,
         role,
         password,
+        supadminid,
 
         } = data;
 
@@ -47,13 +49,13 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
             }
         })
 
-
+        revalidatePath(`/supadmin/${supadminid}/userLists/parentsLists`)
     } catch (error) {
         console.log(error)
     }
 
     console.log("-- Parent_Data -- : " , user_data , " -- End -- ")
-    return redirect('/supadmin/userLists/parentsLists')
+    return redirect(`/supadmin/${supadminid}/userLists/parentsLists`)
 }
 
 export const SupcreateParent = CreateSafeAction(SupParent_Create_Schema, handler)

@@ -39,7 +39,12 @@ const Student_BookLists_School_Year_Grade_Id_Detail = () => {
       const getstudentbooklistsdetailbyid = async (studentID: string, bookId: string) => {
         try {
           const res = await fetch(
-            `/api/student/Student_Booklist_by_id_Lists_by_id/${studentID}/${bookId}`
+            `/api/student/Student_Booklist_by_id_Lists_by_id/${studentID}/${bookId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
           );
           if (!res.ok) {
             throw new Error(`獲取書單詳情失敗: ${res.statusText}`);

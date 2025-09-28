@@ -22,7 +22,12 @@ const ClassRoomByIdBySupadmin = () => {
     const fetchClassRoom = async (id: string) => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/ClassRoomLists_detail_data_by_id/${id}`);
+        const res = await fetch(`/api/ClassRoomLists_detail_data_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取教室數據");
         }

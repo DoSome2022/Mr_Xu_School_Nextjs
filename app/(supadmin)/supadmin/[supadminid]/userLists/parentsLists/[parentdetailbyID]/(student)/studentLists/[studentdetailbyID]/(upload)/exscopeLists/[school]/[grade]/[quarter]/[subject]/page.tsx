@@ -131,7 +131,12 @@ const ExScope_Grade_Quarter_Subject_Listsbysupadmin = () => {
         setIsLoading(true);
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
         const res = await fetch(
-          `${apiUrl}/api/student/Student_ExScope_by_id_Lists/${StudentID}`
+          `${apiUrl}/api/student/Student_ExScope_by_id_Lists/${StudentID}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
         );
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);

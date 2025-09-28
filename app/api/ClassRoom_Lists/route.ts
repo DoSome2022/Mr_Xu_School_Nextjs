@@ -19,7 +19,11 @@ export async function GET() {
         },
       },
     });
-    return new Response(JSON.stringify(rooms), { status: 200 });
+    return new Response(JSON.stringify(rooms), { status: 200 ,headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',  // 額外添加回應頭部，強化禁用快取
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },});
   } catch (error) {
     console.error("獲取教室列表錯誤:", error);
     return new Response(JSON.stringify({ error: "無法獲取教室數據" }), { status: 500 });

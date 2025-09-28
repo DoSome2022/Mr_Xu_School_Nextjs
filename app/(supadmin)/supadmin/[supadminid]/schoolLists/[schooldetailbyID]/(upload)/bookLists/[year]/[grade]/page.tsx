@@ -52,7 +52,12 @@ useEffect(() =>{
     if(SchoolId && yearId && GradeId) {
         const getBooklitsDetail = async (id: string ,yearId:string , GradeId:string) => {
             try {
-            const res = await fetch(`/api/Booklists_by_id/${id}/${yearId}/${GradeId}`);
+            const res = await fetch(`/api/Booklists_by_id/${id}/${yearId}/${GradeId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
             if(!res.ok) {
                 throw new Error("斷線！");
             }

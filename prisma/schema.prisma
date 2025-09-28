@@ -31,7 +31,7 @@ model User {
 
 model StaffUser {
   id                     String                @id @default(cuid())
-  username               String?              @unique     
+  username               String?                @unique
   nickname               String
   email                  String
   phone                  String
@@ -81,7 +81,7 @@ model Account {
 
 model Classroom {
   id                     String @id @default(cuid())
-  room                  String
+  room                  String  @unique
   Course             Course[]
   Class                 Class[]
 }
@@ -472,18 +472,19 @@ model School_EX_Day {
   updatedAt               DateTime       @updatedAt
 }
 
-//想不起用來做甚麼 大數據 AI 方向用?
+//是用在連model School 的 school_subject
 model School_Subject {
   id                String @id @unique @default(cuid())
-  quarter           Int
-  grade             Int
-  chine_data        String
-  math_data         String
-  eng_data          String
+  quarter           Int?
+  grade             Int?
+  chine_data        String?
+  math_data         String?
+  eng_data          String?
   school_subject_id String
   school_subject    School @relation(fields: [school_subject_id], references: [id])
     craetedAt               DateTime       @default(now())
   updatedAt               DateTime       @updatedAt
+  @@unique([school_subject_id, grade, quarter], name: "school_subject_id_grade_quarter")
 }
 
 model School_timetable {

@@ -225,7 +225,12 @@ const CourseDetail = () => {
         setLoading(true);
         setError(null);
         try {
-          const res = await fetch(`/api/Course_detail_data_by_id/${id}`);
+          const res = await fetch(`/api/Course_detail_data_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("無法獲取課程數據");
           }
@@ -245,7 +250,7 @@ const CourseDetail = () => {
     }
   }, [CourseId]);
 
-  console.log("GetCourseDataById:", GetCourseDataById);
+  console.log("GetCourseDataById:", GetCourseDataById , "-- End --");
 
   if (loading) {
     return (

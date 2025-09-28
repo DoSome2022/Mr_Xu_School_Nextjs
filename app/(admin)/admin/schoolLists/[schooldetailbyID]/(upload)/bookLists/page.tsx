@@ -34,7 +34,12 @@ const BookLists_years = () => {
         if (schoolId) {
           const fetchSchoolData = async (id: string) => {
             try {
-              const res = await fetch(`${apiUrl_nextjs}/api/School_Lists_by_id/${id}`);
+              const res = await fetch(`${apiUrl_nextjs}/api/School_Lists_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
               if (!res.ok) {
                 throw new Error("斷線！");
               }

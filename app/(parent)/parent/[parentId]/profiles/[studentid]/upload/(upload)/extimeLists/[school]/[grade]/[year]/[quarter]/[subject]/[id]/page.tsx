@@ -115,7 +115,12 @@ const ExTimeLists_Grade_Year_Quarter_subject_Lists_By_ID = () => {
       const getstudentextimedetailbyid = async (studentdataid: string) => {
         try {
           const res = await fetch(
-            `/api/Parents_Student/Parents_Student_ExTime_by_id_Lists/${studentdataid}`
+            `/api/Parents_Student/Parents_Student_ExTime_by_id_Lists/${studentdataid}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
           );
           if (!res.ok) {
             throw new Error("無法連線至伺服器！");

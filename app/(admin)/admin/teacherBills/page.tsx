@@ -39,7 +39,12 @@ const TeacherBills = () => {
     const fetchTeacherData = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/Course_data_teacher");
+        const res = await fetch("/api/Course_data_teacher", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法連接到伺服器");
         }

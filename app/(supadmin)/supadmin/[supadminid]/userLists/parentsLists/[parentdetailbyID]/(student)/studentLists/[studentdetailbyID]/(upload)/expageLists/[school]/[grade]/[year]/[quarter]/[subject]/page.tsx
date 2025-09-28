@@ -65,7 +65,12 @@ const ExPageLists_Grade_Year_Quarter_Subject_Listsbysupadmin = () => {
             SchoolName
           )}&grade=${encodeURIComponent(Grade)}&year=${encodeURIComponent(Year)}&quarter=${encodeURIComponent(
             Quarter
-          )}&subject=${encodeURIComponent(Subject)}`
+          )}&subject=${encodeURIComponent(Subject)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
         );
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);

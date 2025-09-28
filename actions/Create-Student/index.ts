@@ -50,6 +50,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 pay : pay 
             }
         });
+        revalidatePath(`/admin/userLists/parentsLists/${student_parent_data_id}`)
     } catch (error) {
         console.log(error)
     }

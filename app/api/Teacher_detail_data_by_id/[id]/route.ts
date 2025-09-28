@@ -32,7 +32,13 @@ export async function GET(req: Request, {params}: { params: { id: string } }){
                 }
             });
             console.log("-- API value -- : ",res,"-- end --")
-            return NextResponse.json(res);
+            return NextResponse.json(res, {
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',  // 額外添加回應頭部，強化禁用快取
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },
+        });
 
         }
 

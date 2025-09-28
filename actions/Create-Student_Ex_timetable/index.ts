@@ -39,6 +39,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 subject: subject
             }
         });
+        revalidatePath(`/admin/userLists/parentsLists/${parentId}/studentLists/${student_ex_timetable_id}/extimeLists`)
     } catch (error) {
         console.log(error)
     }

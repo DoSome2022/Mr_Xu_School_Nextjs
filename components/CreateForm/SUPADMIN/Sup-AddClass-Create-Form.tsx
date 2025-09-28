@@ -4,7 +4,7 @@ import * as z from "zod";
 import { useState, useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,12 +51,13 @@ interface Student {
 const AddClass_Create_Formbysupadmin = () => {
   const [isPending, startTransition] = useTransition();
   const params = useParams();
+  const router = useRouter();
   const classId = params?.classdetailbyID as string;
   const courseId = params?.coursedetailbyID as string;
-  // const supadminId = params?.supadminid as string;
+  const supadminId = params?.supadminid as string;
 
   const [GetStudentData, setGetStudentData] = useState<Student[]>([]);
-  const [GetClassData, setGetClassData] = useState<Class | null>(null);
+  const [GetClassData, setGetClassData] = useState<Class[] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<{
@@ -65,6 +66,7 @@ const AddClass_Create_Formbysupadmin = () => {
   } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,8 +74,18 @@ const AddClass_Create_Formbysupadmin = () => {
       setError(null);
       try {
         const [studentRes, classRes] = await Promise.all([
-          fetch(`/api/student/Student_AllLists`),
-          fetch(`/api/Class_detail_data_by_id/${classId}`),
+          fetch(`/api/student/Student_AllLists`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          }),
+          fetch(`/api/Class_detail_data_by_id/${classId}`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          }),
         ]);
 
         if (!studentRes.ok) throw new Error("無法獲取學生數據");
@@ -109,27 +121,38 @@ const AddClass_Create_Formbysupadmin = () => {
       name: "",
       student_class_date: "",
       courseId: courseId,
+      supadminId: supadminId,
     },
   });
 
   useEffect(() => {
-    if (GetClassData?.class_date) {
-      AddClass_create_form.setValue("class_date", GetClassData.class_date);
+    if (GetClassData && GetClassData[0]?.class_date) {
+      AddClass_create_form.setValue("class_date", GetClassData[0].class_date);
     }
   }, [GetClassData, AddClass_create_form]);
 
   const AddClass_create_form_onSubmit = (values: z.infer<typeof SupAddClass_Create_Schema>) => {
     console.log("-- create add class -- : ", values, "-- End --");
     setError(null);
+    setSuccess(null);
     startTransition(() => {
-      SupcreateAddClass(values).then((result) => {
-        if (result?.error) {
-          setError(result.error);
-        } else {
-          AddClass_create_form.reset();
-          setSelectedStudent(null);
-        }
-      });
+      SupcreateAddClass(values)
+        .then((result) => {
+          if (result?.error) {
+            setError(result.error);
+          } else {
+            setSuccess( "加堂記錄創建成功");
+            AddClass_create_form.reset();
+            setSelectedStudent(null);
+            setTimeout(() => {
+              router.push(`/supadmin/${supadminId}/courseLists/${courseId}/classLists/${classId}`);
+            }, 2000); // 延遲 2 秒導航
+          }
+        })
+        .catch((err) => {
+          console.error("表單提交錯誤:", err);
+          setError("提交時發生錯誤，請稍後再試。");
+        });
     });
   };
 
@@ -139,6 +162,7 @@ const AddClass_Create_Formbysupadmin = () => {
     class_date: string,
     id: string
   ) => {
+    console.log("選擇學生:", { studentId, name, class_date, id }); // 除錯日誌
     AddClass_create_form.setValue("studentId", studentId);
     AddClass_create_form.setValue("name", name);
     AddClass_create_form.setValue("student_class_date", class_date);
@@ -167,16 +191,23 @@ const AddClass_Create_Formbysupadmin = () => {
     );
   }
 
+  console.log("selectedStudent:", selectedStudent, "-- End --");
+  console.log("GetStudentData:", GetStudentData, "-- End --");
+  console.log("GetClassData:", GetClassData, "-- End --");
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-700">
-        課堂時間: {GetClassData?.class_date || "載入中..."}
+        課堂時間: {GetClassData && GetClassData[0]?.class_date ? GetClassData[0].class_date : "載入中..."}
       </h2>
       <Form {...AddClass_create_form}>
         <form
           onSubmit={AddClass_create_form.handleSubmit(AddClass_create_form_onSubmit)}
           className="space-y-6"
         >
+          {success && (
+            <div className="text-green-500 bg-green-100 p-3 rounded-md">{success}</div>
+          )}
           {error && (
             <div className="text-red-500 bg-red-100 p-3 rounded-md">{error}</div>
           )}
@@ -217,6 +248,15 @@ const AddClass_Create_Formbysupadmin = () => {
           >
             {isPending ? "正在提交..." : "提交"}
           </Button>
+          {success && (
+            <Button
+              type="button"
+              onClick={() => router.push(`/supadmin/${supadminId}/courseLists/${courseId}/classLists/${classId}`)}
+              className="w-full bg-gray-500 text-white hover:bg-gray-600 transition-colors duration-300 mt-4"
+            >
+              返回課堂詳情
+            </Button>
+          )}
         </form>
       </Form>
 
@@ -262,8 +302,39 @@ const AddClass_Create_Formbysupadmin = () => {
                   </tr>
                 ) : (
                   filteredStudents.map((student) =>
-                    student.student_class.map((classItem, index) => (
-                      <tr key={`${student.id}-${index}`} className="hover:bg-gray-100">
+                    student.student_class.length > 0 ? (
+                      student.student_class.map((classItem, index) => (
+                        <tr key={`${student.id}-${index}`} className="hover:bg-gray-100">
+                          <td className="border border-gray-300 p-3 text-gray-600">
+                            {student.name}
+                          </td>
+                          <td className="border border-gray-300 p-3 text-gray-600">
+                            {student.grade}
+                          </td>
+                          <td className="border border-gray-300 p-3 text-gray-600">
+                            {classItem.class_date}
+                          </td>
+                          <td className="border border-gray-300 p-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleSelectStudent(
+                                  student.id,
+                                  student.name,
+                                  classItem.class_date,
+                                  classItem.id
+                                )
+                              }
+                              className="border-[#e7915b] text-[#e7915b] hover:bg-[#e7915b] hover:text-white transition-colors duration-300"
+                            >
+                              選擇
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr key={student.id} className="hover:bg-gray-100">
                         <td className="border border-gray-300 p-3 text-gray-600">
                           {student.name}
                         </td>
@@ -271,27 +342,20 @@ const AddClass_Create_Formbysupadmin = () => {
                           {student.grade}
                         </td>
                         <td className="border border-gray-300 p-3 text-gray-600">
-                          {classItem.class_date}
+                          無課堂
                         </td>
                         <td className="border border-gray-300 p-3">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              handleSelectStudent(
-                                student.id,
-                                student.name,
-                                classItem.class_date,
-                                classItem.id
-                              )
-                            }
-                            className="border-[#e7915b] text-[#e7915b] hover:bg-[#e7915b] hover:text-white transition-colors duration-300"
+                            disabled
+                            className="border-gray-300 text-gray-400"
                           >
                             選擇
                           </Button>
                         </td>
                       </tr>
-                    ))
+                    )
                   )
                 )}
               </tbody>

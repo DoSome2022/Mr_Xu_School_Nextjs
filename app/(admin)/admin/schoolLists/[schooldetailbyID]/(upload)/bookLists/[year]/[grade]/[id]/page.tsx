@@ -72,7 +72,12 @@ const BookLists_year_grade_by_Id = () => {
         setError(null);
         try {
           const res = await fetch(
-            `/api/Booklists_detail_data_by_id/${schoolId}/${yearId}/${gradeId}/${bookListById}`
+            `/api/Booklists_detail_data_by_id/${schoolId}/${yearId}/${gradeId}/${bookListById}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
           );
           if (!res.ok) {
             throw new Error("無法載入書單詳情");

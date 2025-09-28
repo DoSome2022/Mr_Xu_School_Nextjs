@@ -36,7 +36,12 @@ const ExScope_Grade_Quarter_Subject_Lists = () => {
     if (StudentID) {
       const getstudentexscopelist = async (StudentID: string) => {
         try {
-          const res = await fetch(`/api/student/Student_ExScope_by_id_Lists/${StudentID}`);
+          const res = await fetch(`/api/student/Student_ExScope_by_id_Lists/${StudentID}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("斷線！");
           }

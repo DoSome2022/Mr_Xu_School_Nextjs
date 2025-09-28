@@ -32,7 +32,12 @@ const ExScopeLists_Grade_Subject_exscpelistsbysupadmin = () =>{
         if(SchoolId  && GradeId && QuarterId && SubjectId && ExScopeListById) {
             const getExScopeListDetailById = async (SchoolId: string  , GradeId:string ,QuarterId:string,SubjectId:string,ExScopeListById:string ) => {
                 try {
-                const res = await fetch(`/api/Exscopelists_detail_data_by_id/${SchoolId}/${GradeId}/${QuarterId}/${SubjectId}/${ExScopeListById}`);
+                const res = await fetch(`/api/Exscopelists_detail_data_by_id/${SchoolId}/${GradeId}/${QuarterId}/${SubjectId}/${ExScopeListById}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
                 if(!res.ok) {
                     throw new Error("斷線！");
                 }
@@ -66,7 +71,12 @@ const ExScopeLists_Grade_Subject_exscpelistsbysupadmin = () =>{
   const handleDownload = async (imgUrl: string, fileName: string) => {
     try {
     //   const response = await fetch(imgUrl, { mode: "cors" });
-    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`);
+    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
       if (!response.ok) {
         throw new Error("無法下載圖片");
       }

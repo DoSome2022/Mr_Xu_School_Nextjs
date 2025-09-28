@@ -37,7 +37,12 @@ const ExTimeListsbysupadmin = () => {
         setIsLoading(true);
         const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://127.0.0.1:8000";
         const res = await fetch(
-          `${apiUrl}/api/student/Student_Lists/${parentId}?studentId=${encodeURIComponent(StudentID)}`
+          `${apiUrl}/api/student/Student_Lists/${parentId}?studentId=${encodeURIComponent(StudentID)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
         );
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);

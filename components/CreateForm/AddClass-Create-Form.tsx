@@ -71,8 +71,18 @@ const AddClass_Create_Form = () => {
       setError(null);
       try {
         const [studentRes, classRes] = await Promise.all([
-          fetch(`/api/student/Student_AllLists`),
-          fetch(`/api/Class_detail_data_by_id/${classId}`),
+          fetch(`/api/student/Student_AllLists`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
+          fetch(`/api/Class_detail_data_by_id/${classId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
         ]);
 
         if (!studentRes.ok) throw new Error("無法獲取學生數據");

@@ -41,7 +41,11 @@ export async function POST() {
   } catch (error) {
     const errorMessage = `[${now}] 年級更新失敗: ${error}\n`;
     fs.appendFileSync("./grade-update.log", errorMessage);
-    return NextResponse.json({ error: "年級更新失敗" }, { status: 500 });
+    return NextResponse.json({ error: "年級更新失敗" }, { status: 500 ,headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',  // 額外添加回應頭部，強化禁用快取
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            },});
   } finally {
     await db.$disconnect();
   }

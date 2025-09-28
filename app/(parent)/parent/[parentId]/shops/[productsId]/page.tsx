@@ -50,7 +50,12 @@ export default function ProductPage() {
     const fetchUsername = async () => {
       if (!session?.user?.id) return;
       try {
-        const response = await fetch(`/api/other/User_Parent/${session?.user?.id}`);
+        const response = await fetch(`/api/other/User_Parent/${session?.user?.id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!response.ok) throw new Error("無法獲取用戶名");
         const data = await response.json();
         console.log("Fetched username data:", data);
@@ -66,7 +71,12 @@ export default function ProductPage() {
   useEffect(() => {
     const fetchProductDataLists = async (productId: string) => {
       try {
-        const response = await fetch(`/api/Product_detail_data_by_id/${productId}`);
+        const response = await fetch(`/api/Product_detail_data_by_id/${productId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!response.ok) throw new Error("無法獲取商品數據");
         const data = await response.json();
         setGetProduct(data);
@@ -83,7 +93,12 @@ export default function ProductPage() {
     const fetchStudents = async () => {
       if (!session?.user?.id) return;
       try {
-        const response = await fetch(`/api/user/${session.user.id}/students`);
+        const response = await fetch(`/api/user/${session.user.id}/students`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!response.ok) throw new Error("無法獲取子女數據");
         const data = await response.json();
         console.log("Students data:", data);

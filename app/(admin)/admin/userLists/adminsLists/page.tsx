@@ -1,19 +1,15 @@
+// app/[您的路徑]/AdminLists.tsx
+
 "use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-enum Role {
-  ADMIN,
-  SUPADMIN,
-  TEACHER,
-}
-
 interface SupAdminData {
   id: string;
   username: string;
   nickname: string;
-  role: Role;
+  role: string; // 修改為 string，與後端數據一致
   cram: string;
 }
 
@@ -26,7 +22,12 @@ const AdminLists: React.FC = () => {
     const fetchSupAdminListsData = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/SupAdmin_Lists");
+        const res = await fetch("/api/SupAdmin_Lists", {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        });
         if (!res.ok) {
           throw new Error("無法連接到伺服器");
         }
@@ -41,6 +42,8 @@ const AdminLists: React.FC = () => {
     };
     fetchSupAdminListsData();
   }, []);
+
+  console.log("supAdminData : ", supAdminData);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-20">
@@ -63,7 +66,7 @@ const AdminLists: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {supAdminData.map((data) => {
-              if (data.role === Role.SUPADMIN) {
+              if (data.role === "SUPADMIN") { // 修改為字符串比較
                 return (
                   <div
                     key={data.id}

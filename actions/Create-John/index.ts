@@ -131,6 +131,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { JoinStudent_Create_Schema } from "./schema";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 type InputType = z.infer<typeof JoinStudent_Create_Schema>;
 type ReturnType = { error?: string; data?: { message: string } };
@@ -243,6 +244,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     // 操作成功後重定向
     // redirect(`/admin/courseLists/${courseid}`);
     // return { data: { message: "學生成功加入課程" } };
+
+    revalidatePath(`/admin/courseLists/${courseid}`)
   } catch (error: any) {
     console.error("添加學生失敗:", error);
     return { error: error.message || "添加學生時發生錯誤" };

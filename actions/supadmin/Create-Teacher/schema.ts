@@ -9,4 +9,5 @@ export const SupTeacher_Create_Schema = z.object({
     password: z.string(),
     staff: z.boolean().default(true).optional(),
     isadmin: z.boolean().default(true).optional(),
+    supadminId: z.string(),
 })

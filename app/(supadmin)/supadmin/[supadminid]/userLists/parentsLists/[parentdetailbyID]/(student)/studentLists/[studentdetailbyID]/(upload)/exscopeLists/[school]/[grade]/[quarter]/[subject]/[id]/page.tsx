@@ -134,7 +134,12 @@ const ExScope_Grade_Quarter_Subject_Lists_By_IDbysuadmin = () => {
         setIsLoading(true);
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
         const res = await fetch(
-          `${apiUrl}/api/student/Student_ExScope_by_id_Lists_by_id/${StudentID}/${id}`
+          `${apiUrl}/api/student/Student_ExScope_by_id_Lists_by_id/${StudentID}/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
         );
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);
@@ -170,7 +175,12 @@ const ExScope_Grade_Quarter_Subject_Lists_By_IDbysuadmin = () => {
   const handleDownload = async (imgUrl: string, fileName: string) => {
     try {
     //   const response = await fetch(imgUrl, { mode: "cors" });
-    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`);
+    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
       if (!response.ok) {
         throw new Error("無法下載圖片");
       }

@@ -8,6 +8,7 @@ import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { getUserByUserName } from "@/data/user";
 import { redirect } from 'next/navigation'
+import { revalidatePath } from "next/cache";
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
    
@@ -20,6 +21,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
         password,
         staff,
         isadmin,
+        supadminId
         } = data;
 
         const hashedPassword = await bcrypt.hash(password,10);
@@ -48,11 +50,12 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 password : hashedPassword, 
             }
         });
+        revalidatePath(`/supadmin/${supadminId}/userLists/teachersLists`)
     } catch (error) {
         console.log(error)
     }
     console.log("-- teacher_User -- : " , Teacher_user , " -- End -- ")
-    return redirect('/supadmin/userLists/teachersLists')
+    return redirect(`/supadmin/${supadminId}/userLists/teachersLists`)
 }
 
 export const SupcreateTeacher = CreateSafeAction(SupTeacher_Create_Schema, handler)

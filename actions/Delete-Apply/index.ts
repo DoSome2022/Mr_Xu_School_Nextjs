@@ -20,6 +20,8 @@ const handler = async (data: InputType) : Promise<ReturnType> => {
         apply = await db.apply.delete({
             where:{id}
         })
+    revalidatePath(``)
+    // redirect('/admin/ReceiptLists')
     } catch (error) {
         console.log(error)
         return {

@@ -8,6 +8,7 @@ import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { getUserByUserName } from "@/data/user";
 import { redirect } from 'next/navigation'
+import { revalidatePath } from "next/cache";
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
    
@@ -48,6 +49,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 password : hashedPassword, 
             }
         });
+        revalidatePath('/admin/userLists/teachersLists')
     } catch (error) {
         console.log(error)
     }

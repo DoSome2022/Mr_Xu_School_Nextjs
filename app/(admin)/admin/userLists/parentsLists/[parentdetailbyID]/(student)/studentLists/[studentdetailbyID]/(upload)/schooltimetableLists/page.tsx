@@ -93,7 +93,12 @@ const SchoolTimeTableLists = () => {
       const fetchStudentData = async (parentdataid: string) => {
         try {
           setIsLoading(true);
-          const res = await fetch(`/api/student/Student_Lists/${parentdataid}`);
+          const res = await fetch(`/api/student/Student_Lists/${parentdataid}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("獲取資料失敗！");
           }

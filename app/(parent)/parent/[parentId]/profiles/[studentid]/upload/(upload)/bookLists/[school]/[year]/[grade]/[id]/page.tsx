@@ -35,7 +35,12 @@ console.log(params);
     if (Id) {
       const getstudentbooklistsdetailbyid = async (Id: string) => {
         try {
-            const res = await fetch(`/api/Parents_Student/Parents_Student_Booklist_by_id_Lists/${Id}`);
+            const res = await fetch(`/api/Parents_Student/Parents_Student_Booklist_by_id_Lists/${Id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("斷線！");
           }

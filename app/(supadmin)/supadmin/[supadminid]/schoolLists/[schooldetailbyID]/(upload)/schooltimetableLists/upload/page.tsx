@@ -1,8 +1,7 @@
 "use client";
 
 import School_Timetable_uploadFormbysupadmin from '@/components/CreateForm/SUPADMIN/UploadForm/school/Sup-School_Timetable_uploadForm';
-// import SchoolTimeTable_Create_Form from '@/components/CreateForm/SchoolTimeTable-Create-Form';
-import School_Timetable_uploadForm from '@/components/uploadForm/school/School_Timetable_uploadForm';
+
 import { useParams } from 'next/navigation';
 
 

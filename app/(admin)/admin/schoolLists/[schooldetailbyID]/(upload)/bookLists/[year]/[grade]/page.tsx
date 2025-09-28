@@ -127,7 +127,12 @@ const School_detail_data_by_id_bookLists_year_grade_booklist = () => {
         setLoading(true);
         setError(null);
         try {
-          const res = await fetch(`/api/Booklists_by_id/${id}/${yearId}/${gradeId}`);
+          const res = await fetch(`/api/Booklists_by_id/${id}/${yearId}/${gradeId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("無法載入書單資料");
           }

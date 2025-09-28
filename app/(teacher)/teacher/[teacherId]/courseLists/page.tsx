@@ -50,7 +50,12 @@ export default function TeacherCalendarPage() {
     const fetchCourses = async () => {
       if (!session?.user?.id) return;
       try {
-        const response = await fetch(`/api/teacher/${session.user.id}/courses`);
+        const response = await fetch(`/api/teacher/${session.user.id}/courses`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!response.ok) throw new Error("無法獲取課程數據");
         const data = await response.json();
         setCourses(data);

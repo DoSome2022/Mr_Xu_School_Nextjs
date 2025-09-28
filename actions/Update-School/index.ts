@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { School_Update_Schema } from "./schema";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -25,6 +26,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 school_name: school_name
             }
         });
+        revalidatePath("/admin/schoolLists")
     } catch (error) {
         console.log(error)
     }

@@ -43,7 +43,14 @@ const params = useParams<{year: string ; schooldetailbyID : string ; supadminid:
     console.log("params : ", params)    
 
 
-    const fetcher = (url: string, init?: RequestInit):Promise<StudentGrades[]>  => fetch(url, init).then((res) => res.json());
+    const fetcher = (url: string, init?: RequestInit):Promise<StudentGrades[]>  => fetch(url, {
+    ...init, // 保留傳入的 init 配置（若有）
+    cache: 'no-store', // 強制不快取，確保每次請求新數據
+    headers: {
+      ...init?.headers, // 合併傳入的 headers（若有）
+      'Cache-Control': 'no-cache', // 設置快取控制頭部
+    },
+  }).then((res) => res.json());
     const apiUrl = process.env.NEXT_PUBLIC_API_URL|| "http://127.0.0.1:8000"
     const { data , error , isLoading } = useSWR(`${apiUrl}/api/School_data/schoolgrades/` , fetcher);
     const apiUrl_nextjs = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://127.0.0.1:3000";
@@ -53,7 +60,12 @@ const params = useParams<{year: string ; schooldetailbyID : string ; supadminid:
         if (SchoolId) {
           const fetchSchoolData = async (id: string) => {
             try {
-              const res = await fetch(`${apiUrl_nextjs}/api/School_Lists_by_id/${id}`);
+              const res = await fetch(`${apiUrl_nextjs}/api/School_Lists_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
               if (!res.ok) {
                 throw new Error("斷線！");
               }

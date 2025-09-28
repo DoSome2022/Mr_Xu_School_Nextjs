@@ -65,7 +65,12 @@ const TimeTemplate_Create_Form = () => {
     const fetchpublicholidaysData = async () => {
       try {
         setIsLoadingHolidays(true);
-        const res = await fetch("/api/PublicHoliday_Lists");
+        const res = await fetch("/api/PublicHoliday_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取公眾假期數據！");
         }
@@ -83,18 +88,32 @@ const TimeTemplate_Create_Form = () => {
     fetchpublicholidaysData();
   }, []);
 
-  useEffect(() => {
-    const holidaysArray =
-      Array.isArray(GetPublicHolidays) && GetPublicHolidays.length > 0 && GetPublicHolidays[0].publicholiday
-        ? GetPublicHolidays[0].publicholiday
-        : [];
-    console.log("holidaysArray before mapping:", holidaysArray);
-    const PublicHolidays = holidaysArray
-      .map((date) => formatDate(date))
-      .filter((date): date is string => date !== null);
-    console.log("Formatted PublicHolidays:", PublicHolidays);
-    timetemplate_create_form.setValue("publicHoliday", PublicHolidays);
+  // useEffect(() => {
+  //   const holidaysArray =
+  //     Array.isArray(GetPublicHolidays) && GetPublicHolidays.length > 0 && GetPublicHolidays[0].publicholiday
+  //       ? GetPublicHolidays[0].publicholiday
+  //       : [];
+  //   console.log("holidaysArray before mapping:", holidaysArray);
+  //   const PublicHolidays = holidaysArray
+  //     .map((date) => formatDate(date))
+  //     .filter((date): date is string => date !== null);
+  //   console.log("Formatted PublicHolidays:", PublicHolidays);
+  //   timetemplate_create_form.setValue("publicHoliday", PublicHolidays);
+  // }, [GetPublicHolidays, timetemplate_create_form]);
+
+
+useEffect(() => {
+    // 扁平化所有 publicholiday 陣列並去重
+    const holidaysArray = GetPublicHolidays
+      .flatMap((record) => record.publicholiday) // 將所有 publicholiday 陣列扁平化
+      .map((date) => formatDate(date)) // 格式化日期
+      .filter((date): date is string => date !== null) // 過濾無效日期
+      .filter((date, index, self) => self.indexOf(date) === index); // 去重
+    console.log("Formatted and deduplicated PublicHolidays:", holidaysArray);
+    timetemplate_create_form.setValue("publicHoliday", holidaysArray);
   }, [GetPublicHolidays, timetemplate_create_form]);
+
+
 
   const watchedStartTime = timetemplate_create_form.watch("start_time");
   const watchedEndTime = timetemplate_create_form.watch("end_time");
@@ -238,18 +257,24 @@ const TimeTemplate_Create_Form = () => {
             )}
           />
 
-          {/* Public Holidays */}
+{/* Public Holidays */}
           <div>
-            公眾假期：
+            <FormLabel>公眾假期：</FormLabel>
             {isLoadingHolidays ? (
               <span>載入中...</span>
-            ) : Array.isArray(GetPublicHolidays) && GetPublicHolidays.length > 0 && GetPublicHolidays[0].publicholiday ? (
-              GetPublicHolidays[0].publicholiday.map((date: string, index: number) => {
-                const formattedDate = formatDate(date);
-                return formattedDate ? (
-                  <span key={index}>{formattedDate} </span>
-                ) : null;
-              })
+            ) : Array.isArray(GetPublicHolidays) && GetPublicHolidays.length > 0 ? (
+              <div>
+                {GetPublicHolidays
+                  .flatMap((record) => record.publicholiday) // 扁平化所有 publicholiday
+                  .map((date) => formatDate(date)) // 格式化日期
+                  .filter((date): date is string => date !== null) // 過濾無效日期
+                  .filter((date, index, self) => self.indexOf(date) === index) // 去重
+                  .map((date, index) => (
+                    <span key={index} className="inline-block mr-2">
+                      {date}
+                    </span>
+                  ))}
+              </div>
             ) : (
               <span>無公眾假期數據</span>
             )}

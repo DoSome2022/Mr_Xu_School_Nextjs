@@ -8,6 +8,7 @@ import { Teacher_Update_Schema } from "./schema";
 import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { getUserByUserName } from "@/data/user";
+import { redirect } from "next/navigation";
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
    
@@ -46,6 +47,8 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
 
             }
         });
+        revalidatePath(`/admin/userLists/teachersLists/${teacherid}`);
+        redirect(`/admin/userLists/teachersLists/${teacherid}`)
     } catch (error) {
         console.log(error)
     }

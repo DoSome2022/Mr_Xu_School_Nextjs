@@ -60,7 +60,12 @@ const ExTimeLists_Grade_Year_Quarter_Subject_extimelists_Detailbysupadmin = () =
     ) => {
       try {
         const res = await fetch(
-          `/api/Extimelists_detail_data_by_id/${schoolId}/${gradeId}/${yearId}/${quarterId}/${encodeURIComponent(subjectId)}/${exTimeListById}`
+          `/api/Extimelists_detail_data_by_id/${schoolId}/${gradeId}/${yearId}/${quarterId}/${encodeURIComponent(subjectId)}/${exTimeListById}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
         );
         if (!res.ok) {
           throw new Error("無法連接到伺服器");
@@ -78,7 +83,12 @@ const ExTimeLists_Grade_Year_Quarter_Subject_extimelists_Detailbysupadmin = () =
   // 下載圖片的功能
   const handleDownload = async (imgUrl: string, fileName: string) => {
     try {
-      const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`);
+      const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
       if (!response.ok) {
         throw new Error("無法下載圖片");
       }

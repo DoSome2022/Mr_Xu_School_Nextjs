@@ -41,7 +41,12 @@ const CourseLists = () => {
     const getCourseData = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/Course_Lists");
+        const res = await fetch("/api/Course_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取課程數據");
         }
@@ -66,7 +71,12 @@ const CourseLists = () => {
     }
     try {
       const response = await fetch(
-        `/api/Course_Lists_search?query=${encodeURIComponent(searchQuery)}&field=${encodeURIComponent(searchField)}`
+        `/api/Course_Lists_search?query=${encodeURIComponent(searchQuery)}&field=${encodeURIComponent(searchField)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
       );
       if (!response.ok) {
         throw new Error("搜尋失敗");

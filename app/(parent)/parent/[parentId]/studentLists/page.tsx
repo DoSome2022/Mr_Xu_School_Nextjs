@@ -63,7 +63,12 @@ const StudentListsCourse = () => {
       }
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/Parents_Lists_by_id/${parentId}`);
+        const response = await fetch(`/api/Parents_Lists_by_id/${parentId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!response.ok) {
           throw new Error("無法獲取學生課程數據");
         }

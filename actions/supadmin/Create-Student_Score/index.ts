@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Supstudent_score_Create_Schema } from "./schema";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -40,6 +41,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 img:img,
             }
         });
+        revalidatePath(`/supadmin/userLists/parentsLists/${parentId}/studentLists/${student_score_id}/scoreLists/`)
     } catch (error) {
         console.log(error)
     }

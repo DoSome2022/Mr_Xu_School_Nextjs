@@ -256,11 +256,14 @@ import { FormSuccess } from "@/components/form-success";
 
 import { SupTeacher_Create_Schema } from "@/actions/supadmin/Create-Teacher/schema";
 import { SupcreateTeacher } from "@/actions/supadmin/Create-Teacher";
+import { useParams } from "next/navigation";
 
 const Teacher_Create_Formbysupadmin = () => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
+  const params = useParams();
+  const supadminId = params.supadminid as string;
 
   const teacher_register_form = useForm<z.infer<typeof SupTeacher_Create_Schema>>({
     resolver: zodResolver(SupTeacher_Create_Schema),
@@ -273,6 +276,7 @@ const Teacher_Create_Formbysupadmin = () => {
       password: "",
       staff: true,
       isadmin: false,
+      supadminId: supadminId,
     },
   });
 

@@ -18,8 +18,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { JoinStudent_Create_Schema } from "@/actions/Create-John/schema";
+
 import { createJoinStudent } from "@/actions/Create-John";
+import { SupcreateJoinStudent } from "@/actions/supadmin/Create-John";
+import { SupJoinStudent_Create_Schema } from "@/actions/supadmin/Create-John/schema";
 
 interface StudentType {
   id: string;
@@ -35,7 +37,7 @@ interface CourseData {
 const John_Student_Formbysupadmin = () => {
   const params = useParams();
   const courseId = params?.coursedetailbyID as string;
-  // const supadminId = params?.supadminid as string;
+  const supadminId = params?.supadminid as string;
   const [GetStudentData, setGetStudentData] = useState<StudentType[]>([]);
   const [GetCourseData, setGetCourseData] = useState<CourseData | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -49,8 +51,18 @@ const John_Student_Formbysupadmin = () => {
       setIsLoading(true);
       try {
         const [studentRes, courseRes] = await Promise.all([
-          fetch(`/api/student/Student_AllLists`),
-          fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`),
+          fetch(`/api/student/Student_AllLists`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
+          fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
         ]);
 
         if (!studentRes.ok) throw new Error("無法獲取學生數據");
@@ -81,14 +93,15 @@ const John_Student_Formbysupadmin = () => {
     }
   }, [GetCourseData]);
 
-  const form = useForm<z.infer<typeof JoinStudent_Create_Schema>>({
-    resolver: zodResolver(JoinStudent_Create_Schema),
+  const form = useForm<z.infer<typeof SupJoinStudent_Create_Schema>>({
+    resolver: zodResolver(SupJoinStudent_Create_Schema),
     defaultValues: {
       courseid: courseId || "",
       studentId: "",
       student: [],
       course_name: "",
       targetcourseId: courseId || "",
+      supadminId: supadminId
     },
   });
 
@@ -111,12 +124,12 @@ const John_Student_Formbysupadmin = () => {
     }
   };
 
-  const onSubmit = (values: z.infer<typeof JoinStudent_Create_Schema>) => {
+  const onSubmit = (values: z.infer<typeof SupJoinStudent_Create_Schema>) => {
     console.log("-- JoinStudent -- : ", values, "-- End --");
     setError(null);
     startTransition(async () => {
       try {
-        const result = await createJoinStudent(values);
+        const result = await SupcreateJoinStudent(values);
         if (result?.error) {
           setError(result.error);
         } else {

@@ -120,7 +120,12 @@ const ExTimeLists_Grade_Year_Quarter_subject_Lists_By_ID = () => {
             const getstudentextimedetailbyid = async (StudentID: string, id: string) => {
                 try {
                     setIsLoading(true);
-                    const res = await fetch(`/api/student/Student_ExTime_by_id_Lists_by_id/${StudentID}/${id}`);
+                    const res = await fetch(`/api/student/Student_ExTime_by_id_Lists_by_id/${StudentID}/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
                     if (!res.ok) {
                         throw new Error("获取数据失败！");
                     }

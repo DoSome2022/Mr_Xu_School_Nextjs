@@ -47,7 +47,12 @@ const ExTimeLists_Grade_Year_Quarter_Subject_extimelists_Detail = () => {
       ) => {
         try {
           const res = await fetch(
-            `/api/Extimelists_detail_data_by_id/${SchoolId}/${GradeId}/${YearId}/${QuarterId}/${SubjectId}/${ExTimeListById}`
+            `/api/Extimelists_detail_data_by_id/${SchoolId}/${GradeId}/${YearId}/${QuarterId}/${SubjectId}/${ExTimeListById}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
           );
           if (!res.ok) {
             throw new Error("無法連線！");

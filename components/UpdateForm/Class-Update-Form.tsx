@@ -83,9 +83,24 @@ const Class_Updata_Custom_Form_v1 = () => {
       setError(null);
       try {
         const [teacherRes, courseRes, classRes] = await Promise.all([
-          fetch("/api/Course_data_teacher"),
-          fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`),
-          fetch(`/api/Class_detail_data_by_id/${classId}`),
+          fetch("/api/Course_data_teacher", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
+          fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
+          fetch(`/api/Class_detail_data_by_id/${classId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
         ]);
 
         if (!teacherRes.ok) throw new Error("無法獲取教師數據");

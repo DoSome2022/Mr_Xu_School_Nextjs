@@ -64,6 +64,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
               return AddClass;
 
         });
+        revalidatePath(`/admin/courseLists/${courseId}/classLists/${targetclassId}`)
     } catch (error) {
         console.log(error)
     }

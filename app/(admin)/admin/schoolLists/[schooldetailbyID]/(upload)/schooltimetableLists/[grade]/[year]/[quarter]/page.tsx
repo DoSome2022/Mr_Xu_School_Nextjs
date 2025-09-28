@@ -25,7 +25,12 @@ const SchoolTimeTableLists_Grade_Year_Quarter_Subject = () => {
         if (SchoolId && YearId && GradeId && QuarterId) {
             const getSchoolTimeTableListsDetail = async (SchoolId: string, yearId: string, GradeId: string, QuarterId: string) => {
                 try {
-                    const res = await fetch(`/api/Schooltimetablelists_by_id/${SchoolId}/${GradeId}/${yearId}/${QuarterId}`);
+                    const res = await fetch(`/api/Schooltimetablelists_by_id/${SchoolId}/${GradeId}/${yearId}/${QuarterId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
                     if (!res.ok) {
                         throw new Error("斷線！");
                     }

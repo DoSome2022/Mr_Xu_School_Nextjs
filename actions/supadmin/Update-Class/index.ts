@@ -50,12 +50,16 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       return { error: "課程不存在" };
     }
 
-    // 驗證 classroom 是否存在
-    const classrooms = await db.classroom.findMany({
-      where: { id: { in: classroom } }, // classroom 為 string[]
-    });
-    if (classrooms.length !== classroom.length) {
-      return { error: "部分教室不存在" };
+    // 驗證 classroom 是否存在（如果 classroom 不是空字符串）
+    if (classroom) {
+      console.log("驗證教室 ID:", classroom); // 除錯用
+      const classroomRecord = await db.classroom.findUnique({
+        where: { id: classroom },
+      });
+      console.log("教室記錄:", classroomRecord); // 除錯用
+      if (!classroomRecord) {
+        return { error: "教室不存在" };
+      }
     }
 
     // 驗證 teacher 是否存在
@@ -73,14 +77,13 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       data: {
         class_time_h,
         cram,
-        classroom: {
-          set: [], // 清空現有關聯
-          connect: classroom.map((id) => ({ id })), // 連接到多個教室
-        },
+        classroom: classroom
+          ? { connect: [{ id: classroom }] } // 使用 connect 連接到單個教室
+          : { set: [] }, // 清空關聯
         persons,
         class_course_id,
         class_lesson,
-        class_date: class_date[0], // 取第一個日期
+        class_date: class_date[0],
         class_start_time,
         class_end_time,
         attend_number,
@@ -100,8 +103,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     // 重新驗證相關頁面
     revalidatePath(`/admin/courseLists/${class_course_id}/classLists/${classId}`);
 
-    // 重定向
-    redirect(`/admin/courseLists/${class_course_id}/classLists/${classId}`);
+    // 返回成功結果（避免直接調用 redirect）
+    return { data: class_data };
   } catch (error: any) {
     console.error("更新班級失敗:", error.message, error.stack);
     return {

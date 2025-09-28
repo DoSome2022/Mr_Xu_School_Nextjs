@@ -34,7 +34,12 @@ useEffect(() => {
     const getProductDetail = async (id: string) => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/Product_detail_data_by_id/${id}`);
+        const res = await fetch(`/api/Product_detail_data_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取商品詳情數據");
         }

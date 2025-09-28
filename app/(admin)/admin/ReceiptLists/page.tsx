@@ -129,7 +129,12 @@ const ReceiptListsPage = () => {
   useEffect(() => {
     const fetchReceiptData = async () => {
       try {
-        const res = await fetch("/api/Receipt_Lists");
+        const res = await fetch("/api/Receipt_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法載入收據資料");
         }
@@ -143,7 +148,12 @@ const ReceiptListsPage = () => {
 
     const fetchVoidData = async () => {
       try {
-        const res = await fetch("/api/Void_Lists");
+        const res = await fetch("/api/Void_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法載入補單資料");
         }

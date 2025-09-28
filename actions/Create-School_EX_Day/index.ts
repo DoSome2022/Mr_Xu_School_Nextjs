@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { School_Ex_Day_Schema } from "./schema";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
     const {
@@ -31,6 +32,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
                 title: title,
             },
         });
+        revalidatePath(`/admin/schoolLists/${school_ex_day_id}`)
     } catch (error) {
         console.log(error);
         return { error: "创建失败" }; // 添加错误返回

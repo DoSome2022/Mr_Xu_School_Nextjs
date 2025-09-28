@@ -66,6 +66,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
                 },
             });
         }
+        revalidatePath(``)
     } catch (error) {
         console.error("Error creating/updating teacher time work:", error);
         return { error: "Failed to process teacher time work" };

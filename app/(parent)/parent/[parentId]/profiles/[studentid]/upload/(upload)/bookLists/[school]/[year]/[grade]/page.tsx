@@ -32,7 +32,12 @@ const Student_BookLists_School_Year_Grade_Lists = () => {
     if (StudentID) {
       const getstudentexbooklists = async (StudentID: string) => {
         try {
-          const res = await fetch(`/api/student/Student_Booklist_by_id_Lists/${StudentID}`);
+          const res = await fetch(`/api/student/Student_Booklist_by_id_Lists/${StudentID}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("斷線！");
           }

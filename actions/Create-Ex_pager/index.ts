@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Ex_pager_Create_Schema } from "./schema";
 import OSS from "ali-oss";
+import { revalidatePath } from "next/cache";
 
 // 定義環境變數的類型
 interface OSSConfig {
@@ -118,10 +119,12 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       data: ex_pager_Data,
       school_ex_pager_id,
     };
+    revalidatePath("")
   } catch (error) {
     console.error("創建試卷記錄失敗:", error);
     return { error: "無法創建試卷記錄，請檢查輸入數據或文件格式" };
   }
+  
 };
 
 export const createExPager = CreateSafeAction(Ex_pager_Create_Schema, handler);

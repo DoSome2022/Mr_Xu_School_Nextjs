@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Course_Create_Schema } from "./schema";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 
 
@@ -161,6 +162,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         });
 
         console.log("-- Course_Data -- : ", course_data, " -- End -- ");
+        revalidatePath("/admin/courseLists")
     } catch (error) {
         console.error("建立課程錯誤:", error);
         return { error: "建立課程失敗，請檢查輸入數據" };

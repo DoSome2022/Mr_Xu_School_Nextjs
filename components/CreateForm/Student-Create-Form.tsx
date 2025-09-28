@@ -417,7 +417,12 @@ const Student_Create_Form = () => {
     const fetchSchoolsData = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/School_Lists");
+        const res = await fetch("/api/School_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法連接到伺服器");
         }

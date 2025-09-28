@@ -22,7 +22,7 @@ const TeacherDetailbysupadmin = () => {
   const TeacherId = params?.teacherdetailbyID as string;// 獲取URL中的TeacherId參數
       console.log("param :",  params ,"--end --"  );
 
-    const supadminId = params?.supadminId as string;
+    const supadminId = params?.supadminid as string;
   // 為了拿老師data by id
   const [GetTeacherDataById, setGetTeacherDataById] = useState<Teacher | null>();
 
@@ -34,7 +34,12 @@ const TeacherDetailbysupadmin = () => {
     if (TeacherId) {
       const getTeacherDetail = async (id: string) => {
         try {
-          const res = await fetch(`/api/Course_data_teacher_by_id/${id}`);
+          const res = await fetch(`/api/Course_data_teacher_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("斷線！");
           }

@@ -21,7 +21,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         end_time,
         days,
         weekdays,
-        publicholiday,
+        publicHoliday_model,
         grade,
         course_subject,
         classroom,
@@ -69,7 +69,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
                     end_time,
                     days: validatedDays,
                     weekdays: validatedWeekdays,
-                    publicholiday_model: publicholiday,
+                    publicholiday_model: publicHoliday_model,
                     TimeTemplate: {
                         connect: { id: TimeTemplateID },
                     },
@@ -132,7 +132,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     }
 
     console.log("-- Course_Data -- : ", course_data, " -- End -- ");
-    // revalidatePath("/admin/courseLists");
+    revalidatePath(`/supadmin/${supadminid}/courseLists`);
   return redirect(`/supadmin/${supadminid}/courseLists`);
 };
 

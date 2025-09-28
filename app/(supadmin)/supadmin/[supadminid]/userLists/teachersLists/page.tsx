@@ -13,7 +13,7 @@ interface Teacher {
 
 const TeacherListsbysupadmin = () => {
   const params = useParams();
-  const supadminId = params?.supadminId as string;
+  const supadminId = params?.supadminid as string;
   const [teacherData, setTeacherData] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,12 @@ const TeacherListsbysupadmin = () => {
     const getTeacherData = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/Course_data_teacher");
+        const res = await fetch("/api/Course_data_teacher", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取老師數據");
         }
@@ -78,7 +83,7 @@ const TeacherListsbysupadmin = () => {
                     href={`/supadmin/${supadminId}/userLists/teachersLists/${teacher.id}`}
                     className="text-blue-600 hover:text-blue-500 text-sm font-medium"
                   >
-                    ID: {teacher.id} | 名稱: {teacher.username}
+                     名稱: {teacher.username}
                   </Link>
                 </div>
               ))}

@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// 定義 Class 和 Student 的介面
+// 定義 Classroom、Student 和 Class 的介面
+interface Classroom {
+  id: string;
+  room: string;
+}
+
 interface Student {
   id: string;
   name: string;
@@ -12,7 +17,7 @@ interface Student {
 
 interface Class {
   id: string;
-  classroom: string;
+  classroom: Classroom[];
   class_lesson: string;
   persons: number;
   teacher: string;
@@ -62,7 +67,7 @@ const ClassDetailbysupadmin = () => {
   const ClassId = params?.classdetailbyID as string;
   const supadminId = params?.supadminid as string;
 
-  const [GetClassDataById, setGetClassDataById] = useState<Class | null>(null);
+  const [GetClassDataById, setGetClassDataById] = useState<Class[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,7 +77,12 @@ const ClassDetailbysupadmin = () => {
         setLoading(true);
         setError(null);
         try {
-          const res = await fetch(`/api/Class_detail_data_by_id/${id}`);
+          const res = await fetch(`/api/Class_detail_data_by_id/${id}`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          });
           if (!res.ok) {
             throw new Error("無法獲取課堂數據");
           }
@@ -92,7 +102,7 @@ const ClassDetailbysupadmin = () => {
     }
   }, [ClassId]);
 
-  console.log("GetClassDataById:", GetClassDataById);
+  console.log("GetClassDataById:", GetClassDataById, "-- End --");
 
   if (loading) {
     return (
@@ -110,13 +120,15 @@ const ClassDetailbysupadmin = () => {
     );
   }
 
-  if (!GetClassDataById) {
+  if (!GetClassDataById || GetClassDataById.length === 0) {
     return (
       <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
         <p className="text-gray-600">無課堂數據</p>
       </div>
     );
   }
+
+  const classData = GetClassDataById[0]; // 提取第一個物件
 
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
@@ -147,7 +159,7 @@ const ClassDetailbysupadmin = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-[#e7915b]">
-            課堂: {GetClassDataById.class_lesson}
+            課堂: {classData.class_lesson}
           </h1>
           <Link
             href={`/supadmin/${supadminId}/courseLists/${CourseId}/classLists/${ClassId}/edit`}
@@ -161,25 +173,29 @@ const ClassDetailbysupadmin = () => {
           <div className="grid gap-4">
             <div>
               <h3 className="text-lg font-semibold text-gray-700">課室</h3>
-              <p className="text-gray-600">{GetClassDataById.classroom}</p>
+              <p className="text-gray-600">
+                {classData.classroom && classData.classroom.length > 0
+                  ? classData.classroom[0].room
+                  : "未指定課室"}
+              </p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">課節</h3>
-              <p className="text-gray-600">{GetClassDataById.class_lesson}</p>
+              <p className="text-gray-600">{classData.class_lesson}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">人數</h3>
-              <p className="text-gray-600">{GetClassDataById.persons}</p>
+              <p className="text-gray-600">{classData.persons}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">老師</h3>
-              <p className="text-gray-600">{GetClassDataById.teacher}</p>
+              <p className="text-gray-600">{classData.teacher}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">學生</h3>
-              {GetClassDataById.student && GetClassDataById.student.length > 0 ? (
+              {classData.student && classData.student.length > 0 ? (
                 <ul className="text-gray-600">
-                  {GetClassDataById.student.map((student: Student) => (
+                  {classData.student.map((student: Student) => (
                     <li key={student.id}>{student.name}</li>
                   ))}
                 </ul>
@@ -189,15 +205,15 @@ const ClassDetailbysupadmin = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">筆記數目</h3>
-              <p className="text-gray-600">{GetClassDataById.node}</p>
+              <p className="text-gray-600">{classData.node}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">日期</h3>
-              <p className="text-gray-600">{getFormattedDate(GetClassDataById.class_date)}</p>
+              <p className="text-gray-600">{getFormattedDate(classData.class_date)}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700">年級</h3>
-              <p className="text-gray-600">{gradeMapping[GetClassDataById.grade] || GetClassDataById.grade}</p>
+              <p className="text-gray-600">{gradeMapping[classData.grade] || classData.grade}</p>
             </div>
             <div className="flex space-x-4">
               <Link
@@ -216,7 +232,7 @@ const ClassDetailbysupadmin = () => {
                 href={`/supadmin/${supadminId}/courseLists/${CourseId}/classLists/${ClassId}/changeclassstudent`}
                 className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
               >
-                加入掉堂學生
+                加入調堂學生
               </Link>
             </div>
           </div>

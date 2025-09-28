@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { student_school_timetable_Create_Schema } from "./schema";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -36,6 +37,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 school : school,
             }
         });
+        revalidatePath(`/admin/userLists/parentsLists/${parentId}/studentLists/${student_school_timetable_id}/schooltimetableLists/`)
     } catch (error) {
         console.log(error)
     }

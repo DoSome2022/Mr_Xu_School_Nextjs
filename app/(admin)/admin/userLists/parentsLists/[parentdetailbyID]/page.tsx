@@ -125,7 +125,12 @@ const ParentDetail = () => {
       const fetchStudentData = async (parentId: string) => {
         try {
           setIsLoading(true);
-          const res = await fetch(`/api/student/Student_Lists/${parentId}`);
+          const res = await fetch(`/api/student/Student_Lists/${parentId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error("無法連接到伺服器");
           }

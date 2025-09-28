@@ -62,7 +62,12 @@ const ApplyDetailbysupadmin = () => {
   useEffect(() => {
     const fetchApplyByIdData = async (id: string) => {
       try {
-        const res = await fetch(`/api/Apply_Lists_By_Id/${id}`);
+        const res = await fetch(`/api/Apply_Lists_By_Id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取申請數據");
         }
@@ -81,7 +86,12 @@ const ApplyDetailbysupadmin = () => {
   useEffect(() => {
     const fetchParentByIdData = async (id: string) => {
       try {
-        const res = await fetch(`/api/Parents_Lists_by_id/${id}`);
+        const res = await fetch(`/api/Parents_Lists_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取家長數據");
         }

@@ -30,20 +30,26 @@ const SetPublicHolidaysLists: React.FC = () => {
 
   useEffect(() => {
     const fetchPublicHolidaysLists = async () => {
-      try {
-        const res = await fetch("/api/PublicHoliday_Lists");
-        if (!res.ok) {
-          throw new Error("無法連線至伺服器");
+        try {
+            const res = await fetch("/api/PublicHoliday_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
+          );
+            if (!res.ok) {
+                throw new Error("無法連線至伺服器");
+            }
+            const result: PublicHoliday[] = await res.json();
+            setGetPublicHolidaysLists(result);
+        } catch (error) {
+            console.error("獲取公眾假期列表失敗:", error);
         }
-        const result: PublicHoliday[] = await res.json();
-        setGetPublicHolidaysLists(result);
-      } catch (error) {
-        console.error("獲取公眾假期列表失敗:", error);
-      }
     };
 
     fetchPublicHolidaysLists();
-  }, []);
+}, []);
 
   console.log("GetPublicHolidaysLists:", GetPublicHolidaysLists);
 

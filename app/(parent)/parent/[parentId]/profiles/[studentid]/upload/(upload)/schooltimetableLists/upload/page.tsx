@@ -20,7 +20,12 @@ const Student_SchoolTimeTable_upload = () =>{
     useEffect(() => {
         if(StudentID){
             const fetchStudentData = async (StudentID: string) => {
-                const res = await fetch(`/api/student/Student_Lists_detail_data_by_id/${StudentID}`)
+                const res = await fetch(`/api/student/Student_Lists_detail_data_by_id/${StudentID}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            })
                 if(!res.ok){
                     throw new Error("斷線！")
                 }

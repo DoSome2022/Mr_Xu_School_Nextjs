@@ -169,7 +169,14 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
   }
 
   const fetcher = <T,>(url: string, init?: RequestInit): Promise<T> =>
-    fetch(url, init).then((res) => {
+    fetch(url, {
+    ...init, // 保留傳入的 init 配置（若有）
+    cache: 'no-store', // 強制不快取，確保每次請求新數據
+    headers: {
+      ...init?.headers, // 合併傳入的 headers（若有）
+      'Cache-Control': 'no-cache', // 設置快取控制頭部
+    },
+  }).then((res) => {
       if (!res.ok) throw new Error(res.statusText);
       return res.json();
     });

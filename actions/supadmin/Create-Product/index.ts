@@ -34,6 +34,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 
             }
         });
+        revalidatePath(`/supadmin/${supadminid}/productLists`)
     } catch (error) {
         console.log(error)
     }

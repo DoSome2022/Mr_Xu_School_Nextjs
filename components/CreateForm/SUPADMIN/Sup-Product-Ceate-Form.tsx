@@ -65,7 +65,12 @@ const Product_Create_Formbysupadmin = () => {
     const fetchProductData = async () => {
       try {
         setIsLoadingCourses(true);
-        const res = await fetch("/api/Course_Lists");
+        const res = await fetch("/api/Course_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取課程列表數據");
         }

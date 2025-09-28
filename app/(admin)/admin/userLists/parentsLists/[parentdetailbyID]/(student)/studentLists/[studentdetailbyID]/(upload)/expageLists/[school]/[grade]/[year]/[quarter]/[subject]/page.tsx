@@ -47,7 +47,12 @@ const ExPageLists_Grade_Year_Quarter_Subject_Lists = () => {
     if (StudentID) {
       const getstudentexpaperlist = async (studentID: string) => {
         try {
-          const res = await fetch(`/api/student/Student_ExPaper_by_id_Lists/${studentID}`);
+          const res = await fetch(`/api/student/Student_ExPaper_by_id_Lists/${studentID}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
           if (!res.ok) {
             throw new Error(`獲取考試卷資料失敗: ${res.statusText}`);
           }

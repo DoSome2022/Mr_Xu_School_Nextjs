@@ -24,7 +24,12 @@ const Student_BookLists_School = () =>{
     if(ParentId){
       const fetchStudentData = async (studentdataid : string) => {
         //在app/api/student/Student_Lists/[id]/route.ts
-        const res = await fetch(`/api/Parents_Student/Parents_Student_Lists/${studentdataid}`);
+        const res = await fetch(`/api/Parents_Student/Parents_Student_Lists/${studentdataid}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if(!res){
           throw new Error("斷線！")
         }

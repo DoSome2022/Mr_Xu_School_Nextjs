@@ -45,7 +45,12 @@ const Student_BookLists_School_Year_Grade_Listsbysupadmin = () => {
     const getstudentexbooklists = async (studentId: string) => {
       try {
         setIsLoading(true);
-        const res = await fetch(`/api/student/Student_Booklist_by_id_Lists/${studentId}`);
+        const res = await fetch(`/api/student/Student_Booklist_by_id_Lists/${studentId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);
         }

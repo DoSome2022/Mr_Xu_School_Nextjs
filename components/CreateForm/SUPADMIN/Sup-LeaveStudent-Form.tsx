@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation"; // 添加 useRouter
 import { useEffect, useState, useTransition } from "react";
 import {
   Form,
@@ -13,11 +13,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Leave_Student_schema } from "@/actions/Leave-Student/schema";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Leave_Student_Action } from "@/actions/Leave-Student";
+import { SupLeave_Student_Action } from "@/actions/supadmin/Leave-Student";
+import { SupLeave_Student_schema } from "@/actions/supadmin/Leave-Student/schema";
 
 interface ClassData {
   id: string;
@@ -31,18 +31,19 @@ interface StudentData {
 
 const LeaveStudentFormbysupadmin = () => {
   const params = useParams();
+  const router = useRouter(); // 添加 useRouter
   const [isPending, startTransition] = useTransition();
   const courseId = params?.coursedetailbyID as string;
   const classId = params?.classdetailbyID as string;
-  // const supadminId = params?.supadminid as string;
+  const supadminId = params?.supadminid as string;
 
   const [GetClassDataById, setGetClassDataById] = useState<ClassData | null>(null);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [loading, setLoading] = useState<boolean>(true);
 
-  const form = useForm<z.infer<typeof Leave_Student_schema>>({
-    resolver: zodResolver(Leave_Student_schema),
+  const form = useForm<z.infer<typeof SupLeave_Student_schema>>({
+    resolver: zodResolver(SupLeave_Student_schema),
     defaultValues: {
       name: [],
       CourseId: courseId,
@@ -50,6 +51,7 @@ const LeaveStudentFormbysupadmin = () => {
       currentclassId: classId,
       class_date: "",
       date: "",
+      supadminId: supadminId,
     },
   });
 
@@ -59,7 +61,12 @@ const LeaveStudentFormbysupadmin = () => {
         setLoading(true);
         setError("");
         try {
-          const res = await fetch(`/api/Class_detail_data_by_id/${id}`);
+          const res = await fetch(`/api/Class_detail_data_by_id/${id}`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          });
           if (!res.ok) {
             throw new Error("無法載入課程資料！");
           }
@@ -84,7 +91,7 @@ const LeaveStudentFormbysupadmin = () => {
     }
   }, [classId, form]);
 
-  const onSubmit = (values: z.infer<typeof Leave_Student_schema>) => {
+  const onSubmit = (values: z.infer<typeof SupLeave_Student_schema>) => {
     setError("");
     setSuccess("");
 
@@ -100,9 +107,11 @@ const LeaveStudentFormbysupadmin = () => {
           date: currentDate,
         };
 
-        const result = await Leave_Student_Action(updatedValues);
+        console.log("表單提交數據:", updatedValues); // 除錯用
+
+        const result = await SupLeave_Student_Action(updatedValues);
         if (result.success) {
-          setSuccess("請假記錄已提交！");
+          setSuccess("更新成功");
           form.reset({
             name: [],
             CourseId: courseId,
@@ -110,22 +119,17 @@ const LeaveStudentFormbysupadmin = () => {
             currentclassId: classId,
             class_date: GetClassDataById?.class_date || "",
             date: "",
+            supadminId: supadminId,
           });
+          // 可選：延遲重定向以顯示成功訊息
+          setTimeout(() => {
+            router.push(`/supadmin/${supadminId}/courseLists/${courseId}`);
+          }, 2000); // 延遲 2 秒
         } else {
           setError(result.error || "提交失敗，請重試。");
         }
       } catch (err: any) {
-        if (err.message === "NEXT_REDIRECT") {
-          setSuccess("請假記錄已提交！");
-          form.reset({
-            name: [],
-            CourseId: courseId,
-            targetclassId: classId,
-            currentclassId: classId,
-            class_date: GetClassDataById?.class_date || "",
-            date: "",
-          });
-        } else if (err instanceof z.ZodError) {
+        if (err instanceof z.ZodError) {
           const errorMessage = err.errors
             .map((e) => `${e.path.join(".")}: ${e.message}`)
             .join("; ");
@@ -133,6 +137,7 @@ const LeaveStudentFormbysupadmin = () => {
         } else {
           setError(err.message || "提交時發生錯誤，請稍後再試。");
         }
+        console.error("表單提交錯誤:", err);
       }
     });
   };
@@ -145,7 +150,7 @@ const LeaveStudentFormbysupadmin = () => {
     );
   }
 
-  if (error) {
+  if (error && !success) {
     return (
       <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
         <p className="text-red-500 bg-red-100 p-3 rounded-md">{error}</p>
@@ -231,6 +236,15 @@ const LeaveStudentFormbysupadmin = () => {
           >
             {isPending ? "正在提交..." : "提交請假"}
           </Button>
+          {success && (
+            <Button
+              type="button"
+              onClick={() => router.push(`/supadmin/${supadminId}/courseLists/${courseId}`)}
+              className="w-full bg-gray-500 text-white hover:bg-gray-600 transition-colors duration-300 mt-4"
+            >
+              返回課程列表
+            </Button>
+          )}
         </form>
       </Form>
     </div>

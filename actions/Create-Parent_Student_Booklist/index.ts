@@ -115,7 +115,11 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       data: parent_student_booklist_Data,
       parentid,
       student_booklist_id,
+
     };
+      //刷新緩存
+    // revalidatePath(`/parent/${parentid}/profiles/${student_booklist_id}/upload/bookLists`);
+
   } catch (error) {
     console.error("Error processing upload to OSS:", error);
     return {

@@ -1,6 +1,7 @@
+// components/LeaveStudentForm.tsx
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import {
   Form,
@@ -31,11 +32,12 @@ interface StudentData {
 
 const LeaveStudentForm = () => {
   const params = useParams();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const courseId = params?.coursedetailbyID as string;
   const classId = params?.classdetailbyID as string;
 
-  const [GetClassDataById, setGetClassDataById] = useState<ClassData | null>(null);
+  const [GetClassDataById, setGetClassDataById] = useState<ClassData[] | null>(null);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [loading, setLoading] = useState<boolean>(true);
@@ -58,12 +60,17 @@ const LeaveStudentForm = () => {
         setLoading(true);
         setError("");
         try {
-          const res = await fetch(`/api/Class_detail_data_by_id/${id}`);
+          const res = await fetch(`/api/Class_detail_data_by_id/${id}`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          });
           if (!res.ok) {
             throw new Error("無法載入課程資料！");
           }
           const result = await res.json();
-          setGetClassDataById(result[0]);
+          setGetClassDataById(result);
           if (result[0]?.class_date) {
             form.setValue("class_date", result[0].class_date);
           } else {
@@ -101,37 +108,23 @@ const LeaveStudentForm = () => {
 
         const result = await Leave_Student_Action(updatedValues);
         if (result.success) {
-          setSuccess("請假記錄已提交！");
+          setSuccess("請假記錄創建成功，正在跳轉...");
           form.reset({
             name: [],
             CourseId: courseId,
             targetclassId: classId,
             currentclassId: classId,
-            class_date: GetClassDataById?.class_date || "",
+            class_date: GetClassDataById && GetClassDataById[0]?.class_date || "",
             date: "",
           });
+          setTimeout(() => {
+            router.push(`/admin/courseLists/${courseId}/classLists/${classId}`);
+          }, 2000); // 2秒後跳轉
         } else {
           setError(result.error || "提交失敗，請重試。");
         }
       } catch (err: any) {
-        if (err.message === "NEXT_REDIRECT") {
-          setSuccess("請假記錄已提交！");
-          form.reset({
-            name: [],
-            CourseId: courseId,
-            targetclassId: classId,
-            currentclassId: classId,
-            class_date: GetClassDataById?.class_date || "",
-            date: "",
-          });
-        } else if (err instanceof z.ZodError) {
-          const errorMessage = err.errors
-            .map((e) => `${e.path.join(".")}: ${e.message}`)
-            .join("; ");
-          setError(errorMessage || "表單資料格式錯誤");
-        } else {
-          setError(err.message || "提交時發生錯誤，請稍後再試。");
-        }
+        setError(err.message || "提交時發生錯誤，請稍後再試。");
       }
     });
   };
@@ -152,10 +145,12 @@ const LeaveStudentForm = () => {
     );
   }
 
+  const classData = GetClassDataById && GetClassDataById[0];
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-700">
-        課堂日期: {GetClassDataById?.class_date || "載入中..."}
+        課堂日期: {classData?.class_date || "載入中..."}
       </h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -172,8 +167,8 @@ const LeaveStudentForm = () => {
               <FormItem>
                 <FormLabel className="text-gray-700 font-semibold">選擇請假學生</FormLabel>
                 <div className="space-y-2">
-                  {GetClassDataById?.student?.length ? (
-                    GetClassDataById.student.map((student) => (
+                  {classData?.student?.length ? (
+                    classData.student.map((student) => (
                       <FormItem
                         key={student.name}
                         className="flex items-center space-x-2"

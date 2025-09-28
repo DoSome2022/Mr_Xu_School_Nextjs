@@ -4,7 +4,7 @@ import * as z from "zod";
 import { useState, useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,13 +51,13 @@ interface Student {
 const ChangeClass_Create_Formbysupadmin = () => {
   const [isPending, startTransition] = useTransition();
   const params = useParams();
+  const router = useRouter();
   const classId = params?.classdetailbyID as string;
   const courseId = params?.coursedetailbyID as string;
   const supadminId = params?.supadminid as string;
 
-
   const [GetStudentData, setGetStudentData] = useState<Student[]>([]);
-  const [GetClassData, setGetClassData] = useState<Class | null>(null);
+  const [GetClassData, setGetClassData] = useState<Class[] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<{
@@ -66,6 +66,7 @@ const ChangeClass_Create_Formbysupadmin = () => {
   } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -73,8 +74,18 @@ const ChangeClass_Create_Formbysupadmin = () => {
       setError(null);
       try {
         const [studentRes, classRes] = await Promise.all([
-          fetch(`/api/student/Student_AllLists`),
-          fetch(`/api/Class_detail_data_by_id/${classId}`),
+          fetch(`/api/student/Student_AllLists`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          }),
+          fetch(`/api/Class_detail_data_by_id/${classId}`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          }),
         ]);
 
         if (!studentRes.ok) throw new Error("無法獲取學生數據");
@@ -114,8 +125,17 @@ const ChangeClass_Create_Formbysupadmin = () => {
   });
 
   useEffect(() => {
-    if (GetClassData?.class_date) {
-      ChangeClass_create_form.setValue("class_date", GetClassData.class_date);
+    if (GetClassData && GetClassData[0]?.class_date) {
+      const classDate = GetClassData[0].class_date;
+      console.log("設置 class_date:", classDate); // 除錯日誌
+      ChangeClass_create_form.setValue("class_date", classDate);
+      // 驗證 class_date 格式
+      try {
+        SupChangeClass_Create_Schema.shape.class_date.parse(classDate);
+      } catch (err) {
+        console.error("class_date 驗證失敗:", err);
+        setError("無效的課堂日期格式，請檢查數據");
+      }
     }
   }, [GetClassData, ChangeClass_create_form]);
 
@@ -124,15 +144,25 @@ const ChangeClass_Create_Formbysupadmin = () => {
   ) => {
     console.log("-- create change class -- : ", values, "-- End --");
     setError(null);
+    setSuccess(null);
     startTransition(() => {
-      SupcreateChangeClass(values).then((result) => {
-        if (result?.error) {
-          setError(result.error);
-        } else {
-          ChangeClass_create_form.reset();
-          setSelectedStudent(null);
-        }
-      });
+      SupcreateChangeClass(values)
+        .then((result) => {
+          if (result?.error) {
+            setError(result.error);
+          } else {
+            setSuccess("調堂記錄創建成功");
+            ChangeClass_create_form.reset();
+            setSelectedStudent(null);
+            setTimeout(() => {
+              router.push(`/supadmin/${supadminId}/courseLists/${courseId}/classLists/${values.targetclassId}`);
+            }, 2000);
+          }
+        })
+        .catch((err) => {
+          console.error("表單提交錯誤:", err);
+          setError("提交時發生錯誤，請稍後再試。");
+        });
     });
   };
 
@@ -142,6 +172,7 @@ const ChangeClass_Create_Formbysupadmin = () => {
     class_date: string,
     id: string
   ) => {
+    console.log("選擇學生:", { studentId, name, class_date, id });
     ChangeClass_create_form.setValue("studentId", studentId);
     ChangeClass_create_form.setValue("name", name);
     ChangeClass_create_form.setValue("student_class_date", class_date);
@@ -162,7 +193,7 @@ const ChangeClass_Create_Formbysupadmin = () => {
     );
   }
 
-  if (error) {
+  if (error && !success) {
     return (
       <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
         <p className="text-red-500 bg-red-100 p-3 rounded-md">{error}</p>
@@ -170,16 +201,25 @@ const ChangeClass_Create_Formbysupadmin = () => {
     );
   }
 
+  console.log("GetStudentData:", GetStudentData, "-- End --");
+  console.log("GetClassData:", GetClassData, "-- End --");
+  console.log("selectedStudent:", selectedStudent, "-- End --");
+  console.log("filteredStudents:", filteredStudents, "-- End --");
+  console.log("--Bug-- :", ChangeClass_create_form.formState.errors, "-- End --");
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-700">
-        課堂時間: {GetClassData?.class_date || "載入中..."}
+        課堂時間: {GetClassData && GetClassData[0]?.class_date ? GetClassData[0].class_date : "載入中..."}
       </h2>
       <Form {...ChangeClass_create_form}>
         <form
           onSubmit={ChangeClass_create_form.handleSubmit(ChangeClass_create_form_onSubmit)}
           className="space-y-6"
         >
+          {success && (
+            <div className="text-green-500 bg-green-100 p-3 rounded-md">{success}</div>
+          )}
           {error && (
             <div className="text-red-500 bg-red-100 p-3 rounded-md">{error}</div>
           )}
@@ -203,23 +243,51 @@ const ChangeClass_Create_Formbysupadmin = () => {
               </FormItem>
             )}
           />
+          <FormField
+            control={ChangeClass_create_form.control}
+            name="class_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700 font-semibold">課堂日期</FormLabel>
+                <FormControl>
+                  <Input {...field} readOnly className="border-gray-300" />
+                </FormControl>
+                <FormMessage className="text-red-500" />
+              </FormItem>
+            )}
+          />
           {selectedStudent && (
             <div className="text-gray-600 bg-gray-50 p-4 rounded-md">
               <p>
                 <span className="font-semibold">選擇的學生:</span> {selectedStudent.name}
               </p>
               <p>
-                <span className="font-semibold">上課時間:</span> {selectedStudent.class_date}
+                <span className="font-semibold">目標課堂時間:</span> {selectedStudent.class_date}
               </p>
             </div>
           )}
           <Button
-            disabled={isPending}
+            disabled={isPending || !!ChangeClass_create_form.formState.errors.class_date}
             type="submit"
             className="w-full bg-[#e7915b] text-white hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
           >
             {isPending ? "正在提交..." : "提交"}
           </Button>
+          {success && (
+            <Button
+              type="button"
+              onClick={() =>
+                router.push(
+                  `/supadmin/${supadminId}/courseLists/${courseId}/classLists/${ChangeClass_create_form.getValues(
+                    "targetclassId"
+                  )}`
+                )
+              }
+              className="w-full bg-gray-500 text-white hover:bg-gray-600 transition-colors duration-300 mt-4"
+            >
+              返回班級詳情
+            </Button>
+          )}
         </form>
       </Form>
 
@@ -259,7 +327,10 @@ const ChangeClass_Create_Formbysupadmin = () => {
               <tbody>
                 {filteredStudents.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="border border-gray-300 p-3 text-center text-gray-600">
+                    <td
+                      colSpan={4}
+                      className="border border-gray-300 p-3 text-center text-gray-600"
+                    >
                       沒有找到匹配的學生
                     </td>
                   </tr>

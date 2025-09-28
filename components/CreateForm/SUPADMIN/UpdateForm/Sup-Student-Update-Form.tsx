@@ -1,330 +1,4 @@
-// "use client";
-
-// import * as z from "zod";
-// import { useEffect, useState, useTransition } from "react";
-// import { Controller, useForm } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { useParams } from "next/navigation";
-
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
-// import {
-//   Form,
-//   FormControl,
-//   FormField,
-//   FormItem,
-//   FormLabel,
-//   FormMessage,
-// } from "@/components/ui/form";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
-
-// import { Switch } from "../ui/switch";
-// import { FormError } from "@/components/form-error";
-// import { FormSuccess } from "@/components/form-success";
-// import { SWR_School_Grade } from "../fatchdata/swrschool_grade";
-// import DatePicker from "react-multi-date-picker";
-// import { Student_Update_Schema } from "@/actions/Update-Student/schema";
-// import { Update_Student } from "@/actions/Update-Student";
-
-// interface SchoolData {
-//   id: string;
-//   school_name: string;
-// }
-
-// const Student_Update_Form = () => {
-//   const [isPending, startTransition] = useTransition();
-//   const params = useParams();
-//   const parentId = params?.parentdetailbyID as string;
-//   const [error, setError] = useState<string | undefined>("");
-//   const [success, setSuccess] = useState<string | undefined>("");
-//   const [schoolsData, setSchoolsData] = useState<SchoolData[]>([]);
-//   const [isLoading, setIsLoading] = useState(true);
-
-//   const student_register_form = useForm<z.infer<typeof Student_Update_Schema>>({
-//     resolver: zodResolver(Student_Update_Schema),
-//     defaultValues: {
-//       name: "",
-//       school: "",
-//       grade: 0,
-//       student_id: "",
-//       chine_ex_day: "",
-//       math_ex_day: "",
-//       eng_ex_day: "",
-//       teachers: "",
-//       pay: false,
-//       student_parent_data_id: parentId,
-//       student_class_id: "",
-//       student_teacher_data_id: "",
-//     },
-//   });
-
-
-//   useEffect(() => {
-//     const fetchStudentData = async () => {
-//       try {
-//         const res = await fetch(`/api/student/Student_Lists_detail_data_by_id/${parentId}`);
-//         if (!res.ok) {
-//           throw new Error("無法連接到伺服器");
-//         }
-//         const result = await res.json();
-//         student_register_form.reset(result);
-//       } catch (error) {
-//         console.error("獲取學生數據失敗:", error);
-//       }
-//     }
-//     fetchStudentData()
-
-//   },[])
-
-
-//   useEffect(() => {
-//     const fetchSchoolsData = async () => {
-//       try {
-//         setIsLoading(true);
-//         const res = await fetch("/api/School_Lists");
-//         if (!res.ok) {
-//           throw new Error("無法連接到伺服器");
-//         }
-//         const result = await res.json();
-//         setSchoolsData(result);
-//       } catch (error) {
-//         console.error("獲取學校數據失敗:", error);
-//         setError("無法載入學校數據，請稍後再試");
-//       } finally {
-//         setIsLoading(false);
-//       }
-//     };
-//     fetchSchoolsData();
-//   }, []);
-
-//   const student_register_form_onSubmit = (values: z.infer<typeof Student_Update_Schema>) => {
-//     console.log("-- 學生創建輸入 -- : ", values, "-- End --");
-//     setError("");
-//     setSuccess("");
-//     startTransition(() => {
-//       Update_Student(values).then((data) => {
-//         setError(data?.error);
-//         setSuccess(data?.success);
-//       });
-//     });
-//   };
-
-//   return (
-//     <Form {...student_register_form}>
-//       <form onSubmit={student_register_form.handleSubmit(student_register_form_onSubmit)} className="space-y-6">
-//         {error && <FormError message={error} />}
-//         {success && <FormSuccess message={success} />}
-//         {isLoading ? (
-//           <p className="text-white text-center">正在載入數據...</p>
-//         ) : (
-//           <>
-//             <FormField
-//               control={student_register_form.control}
-//               name="name"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel className="text-white font-medium">姓名</FormLabel>
-//                   <FormControl>
-//                     <Input
-//                       {...field}
-//                       disabled={isPending}
-//                       placeholder="輸入姓名"
-//                       type="text"
-//                       className="border-0 bg-white text-[#e7915b] placeholder:text-gray-400 focus:ring-2 focus:ring-cyan-200"
-//                     />
-//                   </FormControl>
-//                   <FormMessage className="text-cyan-200" />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={student_register_form.control}
-//               name="school"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel className="text-white font-medium">學校</FormLabel>
-//                   <FormControl>
-//                     <Select disabled={isPending} defaultValue={field.value} onValueChange={field.onChange}>
-//                       <SelectTrigger className="border-0 bg-white text-[#e7915b] focus:ring-2 focus:ring-cyan-200">
-//                         <SelectValue placeholder="選擇學校" />
-//                       </SelectTrigger>
-//                       <SelectContent>
-//                         {schoolsData.map((school) => (
-//                           <SelectItem key={school.id} value={school.school_name}>
-//                             {school.school_name}
-//                           </SelectItem>
-//                         ))}
-//                       </SelectContent>
-//                     </Select>
-//                   </FormControl>
-//                   <FormMessage className="text-cyan-200" />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={student_register_form.control}
-//               name="grade"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel className="text-white font-medium">年級</FormLabel>
-//                   <FormControl>
-//                     <SWR_School_Grade field={field} />
-//                   </FormControl>
-//                   <FormMessage className="text-cyan-200" />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={student_register_form.control}
-//               name="chine_ex_day"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel className="text-white font-medium">中文考試時間</FormLabel>
-//                   <FormControl>
-//                     <Controller
-//                       name="chine_ex_day"
-//                       control={student_register_form.control}
-//                       render={({ field: { onChange, value } }) => (
-//                         <DatePicker
-//                           value={value || ""}
-//                           onChange={(date) => {
-//                             const formattedDate = date ? date.format("YYYY-MM-DD") : "";
-//                             onChange(formattedDate);
-//                           }}
-//                           format="YYYY-MM-DD"
-//                           placeholder="選擇日期"
-//                           disabled={isPending}
-//                           inputClass="w-full p-2 border-0 bg-white text-[#e7915b] placeholder:text-gray-400 focus:ring-2 focus:ring-cyan-200 rounded"
-//                         />
-//                       )}
-//                     />
-//                   </FormControl>
-//                   <FormMessage className="text-cyan-200" />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={student_register_form.control}
-//               name="math_ex_day"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel className="text-white font-medium">數學考試時間</FormLabel>
-//                   <FormControl>
-//                     <Controller
-//                       name="math_ex_day"
-//                       control={student_register_form.control}
-//                       render={({ field: { onChange, value } }) => (
-//                         <DatePicker
-//                           value={value || ""}
-//                           onChange={(date) => {
-//                             const formattedDate = date ? date.format("YYYY-MM-DD") : "";
-//                             onChange(formattedDate);
-//                           }}
-//                           format="YYYY-MM-DD"
-//                           placeholder="選擇日期"
-//                           disabled={isPending}
-//                           inputClass="w-full p-2 border-0 bg-white text-[#e7915b] placeholder:text-gray-400 focus:ring-2 focus:ring-cyan-200 rounded"
-//                         />
-//                       )}
-//                     />
-//                   </FormControl>
-//                   <FormMessage className="text-cyan-200" />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={student_register_form.control}
-//               name="eng_ex_day"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel className="text-white font-medium">英文考試時間</FormLabel>
-//                   <FormControl>
-//                     <Controller
-//                       name="eng_ex_day"
-//                       control={student_register_form.control}
-//                       render={({ field: { onChange, value } }) => (
-//                         <DatePicker
-//                           value={value || ""}
-//                           onChange={(date) => {
-//                             const formattedDate = date ? date.format("YYYY-MM-DD") : "";
-//                             onChange(formattedDate);
-//                           }}
-//                           format="YYYY-MM-DD"
-//                           placeholder="選擇日期"
-//                           disabled={isPending}
-//                           inputClass="w-full p-2 border-0 bg-white text-[#e7915b] placeholder:text-gray-400 focus:ring-2 focus:ring-cyan-200 rounded"
-//                         />
-//                       )}
-//                     />
-//                   </FormControl>
-//                   <FormMessage className="text-cyan-200" />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={student_register_form.control}
-//               name="student_id"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel className="text-white font-medium">學生ID</FormLabel>
-//                   <FormControl>
-//                     <Input
-//                       {...field}
-//                       disabled={isPending}
-//                       placeholder="輸入學生ID"
-//                       type="text"
-//                       className="border-0 bg-white text-[#e7915b] placeholder:text-gray-400 focus:ring-2 focus:ring-cyan-200"
-//                     />
-//                   </FormControl>
-//                   <FormMessage className="text-cyan-200" />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={student_register_form.control}
-//               name="teachers"
-//               render={({ field }) => (
-//                 <FormItem hidden>
-//                   <FormControl>
-//                     <Input {...field} disabled type="text" />
-//                   </FormControl>
-//                   <FormMessage className="text-cyan-200" />
-//                 </FormItem>
-//               )}
-//             />
-//             <FormField
-//               control={student_register_form.control}
-//               name="pay"
-//               render={({ field }) => (
-//                 <FormItem hidden>
-//                   <FormControl>
-//                     <Switch checked={field.value} onCheckedChange={field.onChange} disabled />
-//                   </FormControl>
-//                   <FormMessage className="text-cyan-200" />
-//                 </FormItem>
-//               )}
-//             />
-//             <Button
-//               disabled={isPending}
-//               type="submit"
-//               className="w-full bg-white text-[#e7915b] font-medium hover:bg-cyan-200 hover:text-[#e7915b] transition-colors duration-300"
-//             >
-//               建立
-//             </Button>
-//           </>
-//         )}
-//       </form>
-//     </Form>
-//   );
-// };
-
-// export default Student_Update_Form;
+// app/[您的路徑]/Student_Update_Formbysupadmin.tsx
 
 "use client";
 
@@ -332,7 +6,7 @@ import * as z from "zod";
 import { useEffect, useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import useSWR from "swr";
 import {
   Form,
@@ -351,12 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
-
 import DatePicker from "react-multi-date-picker";
-
 import { SWR_School_Grade } from "@/components/fatchdata/swrschool_grade";
 import { Switch } from "@/components/ui/switch";
 import { SupStudent_Update_Schema } from "@/actions/supadmin/Update-Student/schema";
@@ -402,16 +73,18 @@ const Student_Update_Formbysupadmin = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const params = useParams<{
-
+    supadminid: string;
     parentdetailbyID: string;
     studentdetailbyID: string;
   }>();
+  const router = useRouter();
 
   const parentId = params?.parentdetailbyID;
   const studentId = params?.studentdetailbyID;
+  const supadminId = params?.supadminid;
 
   // 驗證路由參數
-  if ( !parentId || !studentId) {
+  if (!parentId || !studentId || !supadminId) {
     return (
       <div className="bg-red-50 text-red-600 p-4 rounded-lg">
         錯誤：缺少必要路由參數
@@ -420,7 +93,14 @@ const Student_Update_Formbysupadmin = () => {
   }
 
   const fetcher = <T,>(url: string, init?: RequestInit): Promise<T> =>
-    fetch(url, init).then((res) => {
+    fetch(url, {
+      ...init,
+      cache: "no-store",
+      headers: {
+        ...init?.headers,
+        "Cache-Control": "no-cache",
+      },
+    }).then((res) => {
       if (!res.ok) throw new Error(res.statusText);
       return res.json();
     });
@@ -447,12 +127,13 @@ const Student_Update_Formbysupadmin = () => {
       name: "",
       school: "",
       grade: 0,
-      student_id: "",
+      student_id: studentId, // 使用路由參數 studentId
       chine_ex_day: "",
       math_ex_day: "",
       eng_ex_day: "",
       pay: false,
       student_parent_data_id: parentId,
+      supadminId: supadminId || "",
     },
   });
 
@@ -463,15 +144,16 @@ const Student_Update_Formbysupadmin = () => {
         name: studentData.name || "",
         school: studentData.school || "",
         grade: studentData.grade || 0,
-        student_id: studentData.student_id || "",
+        student_id: studentId, // 確保與路由參數一致
         chine_ex_day: studentData.chine_ex_day || "",
         math_ex_day: studentData.math_ex_day || "",
         eng_ex_day: studentData.eng_ex_day || "",
         pay: studentData.pay || false,
         student_parent_data_id: studentData.student_parent_data_id || parentId,
+        supadminId: supadminId || "",
       });
     }
-  }, [studentDataRaw, form, parentId]);
+  }, [studentDataRaw, form, parentId, studentId, supadminId]);
 
   // 錯誤處理
   if (studentError || schoolsError) {
@@ -513,16 +195,24 @@ const Student_Update_Formbysupadmin = () => {
     );
   }
 
-const onSubmit = (values: z.infer<typeof SupStudent_Update_Schema>) => {
+  const onSubmit = (values: z.infer<typeof SupStudent_Update_Schema>) => {
+    console.log("-- 學生更新輸入 -- : ", values, " -- End --");
     setError("");
     setSuccess("");
     startTransition(() => {
       SupUpdate_Student(values).then((data) => {
-        setError(data?.error);
-        setSuccess(typeof data?.success === "string" ? data?.success : data?.success ? "學生資料更新成功" : undefined);
+        if (data?.success) {
+          setSuccess("更新成功"); // 或其他默认成功信息
+          form.reset(); // 重置表單
+          router.push(`/supadmin/${supadminId}/userLists/parentsLists/${parentId}/studentLists/${studentId}`);
+        } else {
+          setError(data?.error || "更新失敗，請重試。");
+        }
       });
     });
   };
+
+  console.log("Bug : ", form.formState.errors, " -- End --");
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto">
@@ -585,7 +275,7 @@ const onSubmit = (values: z.infer<typeof SupStudent_Update_Schema>) => {
               </FormItem>
             )}
           />
-          <FormField
+          {/* <FormField
             control={form.control}
             name="student_id"
             render={({ field }) => (
@@ -594,15 +284,15 @@ const onSubmit = (values: z.infer<typeof SupStudent_Update_Schema>) => {
                 <FormControl>
                   <Input
                     {...field}
-                    disabled={isPending}
-                    placeholder="輸入學生 ID"
+                    disabled={true} // 禁用輸入，確保與路由參數一致
+                    value={studentId}
                     className="border-blue-300 focus:border-blue-500"
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
           <FormField
             control={form.control}
             name="chine_ex_day"

@@ -12,6 +12,7 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
+  //trustHost: true, // 添加此行以信任主機
   callbacks: {
     async session({ token, session }) {
       console.log("-- Session token -- : ", { sessionToken: token });

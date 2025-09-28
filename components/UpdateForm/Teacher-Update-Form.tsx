@@ -22,7 +22,7 @@
 //     FormLabel,
 //     FormMessage
 //  } from "@/components/ui/form"
-// import { Teacher_Update_Schema } from "@/actions/Update-Teacher/schema";
+// import { SupTeacher_Update_Schema } from "@/actions/Update-Teacher/schema";
 // import { updateTeacher } from "@/actions/Update-Teacher";
 
 
@@ -66,8 +66,8 @@
 
 
 
-//      const teacher_update_form = useForm<z.infer<typeof Teacher_Update_Schema>>({
-//         resolver: zodResolver(Teacher_Update_Schema),
+//      const teacher_update_form = useForm<z.infer<typeof SupTeacher_Update_Schema>>({
+//         resolver: zodResolver(SupTeacher_Update_Schema),
 //         defaultValues:{
 //             teacherid:TeacherId,
 //             username: UserName,
@@ -111,7 +111,7 @@
 
 
 
-//     const teacher_update_form_onSubmit = (values:z.infer<typeof Teacher_Update_Schema>) =>{
+//     const teacher_update_form_onSubmit = (values:z.infer<typeof SupTeacher_Update_Schema>) =>{
 //         console.log("-- teacher update輸入 -- : ",values,"-- End --")
 //         startTransition( async () => {
 //             const result = await updateTeacher(values);
@@ -308,14 +308,15 @@
 // export default Teacher_Update_Form
 
 
+// app/[您的路徑]/Teacher_Update_Formbysupadmin.tsx
+
 "use client";
 
 import * as z from "zod";
 import { useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "next/navigation";
-
+import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -329,8 +330,8 @@ import {
 } from "@/components/ui/form";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
-import { Teacher_Update_Schema } from "@/actions/Update-Teacher/schema";
-import { updateTeacher } from "@/actions/Update-Teacher";
+import { SupupdateTeacher } from "@/actions/supadmin/Update-Teacher";
+import { SupTeacher_Update_Schema } from "@/actions/supadmin/Update-Teacher/schema";
 
 interface TeacherData {
   username: string;
@@ -341,77 +342,122 @@ interface TeacherData {
   isadmin: boolean;
 }
 
-const Teacher_Update_Form = () => {
-  const params = useParams();
-  const teacherId = params?.teacherdetailbyID as string;
+const Teacher_Update_Formbysupadmin = () => {
+  const params = useParams<{
+    supadminid: string;
+    teacherdetailbyID: string;
+  }>();
+  const router = useRouter();
+  const teacherId = params?.teacherdetailbyID;
+  const supadminId = params?.supadminid;
 
   const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const teacher_update_form = useForm<z.infer<typeof Teacher_Update_Schema>>({
-    resolver: zodResolver(Teacher_Update_Schema),
+  const teacher_update_form = useForm<z.infer<typeof SupTeacher_Update_Schema>>({
+    resolver: zodResolver(SupTeacher_Update_Schema),
     defaultValues: {
-      teacherid: teacherId,
+      teacherid: teacherId || "",
       username: "",
       nickname: "",
       email: "",
       phone: "",
       staff: false,
       isadmin: false,
+      supadminId: supadminId || "",
     },
   });
 
   useEffect(() => {
-    if (teacherId) {
-      const fetchTeacherData = async (userId: string) => {
-        try {
-          const res = await fetch(`/api/Course_data_teacher_by_id/${userId}`);
-          if (!res.ok) {
-            throw new Error("無法連接到伺服器");
-          }
-          const result = await res.json();
-          setTeacherData(result);
-          teacher_update_form.reset({
-            teacherid: teacherId,
-            username: result.username || "",
-            nickname: result.nickname || "",
-            email: result.email || "",
-            phone: result.phone || "",
-            staff: result.staff || false,
-            isadmin: result.isadmin || false,
-          });
-        } catch (error) {
-          console.error("獲取老師數據失敗:", error);
-          setError("無法載入老師數據，請稍後再試");
-        }
-      };
-      fetchTeacherData(teacherId);
+    if (!teacherId || !supadminId) {
+      setError("缺少必要路由參數");
+      setLoading(false);
+      return;
     }
-  }, [teacherId, teacher_update_form]);
 
-  const teacher_update_form_onSubmit = (values: z.infer<typeof Teacher_Update_Schema>) => {
-    console.log("-- 老師用戶更新輸入 -- : ", values, "-- End --");
+    const fetchTeacherData = async (userId: string) => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/Course_data_teacher_by_id/${userId}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        });
+        if (!res.ok) {
+          throw new Error("無法連接到伺服器");
+        }
+        const result = await res.json();
+        if (!result || typeof result !== "object") {
+          throw new Error("無效的教師數據格式");
+        }
+        setTeacherData(result);
+        teacher_update_form.reset({
+          teacherid: teacherId,
+          username: result.username || "",
+          nickname: result.nickname || "",
+          email: result.email || "",
+          phone: result.phone || "",
+          staff: result.staff || false,
+          isadmin: result.isadmin || false,
+          supadminId: supadminId || "",
+        });
+      } catch (error: any) {
+        console.error("獲取老師數據失敗:", error);
+        setError("無法載入老師數據，請稍後再試");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTeacherData(teacherId);
+  }, [teacherId, supadminId, teacher_update_form]);
+
+  const teacher_update_form_onSubmit = (values: z.infer<typeof SupTeacher_Update_Schema>) => {
+    console.log("-- 老師用戶更新輸入 -- : ", values, " -- End --");
     setError("");
     setSuccess("");
     startTransition(() => {
-      updateTeacher(values).then((data) => {
-        setError(data?.error);
-        setSuccess(typeof data?.success === "string" ? data?.success : data?.success ? "資料更新成功" : undefined);
+      SupupdateTeacher(values).then((data) => {
+        if (data?.success) {
+          setSuccess("資料更新成功");
+          teacher_update_form.reset();
+          router.push(`/supadmin/${supadminId}/userLists/teachersLists/${teacherId}`);
+        } else {
+          setError(data?.error || "更新失敗，請重試。");
+        }
       });
     });
   };
 
+  console.log("teacher_update_form : ", teacher_update_form.formState.errors, " -- End --");
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-gray-600 text-lg">正在加載...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 pt-20 flex justify-center items-center">
+        <p className="text-red-500 bg-red-100 p-3 rounded-md">{error}</p>
+      </div>
+    );
+  }
+
   return (
-    <Form {...teacher_update_form}>
-      <form onSubmit={teacher_update_form.handleSubmit(teacher_update_form_onSubmit)} className="space-y-6">
-        {error && <FormError message={error} />}
-        {success && <FormSuccess message={success} />}
-        {!teacherData ? (
-          <p className="text-white text-center">正在載入數據...</p>
-        ) : (
-          <>
+    <div className="min-h-screen bg-gray-100 pt-20 flex justify-center">
+      <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
+        <h2 className="text-xl font-semibold text-[#e7915b] mb-6">編輯教師資料</h2>
+        <Form {...teacher_update_form}>
+          <form onSubmit={teacher_update_form.handleSubmit(teacher_update_form_onSubmit)} className="space-y-6">
+            <FormError message={error} />
+            <FormSuccess message={success} />
             <FormField
               control={teacher_update_form.control}
               name="teacherid"
@@ -429,7 +475,7 @@ const Teacher_Update_Form = () => {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">用戶名稱</FormLabel>
+                  <FormLabel className="text-black font-medium">用戶名稱</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -448,7 +494,7 @@ const Teacher_Update_Form = () => {
               name="nickname"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">暱稱</FormLabel>
+                  <FormLabel className="text-black font-medium">暱稱</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -467,7 +513,7 @@ const Teacher_Update_Form = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">電郵</FormLabel>
+                  <FormLabel className="text-black font-medium">電郵</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -486,7 +532,7 @@ const Teacher_Update_Form = () => {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">電話</FormLabel>
+                  <FormLabel className="text-black font-medium">電話</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -505,7 +551,7 @@ const Teacher_Update_Form = () => {
               name="staff"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">職員</FormLabel>
+                  <FormLabel className="text-black font-medium">職員</FormLabel>
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -523,7 +569,7 @@ const Teacher_Update_Form = () => {
               name="isadmin"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white font-medium">是否管理員</FormLabel>
+                  <FormLabel className="text-black font-medium">是否管理員</FormLabel>
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -541,13 +587,13 @@ const Teacher_Update_Form = () => {
               type="submit"
               className="w-full bg-white text-[#e7915b] font-medium hover:bg-cyan-200 hover:text-[#e7915b] transition-colors duration-300"
             >
-              更新
+              {isPending ? "正在提交..." : "更新"}
             </Button>
-          </>
-        )}
-      </form>
-    </Form>
+          </form>
+        </Form>
+      </div>
+    </div>
   );
 };
 
-export default Teacher_Update_Form;
+export default Teacher_Update_Formbysupadmin;

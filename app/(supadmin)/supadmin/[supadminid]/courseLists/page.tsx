@@ -45,7 +45,12 @@ const CourseListsbysupadmin = () => {
     const fetchCourseData = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/Course_Lists");
+        const res = await fetch("/api/Course_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error(`HTTP 錯誤，狀態碼：${res.status}`);
         }
@@ -71,7 +76,12 @@ const CourseListsbysupadmin = () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `/api/Course_Lists_search?query=${encodeURIComponent(searchQuery)}&field=${searchField}`
+        `/api/Course_Lists_search?query=${encodeURIComponent(searchQuery)}&field=${searchField}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
       );
       if (!response.ok) {
         throw new Error(`搜尋失敗，狀態碼：${response.status}`);

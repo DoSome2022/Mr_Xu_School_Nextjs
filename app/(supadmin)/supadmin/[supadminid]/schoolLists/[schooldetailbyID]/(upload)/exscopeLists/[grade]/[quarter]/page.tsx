@@ -11,7 +11,14 @@ interface SchoolSubject {
 }
 
 
-const fetcher = (url: string, init?: RequestInit):Promise<SchoolSubject[]>  => fetch(url, init).then((res) => res.json());
+const fetcher = (url: string, init?: RequestInit):Promise<SchoolSubject[]>  => fetch(url, {
+    ...init, // 保留傳入的 init 配置（若有）
+    cache: 'no-store', // 強制不快取，確保每次請求新數據
+    headers: {
+      ...init?.headers, // 合併傳入的 headers（若有）
+      'Cache-Control': 'no-cache', // 設置快取控制頭部
+    },
+  }).then((res) => res.json());
 const apiUrl = process.env.NEXT_PUBLIC_API_URL|| "http://127.0.0.1:8000"
 
 const ExScopeLists_Grade_Quarter_subjectbysupadmin = () =>{

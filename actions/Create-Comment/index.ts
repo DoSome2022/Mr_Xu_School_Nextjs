@@ -25,6 +25,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 student_id : student_id
             }
         });
+        revalidatePath("")
     } catch (error) {
         console.log(error)
     }

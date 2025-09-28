@@ -41,6 +41,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 img:img,
             }
         });
+        revalidatePath(`/admin/userLists/parentsLists/${parentId}/studentLists/${student_score_id}/scoreLists/`)
     } catch (error) {
         console.log(error)
     }

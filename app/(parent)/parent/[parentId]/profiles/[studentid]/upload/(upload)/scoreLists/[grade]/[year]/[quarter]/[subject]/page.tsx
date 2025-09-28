@@ -28,7 +28,12 @@ const ScoreLists_Year_Quarter_Subject_List = () => {
         if(StudentID){
             const getstudentscorelists = async (StudentID: string) => {
                 try {
-                    const res = await fetch(`/api/student/Student_Score_by_id_Lists/${StudentID}`)
+                    const res = await fetch(`/api/student/Student_Score_by_id_Lists/${StudentID}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            })
                     if(!res.ok) {
                         throw new Error("斷線！");
                     }

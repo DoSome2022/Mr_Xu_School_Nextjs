@@ -17,7 +17,12 @@ const ExTimeLists = () => {
   useEffect(() => {
     if (StudentID) {
       const fetchStudentData = async (studentdataid: string) => {
-        const res = await fetch(`/api/Parents_Student/Parents_Student_Lists/${studentdataid}`);
+        const res = await fetch(`/api/Parents_Student/Parents_Student_Lists/${studentdataid}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("斷線！");
         }

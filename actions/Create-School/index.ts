@@ -22,6 +22,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 school_name : school_name
             }
         });
+        revalidatePath(`/admin/schoolLists`)
     } catch (error) {
         console.log(error)
     }

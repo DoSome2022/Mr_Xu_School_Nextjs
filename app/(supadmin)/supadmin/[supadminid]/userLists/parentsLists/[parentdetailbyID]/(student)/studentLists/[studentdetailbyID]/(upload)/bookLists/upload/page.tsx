@@ -39,7 +39,12 @@ const Student_BookLists_uploadbysupadmin = () => {
     const fetchStudentData = async (studentId: string) => {
       try {
         setIsLoading(true);
-        const res = await fetch(`/api/student/Student_Lists_detail_data_by_id/${studentId}`);
+        const res = await fetch(`/api/student/Student_Lists_detail_data_by_id/${studentId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);
         }

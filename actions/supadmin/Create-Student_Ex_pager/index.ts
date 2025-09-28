@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Supstudent_ex_paper_Create_Schema } from "./schema";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 
 const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
@@ -38,6 +39,7 @@ const handler = async ( data: InputType ) : Promise<ReturnType> =>  {
                 school : school
             }
         });
+        revalidatePath(`/supadmin/userLists/parentsLists/${parentId}/studentLists/${student_ex_paper_id}/expageLists/`)
     } catch (error) {
         console.log(error)
     }

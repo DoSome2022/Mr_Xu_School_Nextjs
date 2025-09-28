@@ -33,7 +33,12 @@ const ExTimeLists_Grade_Year_Quarter_Subject_extimelistsbysupadmin = () =>{
         if(SchoolId && YearId && GradeId && QuarterId && SubjectId) {
             const getExTimeListsDetail = async (SchoolId: string , GradeId:string,yearId:string ,QuarterId:string ,SubjectId: string) => {
                 try {
-                const res = await fetch(`/api/Extimelists_by_id/${SchoolId}/${GradeId}/${yearId}/${QuarterId}/${SubjectId}`);
+                const res = await fetch(`/api/Extimelists_by_id/${SchoolId}/${GradeId}/${yearId}/${QuarterId}/${SubjectId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
                 if(!res.ok) {
                     throw new Error("斷線！");
                 }

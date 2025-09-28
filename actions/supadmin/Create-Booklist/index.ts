@@ -38,7 +38,7 @@ let booklist_Data;
                 year : year,
             }
         });
-        
+        revalidatePath(`/supadmin/${supadminid}/schoolLists/${school_booklist_id}/bookLists/`)
     } catch (error) {
         console.log(error)
     }

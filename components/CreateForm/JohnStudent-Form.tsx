@@ -254,8 +254,18 @@ const John_Student_Form = () => {
       setIsLoading(true);
       try {
         const [studentRes, courseRes] = await Promise.all([
-          fetch(`/api/student/Student_AllLists`),
-          fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`),
+          fetch(`/api/student/Student_AllLists`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
+          fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }),
         ]);
 
         if (!studentRes.ok) throw new Error("無法獲取學生數據");
@@ -304,7 +314,12 @@ const John_Student_Form = () => {
     }
     try {
       const response = await fetch(
-        `/api/AddStudent_Lists_search?query=${encodeURIComponent(searchQuery)}`
+        `/api/AddStudent_Lists_search?query=${encodeURIComponent(searchQuery)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
       );
       if (!response.ok) throw new Error("搜索請求失敗");
       const data = await response.json();

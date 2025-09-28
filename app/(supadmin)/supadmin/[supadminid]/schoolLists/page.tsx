@@ -33,7 +33,12 @@ const SchoolListsbysupadmin = () => {
     const fetchSchoolsData = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/School_Lists");
+        const res = await fetch("/api/School_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取學校列表數據");
         }
@@ -54,7 +59,12 @@ const SchoolListsbysupadmin = () => {
       const response = await fetch(
         `/api/SchoolLists_search?query=${encodeURIComponent(
           searchQuery
-        )}&field=${searchField}`
+        )}&field=${searchField}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
       );
       if (!response.ok) {
         throw new Error("搜尋失敗");

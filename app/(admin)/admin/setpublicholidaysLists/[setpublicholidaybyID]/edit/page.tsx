@@ -60,7 +60,12 @@ const EditPublicHolidaysPage = () => {
 
   useEffect(() => {
     const fetchPublicHolidaysLists = async (id: any) => {
-      const res = await fetch(`/api/PublicHoliday_Lists_by_id/${id}`);
+      const res = await fetch(`/api/PublicHoliday_Lists_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
       if (!res.ok) {
         throw new Error("斷線！");
       }

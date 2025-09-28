@@ -49,7 +49,12 @@ const Student_BookLists_School_Year_Grade_Id_Detailbysupadmin = () => {
   const handleDownload = async (imgUrl: string, fileName: string) => {
     try {
     //   const response = await fetch(imgUrl, { mode: "cors" });
-    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`);
+    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
       if (!response.ok) {
         throw new Error("無法下載圖片");
       }
@@ -73,7 +78,12 @@ const Student_BookLists_School_Year_Grade_Id_Detailbysupadmin = () => {
     const getstudentbooklistsdetailbyid = async (studentId: string, bookId: string) => {
       try {
         setIsLoading(true);
-        const res = await fetch(`/api/student/Student_Booklist_by_id_Lists_by_id/${studentId}/${bookId}`);
+        const res = await fetch(`/api/student/Student_Booklist_by_id_Lists_by_id/${studentId}/${bookId}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);
         }

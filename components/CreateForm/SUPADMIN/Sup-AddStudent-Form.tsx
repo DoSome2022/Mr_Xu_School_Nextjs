@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { SupAddStudent_Create_Schema } from "@/actions/supadmin/Create-AddStudent/schema";
 import { SupcreateAddStudent } from "@/actions/supadmin/Create-AddStudent";
+import { FormSuccess } from "@/components/form-success";
 
 interface StudentData {
   id: string;
@@ -29,11 +30,13 @@ interface StudentData {
 const Add_Student_Formbysupadmin = () => {
   const params = useParams();
   const courseId = params?.coursedetailbyID as string;
-  // const supadminId = params?.supadminid as string;
+  const supadminId = params?.supadminid as string;
   const [GetStudentData, setGetStudentData] = useState<StudentData[]>([]);
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<StudentData[]>([]);
+  const [success, setSuccess] = useState<string | undefined>("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,7 +44,12 @@ const Add_Student_Formbysupadmin = () => {
     const fetchStudentData = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/student/Student_AllLists`);
+        const res = await fetch(`/api/student/Student_AllLists`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) throw new Error("無法獲取學生數據");
         const result = await res.json();
         setGetStudentData(result);
@@ -70,7 +78,12 @@ const Add_Student_Formbysupadmin = () => {
     }
     try {
       const response = await fetch(
-        `/api/AddStudent_Lists_search?query=${encodeURIComponent(searchQuery)}`
+        `/api/AddStudent_Lists_search?query=${encodeURIComponent(searchQuery)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            }
       );
       if (!response.ok) throw new Error("搜索請求失敗");
       const data = await response.json();
@@ -82,17 +95,23 @@ const Add_Student_Formbysupadmin = () => {
     }
   };
 
-  const onSubmit = (values: z.infer<typeof SupAddStudent_Create_Schema>) => {
-    setError(null);
-    startTransition(async () => {
-      const result = await SupcreateAddStudent(values);
-      if (result?.error) {
-        setError(result.error);
-      } else {
-        form.reset(); // 重置表單
-        setSearchQuery("");
-        setSearchResults([]);
-      }
+const onSubmit = (values: z.infer<typeof SupAddStudent_Create_Schema>) => {
+    setError("");
+    setSuccess("");
+    startTransition(() => {
+      SupcreateAddStudent(values).then((result) => {
+        if (result?.success) {
+          setSuccess("學生添加成功！");
+          form.reset({
+            courseId: courseId,
+            student: [],
+          });
+          // 客戶端重定向
+          router.push(`/supadmin/${supadminId}/courseLists/${courseId}`);
+        } else {
+          setError(result?.error || "添加學生失敗，請重試。");
+        }
+      });
     });
   };
 
@@ -154,6 +173,7 @@ const Add_Student_Formbysupadmin = () => {
         {error && (
           <div className="text-red-500 bg-red-100 p-3 rounded-md">{error}</div>
         )}
+        <FormSuccess message={success} />
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
             <Input
@@ -217,3 +237,5 @@ const Add_Student_Formbysupadmin = () => {
 };
 
 export default Add_Student_Formbysupadmin;
+
+

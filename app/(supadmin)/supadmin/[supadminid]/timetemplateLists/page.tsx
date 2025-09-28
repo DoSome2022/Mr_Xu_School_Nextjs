@@ -43,7 +43,12 @@ const TimeTemplateListsbysupadmin: React.FC = () => {
     const fetchTimeTemp = async (): Promise<void> => {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/TimeTemplate_Lists");
+        const res = await fetch("/api/TimeTemplate_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取時間模板列表數據");
         }

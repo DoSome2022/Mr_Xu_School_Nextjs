@@ -31,7 +31,12 @@ const ExPageLists_grade_year_quarter_subject_expagelists_by_id_bysupadmin = () =
         if(SchoolId && YearId && GradeId && QuarterId && SubjectId && ExPageListById) {
             const getExPageListsDetailById = async (SchoolId: string ,YearId:string , GradeId:string ,QuarterId:string,SubjectId:string,ExPageListById:string ) => {
                 try {
-                const res = await fetch(`/api/Expagelists_detail_data_by_id/${SchoolId}/${GradeId}/${YearId}/${QuarterId}/${SubjectId}/${ExPageListById}`);
+                const res = await fetch(`/api/Expagelists_detail_data_by_id/${SchoolId}/${GradeId}/${YearId}/${QuarterId}/${SubjectId}/${ExPageListById}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
                 if(!res.ok) {
                     throw new Error("斷線！");
                 }
@@ -66,7 +71,12 @@ const ExPageLists_grade_year_quarter_subject_expagelists_by_id_bysupadmin = () =
   const handleDownload = async (imgUrl: string, fileName: string) => {
     try {
     //   const response = await fetch(imgUrl, { mode: "cors" });
-    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`);
+    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
       if (!response.ok) {
         throw new Error("無法下載圖片");
       }

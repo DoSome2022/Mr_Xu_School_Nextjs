@@ -40,6 +40,8 @@
 
 
 
+// actions/Update-Course/index.ts
+
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -47,8 +49,8 @@ import { InputType, ReturnType } from "./types";
 import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Course_Update_Schema } from "./schema";
-import { redirect } from "next/navigation";
 import { Course } from "@prisma/client";
+import { redirect } from "next/navigation";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
   const { courseId, course_name, course_subject, persons, grade, teacher, course_teacher_data_id } = data;
@@ -93,8 +95,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
         grade,
         teacher,
         Teacher_data: course_teacher_data_id && course_teacher_data_id.length > 0
-          ? { set: course_teacher_data_id.map(id => ({ id })) } // 更新多對多關係
-          : { set: [] }, // 清空關係
+          ? { set: course_teacher_data_id.map(id => ({ id })) }
+          : { set: [] },
       },
     });
 
@@ -105,10 +107,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
     // 重新驗證相關頁面
     revalidatePath(`/admin/courseLists/${courseId}`);
-
-    // 重定向
     redirect(`/admin/courseLists/${courseId}`);
-
     return { data: course_data, success: "課程更新成功" };
   } catch (error: any) {
     console.error("更新課程失敗:", error);

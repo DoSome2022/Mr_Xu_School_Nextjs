@@ -108,7 +108,12 @@ const Parent_Student_ExtimeLists_Create_Form = () => {
     };
     useEffect(() => {
         const fetchSchoolData = async () => {
-            const res = await fetch(`/api/School_Lists/`);
+            const res = await fetch(`/api/School_Lists/`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
             if (!res.ok) throw new Error("Network error!");
             const result = await res.json();
             setGetSchoolData(result);
@@ -119,7 +124,12 @@ const Parent_Student_ExtimeLists_Create_Form = () => {
     useEffect(() => {
         if (StudentID) {
             const fetchStudentData = async () => {
-                const res = await fetch(`/api/Parents_Student/Parents_Student_Lists_detail_data_by_id/${StudentID}`);
+                const res = await fetch(`/api/Parents_Student/Parents_Student_Lists_detail_data_by_id/${StudentID}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
                 if (!res.ok) throw new Error("Network error!");
                 const result = await res.json();
                 setGetStudentData(result);

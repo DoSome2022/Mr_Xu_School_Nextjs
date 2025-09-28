@@ -19,7 +19,12 @@ const ApplyListsbysupadmin = () => {
   useEffect(() => {
     const fetchApplyData = async () => {
       try {
-        const res = await fetch("/api/Apply_Lists");
+        const res = await fetch("/api/Apply_Lists", {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
         if (!res.ok) {
           throw new Error("無法獲取申請列表數據！");
         }

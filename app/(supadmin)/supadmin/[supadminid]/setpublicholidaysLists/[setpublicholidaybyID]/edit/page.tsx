@@ -1,7 +1,6 @@
 "use client";
 
 import Public_Holidays_Edit_Formbysupadmin from "@/components/CreateForm/SUPADMIN/UpdateForm/Sup-editSetPublicHolidays-Form";
-import Public_Holidays_Edit_Form from "@/components/UpdateForm/editSetPublicHolidays-Form";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -12,7 +11,12 @@ const EditPublicHolidaysPagebysupadmin = () => {
 
   useEffect(() => {
     const fetchPublicHolidaysLists = async (id: any) => {
-      const res = await fetch(`/api/PublicHoliday_Lists_by_id/${id}`);
+      const res = await fetch(`/api/PublicHoliday_Lists_by_id/${id}`, {
+                cache: 'no-store',  // 強制不快取，確保每次請求新數據
+                headers: {
+                    'Cache-Control': 'no-cache',
+                },
+            });
       if (!res) {
         throw new Error("斷線！");
       }
