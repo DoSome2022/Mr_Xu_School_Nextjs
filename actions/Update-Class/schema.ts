@@ -31,8 +31,8 @@ import { z } from "zod";
 
 export const Class_Update_Schema = z.object({
   classId: z.string().min(1, { message: "班級 ID 不可為空" }),
-  freq: z.string().min(1, { message: "頻率不可為空" }),
-  byweekday: z.string().min(1, { message: "工作日不可為空" }),
+  freq: z.string(),
+  byweekday: z.string(),
   title: z.string().min(1, { message: "標題不可為空" }),
   allDay: z.boolean({ message: "全天狀態必須提供" }),
   class_start_time: z.string().min(1, { message: "開始時間不可為空" }),
@@ -46,6 +46,6 @@ export const Class_Update_Schema = z.object({
   node: z.number().min(0, { message: "節點必須大於等於0" }),
   teacher: z.string().min(1, { message: "教師不可為空" }),
   grade: z.number().min(0, { message: "年級必須大於等於0" }),
-  cram: z.string().min(1, { message: "補習類型不可為空" }),
+  cram: z.string(),
   class_date: z.array(z.date()).min(1, { message: "至少選擇一個日期" }),
 });

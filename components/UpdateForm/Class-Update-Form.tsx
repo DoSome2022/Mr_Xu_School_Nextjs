@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams} from "next/navigation";
+import { useParams, useRouter } from "next/navigation"; // 加入 useRouter
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,6 @@ import { Class_Update_Schema } from "@/actions/Update-Class/schema";
 import { z } from "zod";
 import Link from "next/link";
 
-// 定義介面
 interface Teacher {
   id: string;
   username: string;
@@ -52,7 +51,7 @@ interface Class {
   id: string;
   title: string;
   class_lesson: string;
-  classroom: string;
+  classroom: { id: string; room: string }[];
   teacher: string;
   class_start_time: string;
   class_end_time: string;
@@ -66,6 +65,7 @@ interface Class {
 const Class_Updata_Custom_Form_v1 = () => {
   const [isPending, startTransition] = useTransition();
   const params = useParams();
+  const router = useRouter(); // 新增 useRouter
   const courseId = params?.coursedetailbyID as string;
   const classId = params?.classdetailbyID as string;
   const [selectedDates, setSelectedDates] = useState<Date | null>(null);
@@ -75,7 +75,7 @@ const Class_Updata_Custom_Form_v1 = () => {
 
   const [GetTeacherData, setGetTeacherData] = useState<Teacher[]>([]);
   const [GetCourseData, setGetCourseData] = useState<Course | null>(null);
-  const [GetClassData, setGetClassData] = useState<Class | null>(null);
+  const [GetClassData, setGetClassData] = useState<Class[] | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,23 +84,17 @@ const Class_Updata_Custom_Form_v1 = () => {
       try {
         const [teacherRes, courseRes, classRes] = await Promise.all([
           fetch("/api/Course_data_teacher", {
-                cache: 'no-store',  // 強制不快取，確保每次請求新數據
-                headers: {
-                    'Cache-Control': 'no-cache',
-                },
-            }),
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" },
+          }),
           fetch(`/api/Course_detail_data_by_id_findMany/${courseId}`, {
-                cache: 'no-store',  // 強制不快取，確保每次請求新數據
-                headers: {
-                    'Cache-Control': 'no-cache',
-                },
-            }),
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" },
+          }),
           fetch(`/api/Class_detail_data_by_id/${classId}`, {
-                cache: 'no-store',  // 強制不快取，確保每次請求新數據
-                headers: {
-                    'Cache-Control': 'no-cache',
-                },
-            }),
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" },
+          }),
         ]);
 
         if (!teacherRes.ok) throw new Error("無法獲取教師數據");
@@ -141,7 +135,7 @@ const Class_Updata_Custom_Form_v1 = () => {
       class_start_time: "",
       class_end_time: "",
       class_time_h: 0,
-      // classroom: "",
+      classroomId: "",
       class_lesson: "",
       class_course_id: courseId,
       attend_number: 0,
@@ -155,11 +149,11 @@ const Class_Updata_Custom_Form_v1 = () => {
   });
 
   useEffect(() => {
-    if (GetClassData) {
-      const classData = GetClassData;
+    if (GetClassData && GetClassData.length > 0) {
+      const classData = GetClassData[0];
       class_updata_custom_form.setValue("title", classData.title || "");
       class_updata_custom_form.setValue("class_lesson", classData.class_lesson || "");
-      // class_updata_custom_form.setValue("classroom", classData.classroom || "");
+      class_updata_custom_form.setValue("classroomId", classData.classroom[0]?.id || ""); // 使用 classroom.id 而非 room
       class_updata_custom_form.setValue("teacher", classData.teacher || "");
       class_updata_custom_form.setValue("class_start_time", classData.class_start_time || "");
       class_updata_custom_form.setValue("class_end_time", classData.class_end_time || "");
@@ -174,7 +168,10 @@ const Class_Updata_Custom_Form_v1 = () => {
           setSelectedDates(date);
         }
       }
+    } else if (GetClassData?.length === 0) {
+      setError("未找到課堂資料");
     }
+
     if (GetCourseData) {
       class_updata_custom_form.setValue("persons", GetCourseData.persons || 0);
       class_updata_custom_form.setValue("node", GetCourseData.persons || 0);
@@ -249,6 +246,9 @@ const Class_Updata_Custom_Form_v1 = () => {
     );
   }
 
+  console.log("GetClassData : ", GetClassData, "-- Bug --");
+  console.log("bug : ", class_updata_custom_form.formState.errors, "-- Bug --");
+
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
       <nav className="bg-[#80A8BD] shadow-md">
@@ -289,6 +289,8 @@ const Class_Updata_Custom_Form_v1 = () => {
                       setError(result.error);
                     } else {
                       class_updata_custom_form.reset();
+                      // 客戶端跳轉
+                      router.push(`/admin/courseLists/${courseId}/classLists/${classId}`);
                     }
                   });
                 });
@@ -433,10 +435,10 @@ const Class_Updata_Custom_Form_v1 = () => {
                   )}
                 />
               </div>
-              {/* <div className="space-y-4">
+              <div className="space-y-4">
                 <FormField
                   control={class_updata_custom_form.control}
-                  name="classroom"
+                  name="classroomId"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 font-semibold">課堂課室</FormLabel>
@@ -451,7 +453,7 @@ const Class_Updata_Custom_Form_v1 = () => {
                     </FormItem>
                   )}
                 />
-              </div> */}
+              </div>
               <div className="space-y-4">
                 <FormField
                   control={class_updata_custom_form.control}
