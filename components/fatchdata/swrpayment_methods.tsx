@@ -31,7 +31,8 @@ interface PaymentMethodsData<T extends FieldValues> {
 const fetcher = (url: string):Promise<SWRPaymentMethods[]> => fetch(url).then((res) => res.json());
 
 export const SWR_Payment_Methods_checkbox = <T extends FieldValues>({field}:{field:PaymentMethodsData<T>}) => { 
-    const { data, error, isLoading } = useSWR<SWRPaymentMethods[]>("http://127.0.0.1:8000/api/paymentMethods/paymentmethods", fetcher);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
+    const { data, error, isLoading } = useSWR<SWRPaymentMethods[]>(`${apiUrl}/api/paymentMethods/paymentmethods`, fetcher);
 
 if (error) return <>錯誤: {error.message || "無法載入數據"}</>;
 if (isLoading) return <>載入中...</>;

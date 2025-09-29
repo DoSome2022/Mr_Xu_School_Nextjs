@@ -147,12 +147,12 @@ const ScoreListsbysupadmin = () => {
       return res.json();
     });
 
-  const apiUrl_DJANGO = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
-  const apiUrl_NEXTJS = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://127.0.0.1:3000";
+  const apiUrl_DJANGO = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://localhost:8000";
+  const apiUrl_NEXTJS = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://localhost:3000";
 
   // 獲取年級資料
   const { data: gradesData, error: gradesError, isLoading: gradesLoading } = useSWR<Student_School_Grade[]>(
-    `${apiUrl_DJANGO}/api/School_data/schoolgrades`,
+    `${apiUrl_DJANGO}/api/School_data/schoolgrades/`,
     fetcher,
     { revalidateOnFocus: false }
   );

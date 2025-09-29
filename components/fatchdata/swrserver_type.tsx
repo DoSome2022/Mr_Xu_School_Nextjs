@@ -28,7 +28,8 @@ const fetcher = (url: string): Promise<ServerType[]> =>
     fetch(url).then((res) => res.json());
 
 export const SWR_Server_Type = ({ field } : { field: FormField }) => {
-    const { data , error , isLoading } = useSWR('http://127.0.0.1:8000/api/servertype/servertype/' , fetcher);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
+    const { data , error , isLoading } = useSWR(`${apiUrl}/api/servertype/servertype/` , fetcher);
 
     if(error) return <> error : {error} </>
     if(isLoading) return <> 載入中 .... </>

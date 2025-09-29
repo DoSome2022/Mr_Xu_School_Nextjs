@@ -13,7 +13,7 @@ interface Booklist_uploadFormProps {
 }
 
 const Booklist_uploadForm = ({ SchoolId }: Booklist_uploadFormProps) => {
-  const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
+  const [schoolData, setSchoolData] = useState<SchoolData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +65,7 @@ const Booklist_uploadForm = ({ SchoolId }: Booklist_uploadFormProps) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-700">上傳書單 - {schoolData.school_name}</h2>
+      <h2 className="text-xl font-semibold text-gray-700">上傳書單 - {schoolData[0].school_name}</h2>
       <BookList_Create_Form SchoolId={SchoolId} data={schoolData} />
     </div>
   );

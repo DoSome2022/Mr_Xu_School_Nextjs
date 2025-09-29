@@ -217,3 +217,14 @@ admin 版本 主頁 顯示 隱藏 有錯 應該當用戶選完課程後 再按�
 28/9/2025
 
 經過兩天日子，把supadmin 及 admin 大部分的功能慢慢試下，都解決了bug(在loacl) 接下來在deploy 下測試
+
+
+
+admin
+BookList-Create-Form.tsx
+
+
+在各api 加了
+// 強制動態渲染，等同於每個 fetch 使用 no-store 和 revalidate: 0
+// 強制禁用所有 fetch 快取
+// 設定重新驗證時間為 0 秒，確保每次請求動態執行

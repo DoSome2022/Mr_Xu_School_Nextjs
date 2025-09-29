@@ -326,7 +326,7 @@ interface SchoolData {
 
 interface BookList_Create_FormProps {
   SchoolId: string;
-  data: SchoolData;
+  data: SchoolData[];
 }
 
 const BookList_Create_Form = ({ SchoolId, data }: BookList_Create_FormProps) => {
@@ -336,11 +336,13 @@ const BookList_Create_Form = ({ SchoolId, data }: BookList_Create_FormProps) => 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const router = useRouter();
 
+  console.log(" data :" , data,"-- end --")
+
   const booklist_create_form = useForm<z.infer<typeof Booklist_Create_Schema>>({
     resolver: zodResolver(Booklist_Create_Schema),
     defaultValues: {
       name: "",
-      school_name: data?.school_name || "",
+      school_name: data[0]?.school_name || "",
       year: "",
       grade: 0,
       img: "",
@@ -349,8 +351,8 @@ const BookList_Create_Form = ({ SchoolId, data }: BookList_Create_FormProps) => 
   });
 
   useEffect(() => {
-    if (data?.school_name) {
-      booklist_create_form.setValue("school_name", data.school_name);
+    if (data[0]?.school_name) {
+      booklist_create_form.setValue("school_name", data[0].school_name);
     }
   }, [data, booklist_create_form]);
 
@@ -382,6 +384,7 @@ const BookList_Create_Form = ({ SchoolId, data }: BookList_Create_FormProps) => 
   const booklist_create_form_onSubmit = (values: z.infer<typeof Booklist_Create_Schema>) => {
     setError("");
     setSuccess("");
+    console.log("-- create booklist -- : ", values, "-- End --");
     startTransition(() => {
       createBooklist(values).then((data) => {
         if (data?.success === "true" && data.data) {
@@ -403,7 +406,7 @@ const BookList_Create_Form = ({ SchoolId, data }: BookList_Create_FormProps) => 
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold text-gray-700">上傳書單 - {data?.school_name || "學校"}</h2>
+      <h2 className="text-xl font-semibold text-gray-700">上傳書單 - {data[0]?.school_name || "學校"}</h2>
       <Form {...booklist_create_form}>
         <form onSubmit={booklist_create_form.handleSubmit(booklist_create_form_onSubmit)} className="space-y-6">
           <FormError message={error} />
@@ -438,7 +441,7 @@ const BookList_Create_Form = ({ SchoolId, data }: BookList_Create_FormProps) => 
                     <Input
                       {...field}
                       disabled
-                      placeholder={data?.school_name || "學校名稱"}
+                      placeholder={data[0]?.school_name || "學校名稱"}
                       type="text"
                       className="border-gray-300 bg-gray-100"
                     />
