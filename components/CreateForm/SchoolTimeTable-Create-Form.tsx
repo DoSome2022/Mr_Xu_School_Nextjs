@@ -93,6 +93,7 @@ const SchoolTimeTable_Create_Form = ({ SchoolId, data }: SchoolTimeTable_Create_
   };
 
   const schooltimetable_create_form_onSubmit = (values: z.infer<typeof School_timetable_Create_Schema>) => {
+    console.log("--  create schooltimetable -- : ", values ,"-- End --")
     setError("");
     setSuccess("");
     startTransition(() => {

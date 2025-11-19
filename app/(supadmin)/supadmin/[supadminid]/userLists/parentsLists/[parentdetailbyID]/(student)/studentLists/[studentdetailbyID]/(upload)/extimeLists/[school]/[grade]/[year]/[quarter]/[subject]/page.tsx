@@ -1,80 +1,3 @@
-// "use client";
-
-// import { useParams } from 'next/navigation';
-// import Link from "next/link";
-// import { useEffect, useState } from 'react';
-
-// interface StudentSchoolName {
-//     name:string;
-//     id:string;
-//     school:string;
-//     grade:string;
-//     year:string;
-//     quarter:string;
-//     subject:string;
-// }
-// const ExTimeLists_Grade_Year_Quarter_subject_Listsbysupadmin = () => {
-//     const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ; school : string; grade : string ; year: string; quarter:string; subject: string; supadminId:string;}>();
-//     const ParentID = params?.parentdetailbyID as string;
-//     const StudentID = params?.studentdetailbyID as string;
-//     const SchoolName = params?.school as string;
-//     const Grade = params?.grade as string;
-//     const Year = params?.year as string;
-//     const Quarter = params?.quarter as string;
-//     const Subject = params?.subject ? decodeURIComponent(params.subject) : '';
-//     const supadminId = params?.supadminId as string;
-
-
-//     const [ GetStudentExTimeLists , setGetStudentExTimeLists ] = useState<StudentSchoolName[]>([]);
-
-//     useEffect(()=>{
-//         if(StudentID){
-//             const getstudentextimelist = async (StudentID: string) => {
-//                 try {
-//                     const res = await fetch(`/api/student/Student_ExTime_by_id_Lists/${StudentID}`)
-//                     if(!res.ok) {
-//                         throw new Error("斷線！");
-//                     }
-//                     const result = await res.json();
-//                     setGetStudentExTimeLists(result);                    
-//                 } catch (error) {
-//                     console.error(error)
-//                 }
-//             };
-//             getstudentextimelist(StudentID)
-//         }
-//     },[StudentID])
-
-
-//     console.log(GetStudentExTimeLists[0])
-
-//     return(
-//         <>
-//             <span> ExTimeLists_Grade_Year_Quarter_subject_Lists </span>
-//             <br />
-//             {GetStudentExTimeLists.map((d)=>{
-//                 if(d.school == SchoolName && d.grade == Grade && d.year == Year && d.quarter == Quarter && d.subject == Subject){
-//                 return(
-//                     <>
-//             <br />
-//                 <Link className="text-stone-950 hover:text-gray-700" 
-//                     href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${SchoolName}/${Grade}/${Year}/${Quarter}/${Subject}/${d.id}`}
-//                 >
-//                     名稱: {d.name}
-//                 </Link>
-//             <br />
-//                     </>
-//                 )
-
-//                 }
-
-//             })}
-//         </>
-//     )
-// }
-
-// export default ExTimeLists_Grade_Year_Quarter_subject_Listsbysupadmin
-
 "use client";
 
 import { useParams } from "next/navigation";
@@ -85,9 +8,9 @@ interface StudentSchoolName {
   id: string;
   name: string;
   school: string;
-  grade: string; // 若 API 返回數字，需改為 number
+  grade: number; // 改為 number 以匹配 API
   year: string;
-  quarter: string;
+  quarter: number; // 改為 number 以匹配 API
   subject: string;
 }
 
@@ -120,22 +43,30 @@ const ExTimeLists_Grade_Year_Quarter_subject_Listsbysupadmin = () => {
     );
   }
 
+  // 將路由參數轉為數字
+  const parsedGrade = parseInt(Grade, 10);
+  const parsedQuarter = parseInt(Quarter, 10);
+
   const fetcher = (url: string, init?: RequestInit): Promise<StudentSchoolName[]> =>
     fetch(url, {
-    ...init, // 保留傳入的 init 配置（若有）
-    cache: 'no-store', // 強制不快取，確保每次請求新數據
-    headers: {
-      ...init?.headers, // 合併傳入的 headers（若有）
-      'Cache-Control': 'no-cache', // 設置快取控制頭部
-    },
-  }).then((res) => {
+      ...init,
+      cache: "no-store",
+      headers: {
+        ...init?.headers,
+        "Cache-Control": "no-cache",
+      },
+    }).then((res) => {
       if (!res.ok) throw new Error(res.statusText);
       return res.json();
     });
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR(
-    `${apiUrl}/api/student/Student_ExTime_by_id_Lists/${StudentID}?school=${encodeURIComponent(SchoolName)}&grade=${encodeURIComponent(Grade)}&year=${encodeURIComponent(Year)}&quarter=${encodeURIComponent(Quarter)}&subject=${encodeURIComponent(Subject)}`,
+    `${apiUrl}/api/student/Student_ExTime_by_id_Lists/${StudentID}?school=${encodeURIComponent(
+      SchoolName
+    )}&grade=${encodeURIComponent(Grade)}&year=${encodeURIComponent(Year)}&quarter=${encodeURIComponent(
+      Quarter
+    )}&subject=${encodeURIComponent(Subject)}`,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -163,12 +94,13 @@ const ExTimeLists_Grade_Year_Quarter_subject_Listsbysupadmin = () => {
         typeof item.name === "string" &&
         typeof item.id === "string" &&
         typeof item.school === "string" &&
-        typeof item.grade === "string" &&
+        typeof item.grade === "number" && // 改為檢查 number
         typeof item.year === "string" &&
-        typeof item.quarter === "string" &&
+        typeof item.quarter === "number" && // 改為檢查 number
         typeof item.subject === "string"
     )
   ) {
+    console.log("data : ", data, "-- End --");
     return (
       <div className="bg-red-50 text-red-600 p-4 rounded-lg">
         無效的考試時間表資料格式
@@ -180,9 +112,9 @@ const ExTimeLists_Grade_Year_Quarter_subject_Listsbysupadmin = () => {
   const filteredExTimeLists = data.filter(
     (d) =>
       d.school === SchoolName &&
-      d.grade === Grade &&
+      d.grade === parsedGrade && // 使用數字比較
       d.year === Year &&
-      d.quarter === Quarter &&
+      d.quarter === parsedQuarter && // 使用數字比較
       d.subject === Subject
   );
 
@@ -220,28 +152,36 @@ const ExTimeLists_Grade_Year_Quarter_subject_Listsbysupadmin = () => {
         </Link>
         <span className="mx-2">/</span>
         <Link
-          href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(SchoolName)}`}
+          href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(
+            SchoolName
+          )}`}
           className="text-blue-600 hover:text-blue-800"
         >
           {SchoolName}
         </Link>
         <span className="mx-2">/</span>
         <Link
-          href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(SchoolName)}/${encodeURIComponent(Grade)}`}
+          href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(
+            SchoolName
+          )}/${encodeURIComponent(Grade)}`}
           className="text-blue-600 hover:text-blue-800"
         >
           年級 {Grade}
         </Link>
         <span className="mx-2">/</span>
         <Link
-          href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(SchoolName)}/${encodeURIComponent(Grade)}/${encodeURIComponent(Year)}`}
+          href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(
+            SchoolName
+          )}/${encodeURIComponent(Grade)}/${encodeURIComponent(Year)}`}
           className="text-blue-600 hover:text-blue-800"
         >
           {Year}
         </Link>
         <span className="mx-2">/</span>
         <Link
-          href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(SchoolName)}/${encodeURIComponent(Grade)}/${encodeURIComponent(Year)}/${encodeURIComponent(Quarter)}`}
+          href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(
+            SchoolName
+          )}/${encodeURIComponent(Grade)}/${encodeURIComponent(Year)}/${encodeURIComponent(Quarter)}`}
           className="text-blue-600 hover:text-blue-800"
         >
           季度 {Quarter}
@@ -263,7 +203,11 @@ const ExTimeLists_Grade_Year_Quarter_subject_Listsbysupadmin = () => {
           <Link
             key={d.id}
             className="text-blue-600 hover:text-blue-800 font-medium"
-            href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(SchoolName)}/${encodeURIComponent(Grade)}/${encodeURIComponent(Year)}/${encodeURIComponent(Quarter)}/${encodeURIComponent(Subject)}/${d.id}`}
+            href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/extimeLists/${encodeURIComponent(
+              SchoolName
+            )}/${encodeURIComponent(Grade)}/${encodeURIComponent(Year)}/${encodeURIComponent(
+              Quarter
+            )}/${encodeURIComponent(Subject)}/${d.id}`}
           >
             {d.name}
           </Link>

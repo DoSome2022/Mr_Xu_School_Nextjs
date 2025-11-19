@@ -93,6 +93,7 @@ const EX_Scope_Create_Form = ({ SchoolId, data }: EX_Scope_Create_FormProps) => 
   };
 
   const ex_scope_create_form_onSubmit = (values: z.infer<typeof Ex_scope_Create_Schema>) => {
+    console.log("--  create ex scope -- : ", values ,"-- End --")
     setError("");
     setSuccess("");
     startTransition(() => {

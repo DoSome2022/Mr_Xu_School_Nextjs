@@ -219,7 +219,7 @@ const fetcher = (url: string, init?: RequestInit): Promise<StudentSchoolGrade[]>
     return res.json();
   });
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
 
 const ExScopeListsbysupadmin = () => {
   const [getschooldata, setgetschooldata] = useState<SchoolData[] | null>(null);

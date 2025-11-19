@@ -1,78 +1,3 @@
-// "use client";
-
-// import { useParams } from 'next/navigation';
-// import { useEffect, useState } from 'react';
-// import Image from 'next/image';
-
-// interface StudentDetailData {
-//     name: string;
-//     img: string;
-//     id : string;
-//     grade: string;
-//     year: string;
-//     quarter: string;
-//     subject: string;
-// }
-// const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
-//     const params = useParams<{ studentdetailbyID : string ; id : string ;parentdetailbyID : string ;  grade : string ; year: string; quarter:string; subject: string;}>();
-//     const StudentID = params?.studentdetailbyID as string;
-//     const Grade = params?.grade as string;
-//     const Year = params?.year as string;
-//     const Quarter = params?.quarter as string;
-//     const Subject = params?.subject ? decodeURIComponent(params.subject) : '';
-//     const Id = params?.id as string;
-
-//     const [ GetStudentScoreDetailByID , setGetStudentScoreDetailByID] = useState<StudentDetailData[]>([]);
-
-//     useEffect(()=>{
-//         if(StudentID && Id){
-//             const getstudentscoredetailbyid = async (StudentID: string, id: string) => {
-//                 try {
-//                     const res = await fetch(`/api/student/Student_Score_by_id_Lists_by_id/${StudentID}/${id}`)
-//                     if(!res.ok) {
-//                         throw new Error("斷線！");
-//                     }
-//                     const result = await res.json();
-//                     setGetStudentScoreDetailByID(result);                    
-//                 } catch (error) {
-//                     console.error(error)
-//                 }
-//             };
-//             getstudentscoredetailbyid(StudentID , Id)
-//         }
-//     },[StudentID , Id])
-
-
-//     console.log(GetStudentScoreDetailByID[0])
-
-//     return(
-//         <>
-//             <span> ScoreLists_Year_Quarter_Subject_List_By_ID </span>
-//             <br />
-// {GetStudentScoreDetailByID.map((d)=>{
-//     if(d.grade == Grade && d.year == Year && d.quarter == Quarter && d.subject == Subject && d.id == Id) {
-//     return(
-//         <>
-//         {d.name}
-//         <br />
-//         <Image 
-//                     width={500}
-//                     height={500}
-//                     src={d.img}
-//                     alt=""
-//                     />
-//         </>
-//     )        
-//     }
-
-// })}
-//         </>
-//     )
-// }
-
-// export default ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin
-
-
 "use client";
 
 import { useParams } from "next/navigation";
@@ -108,9 +33,9 @@ interface StudentDetailData {
   id: string;
   name: string;
   img: string;
-  grade: string;
+  grade: number; // 改為 number
   year: string;
-  quarter: string;
+  quarter: number; // 改為 number
   subject: string;
 }
 
@@ -150,6 +75,19 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
     );
   }
 
+  // 將路由參數轉為數字
+  const parsedGrade = parseInt(Grade, 10);
+  const parsedQuarter = parseInt(Quarter, 10);
+
+  // 驗證轉換後的參數
+  if (isNaN(parsedGrade) || isNaN(parsedQuarter)) {
+    return (
+      <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+        錯誤：年級或季度格式無效
+      </div>
+    );
+  }
+
   // 驗證年級是否有效
   if (!gradeMapping[Grade]) {
     return (
@@ -170,13 +108,13 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
 
   const fetcher = <T,>(url: string, init?: RequestInit): Promise<T> =>
     fetch(url, {
-    ...init, // 保留傳入的 init 配置（若有）
-    cache: 'no-store', // 強制不快取，確保每次請求新數據
-    headers: {
-      ...init?.headers, // 合併傳入的 headers（若有）
-      'Cache-Control': 'no-cache', // 設置快取控制頭部
-    },
-  }).then((res) => {
+      ...init,
+      cache: "no-store",
+      headers: {
+        ...init?.headers,
+        "Cache-Control": "no-cache",
+      },
+    }).then((res) => {
       if (!res.ok) throw new Error(res.statusText);
       return res.json();
     });
@@ -184,7 +122,7 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://127.0.0.1:3000";
 
   // 獲取成績詳細資料
-  const { data: scoreData, error: scoreError, isLoading: scoreLoading } = useSWR<StudentDetailData>(
+  const { data: scoreDataArray, error: scoreError, isLoading: scoreLoading } = useSWR<StudentDetailData[]>(
     `${apiUrl}/api/student/Student_Score_by_id_Lists_by_id/${StudentID}/${Id}?grade=${encodeURIComponent(Grade)}&year=${encodeURIComponent(Year)}&quarter=${encodeURIComponent(Quarter)}&subject=${encodeURIComponent(Subject)}`,
     fetcher,
     { revalidateOnFocus: false }
@@ -196,6 +134,16 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
     fetcher,
     { revalidateOnFocus: false }
   );
+
+  // 提取第一個成績資料
+  const scoreData = scoreDataArray && scoreDataArray.length > 0 ? scoreDataArray[0] : null;
+
+  // 開發環境日誌
+  if (process.env.NODE_ENV === "development") {
+    console.log("scoreDataArray :", scoreDataArray, "-- End --");
+    console.log("scoreData :", scoreData, "-- End --");
+    console.log("studentData :", studentData, "-- End --");
+  }
 
   // 錯誤處理
   if (scoreError || studentError) {
@@ -217,9 +165,9 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
     !scoreData.id ||
     !scoreData.name ||
     !scoreData.img ||
-    !scoreData.grade ||
+    typeof scoreData.grade !== "number" ||
     !scoreData.year ||
-    !scoreData.quarter ||
+    typeof scoreData.quarter !== "number" ||
     !scoreData.subject
   ) {
     return (
@@ -245,9 +193,9 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
 
   // 驗證成績資料是否匹配
   if (
-    scoreData.grade !== Grade ||
+    scoreData.grade !== parsedGrade ||
     scoreData.year !== Year ||
-    scoreData.quarter !== Quarter ||
+    scoreData.quarter !== parsedQuarter ||
     scoreData.subject !== Subject ||
     scoreData.id !== Id
   ) {
@@ -258,19 +206,29 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
     );
   }
 
+  // 將 HTTP 轉為 HTTPS（解決 Mixed Content）
+  const secureImgUrl = scoreData.img.replace(/^http:\/\//, "https://");
+
+  // 判斷檔案類型
+  const isPdf = secureImgUrl.toLowerCase().endsWith(".pdf");
+
   // 下載圖片的功能
   const handleDownload = async (imgUrl: string, fileName: string) => {
     try {
-    //   const response = await fetch(imgUrl, { mode: "cors" });
-    const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`);
+      const response = await fetch(`/api/proxy-image?img=${encodeURIComponent(imgUrl)}`, {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache",
+        },
+      });
       if (!response.ok) {
-        throw new Error("無法下載圖片");
+        throw new Error(`無法下載圖片：${response.statusText}`);
       }
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = fileName || "Score-image.jpg"; // 使用書單名稱或默認文件名
+      link.download = `${fileName}${isPdf ? ".pdf" : ".jpg"}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -280,7 +238,6 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
       alert("下載圖片失敗，請稍後再試");
     }
   };
-
 
   return (
     <div className="container mx-auto px-4 py-6 bg-blue-50 min-h-screen">
@@ -352,19 +309,27 @@ const ScoreLists_Year_Quarter_Subject_List_By_IDbysupadmin = () => {
 
       <div className="flex flex-col space-y-4">
         <div className="text-blue-600 font-medium">{scoreData.name}</div>
-        <Image
-          width={500}
-          height={500}
-          src={scoreData.img}
-          alt={`${scoreData.name} 的成績圖片`}
-          className="object-contain rounded-lg"
-        />
+        {isPdf ? (
+          <iframe
+            src={secureImgUrl}
+            title={scoreData.name}
+            className="w-full h-[500px] rounded-lg border border-gray-300"
+          />
+        ) : (
+          <Image
+            width={500}
+            height={500}
+            src={secureImgUrl}
+            alt={scoreData.name}
+            className="object-contain rounded-lg"
+          />
+        )}
       </div>
       <button
-        onClick={() => handleDownload(scoreData.img, `${scoreData.name}.jpg`)}
+        onClick={() => handleDownload(secureImgUrl, `${scoreData.name}${isPdf ? ".pdf" : ".jpg"}`)}
         className="mt-4 inline-block text-white bg-[#80A8BD] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
       >
-        下載圖片
+        下載{isPdf ? " PDF" : " 圖片"}
       </button>
     </div>
   );

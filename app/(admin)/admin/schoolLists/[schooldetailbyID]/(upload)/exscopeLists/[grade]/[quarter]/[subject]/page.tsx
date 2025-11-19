@@ -51,6 +51,8 @@ const ExScopeLists_Grade_Subject_exscpelists = () => {
     }
   }, [SchoolId, GradeId, QuarterId, SubjectId]);
 
+  console.log("GetExScopeListsDataById : ", GetExScopeListsDataById , "-- End --")
+
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
       {/* 麵包屑導航 */}

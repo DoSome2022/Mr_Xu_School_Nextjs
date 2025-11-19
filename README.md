@@ -228,3 +228,31 @@ BookList-Create-Form.tsx
 // 強制動態渲染，等同於每個 fetch 使用 no-store 和 revalidate: 0
 // 強制禁用所有 fetch 快取
 // 設定重新驗證時間為 0 秒，確保每次請求動態執行
+
+
+
+02-10-2025
+
+action
+
+Create-Ex_scope/index.ts -done
+Create-Ex_timetable/index.ts -done
+Create-BookList/index.ts - done
+Create-Expager/index.ts - done
+Create-School_Timetable/index.ts -done
+
+
+admin中的school 及 user 家長中的學生 中upload 功能完成 （03－10－2025）
+
+Sup-Student-BookList-Create-Form - done
+Sup-Student-SchoolTimeTable-Create-Form　-deone
+Sup-Student-Expager-Create-Form -做到這　準備在https中試create 同　show pdf 
+Sup-Student-Ex-Time-Create-Form
+Sup-Student-Ex-Scope-Create-Form
+Sup-Student-Score-Create-Form
+
+８-10-2025
+
+把admin home　page 中　顏色拿掉
+收據
+UI 改變　用上　發條UI

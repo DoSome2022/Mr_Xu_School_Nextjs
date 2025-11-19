@@ -89,8 +89,8 @@ interface StudentName {
   id: string;
   name: string;
   school: string;
-  grade: string;
-  quarter: string;
+  grade: number; // 改為 number
+  quarter: number; // 改為 number
   subject: string;
 }
 
@@ -121,6 +121,19 @@ const ExScope_Grade_Quarter_Subject_Listsbysupadmin = () => {
     );
   }
 
+  // 將路由參數轉為數字
+  const parsedGrade = parseInt(Grade, 10);
+  const parsedQuarter = parseInt(Quarter, 10);
+
+  // 驗證轉換後的參數
+  if (isNaN(parsedGrade) || isNaN(parsedQuarter)) {
+    return (
+      <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+        錯誤：年級或季度格式無效
+      </div>
+    );
+  }
+
   const [GetStudentExScopeLists, setGetStudentExScopeLists] = useState<StudentName[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,19 +142,20 @@ const ExScope_Grade_Quarter_Subject_Listsbysupadmin = () => {
     const getstudentexscopelist = async (studentId: string) => {
       try {
         setIsLoading(true);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://127.0.0.1:3000";
         const res = await fetch(
           `${apiUrl}/api/student/Student_ExScope_by_id_Lists/${StudentID}`, {
-                cache: 'no-store',  // 強制不快取，確保每次請求新數據
-                headers: {
-                    'Cache-Control': 'no-cache',
-                },
-            }
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          }
         );
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);
         }
         const result = await res.json();
+        console.log("result :", result, "-- End --");
         if (!Array.isArray(result)) {
           throw new Error("無效的考試範圍資料格式");
         }
@@ -151,8 +165,8 @@ const ExScope_Grade_Quarter_Subject_Listsbysupadmin = () => {
               typeof item.id === "string" &&
               typeof item.name === "string" &&
               typeof item.school === "string" &&
-              typeof item.grade === "string" &&
-              typeof item.quarter === "string" &&
+              typeof item.grade === "number" && // 改為檢查 number
+              typeof item.quarter === "number" && // 改為檢查 number
               typeof item.subject === "string"
           )
         ) {
@@ -169,11 +183,11 @@ const ExScope_Grade_Quarter_Subject_Listsbysupadmin = () => {
     if (StudentID) {
       getstudentexscopelist(StudentID);
     }
-  }, [StudentID, SchoolName, Grade, Quarter, Subject]);
+  }, [StudentID]);
 
   // 過濾數據
   const filteredData = GetStudentExScopeLists.filter(
-    (d) => d.school === SchoolName && d.grade === Grade && d.quarter === Quarter && d.subject === Subject
+    (d) => d.school === SchoolName && d.grade === parsedGrade && d.quarter === parsedQuarter && d.subject === Subject
   );
 
   // 開發環境日誌
@@ -200,7 +214,7 @@ const ExScope_Grade_Quarter_Subject_Listsbysupadmin = () => {
           學生列表
         </Link>
         <span className="mx-2">/</span>
-                <Link
+        <Link
           href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/`}
           className="text-blue-600 hover:text-blue-800"
         >

@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
       'Cache-Control': 'no-cache', // 設置快取控制頭部
     },
   }).then((res) => res.json());
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL|| "http://127.0.0.1:8000"
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO|| "http://127.0.0.1:8000"
 
 // 定義年級對應對象
 const gradeMapping:{[key:string]:string} = {

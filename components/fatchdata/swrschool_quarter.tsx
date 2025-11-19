@@ -26,8 +26,9 @@ interface SWR_School_QuarterProps {
 }
 
 export const SWR_School_Quarter = ({ field, disabled }: SWR_School_QuarterProps) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR<SchoolQuarter[]>(
-    "http://127.0.0.1:8000/api/School_data/schoolquarters/",
+    `${apiUrl}/api/School_data/schoolquarters/`,
     fetcher
   );
 

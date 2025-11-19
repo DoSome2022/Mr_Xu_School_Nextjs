@@ -27,7 +27,7 @@ interface SchoolSubject {
 export const SWR_School_Subject = ({ field, className, disabled }: SWRSchoolSubjectProps) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR<SchoolSubject[]>(
-    "http://127.0.0.1:8000/api/School_data/schoolsubjects/",
+    `${apiUrl}/api/School_data/schoolsubjects/`,
     fetcher
   );
 

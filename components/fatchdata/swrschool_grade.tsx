@@ -49,7 +49,7 @@ interface SchoolGrade {
 export const SWR_School_Grade = ({ field, className, disabled }: SWRSchoolGradeProps) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO|| "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR<SchoolGrade[]>(
-    "http://127.0.0.1:8000/api/School_data/schoolgrades/",
+    `${apiUrl}/api/School_data/schoolgrades/`,
     fetcher
   );
 

@@ -417,6 +417,7 @@ const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
   }
 };
 const ex_time_create_form_onSubmit = (values: z.infer<typeof Ex_timetable_Create_Schema>) => {
+  console.log("ex_time_create_form_onSubmit", values , "-- End --");
   setError("");
   setSuccess("");
   startTransition(() => {

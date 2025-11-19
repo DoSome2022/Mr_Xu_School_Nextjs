@@ -10,6 +10,7 @@ const CreateProductbysupadmin = () => {
         <h1 className="text-3xl font-semibold text-blue-600 mb-6">建立商品</h1>
         <div className="bg-white shadow-lg rounded-lg p-6 max-w-md mx-auto">
           <Product_Create_Formbysupadmin />
+          
         </div>
       </div>
     </div>

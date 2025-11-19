@@ -66,15 +66,18 @@ const Product_Create_Formbysupadmin = () => {
       try {
         setIsLoadingCourses(true);
         const res = await fetch("/api/Course_Lists", {
-                cache: 'no-store',  // 強制不快取，確保每次請求新數據
-                headers: {
-                    'Cache-Control': 'no-cache',
-                },
-            });
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        });
         if (!res.ok) {
           throw new Error("無法獲取課程列表數據");
         }
         const result = await res.json();
+        if (!Array.isArray(result) || !result.every((item) => item.id && item.course_name)) {
+          throw new Error("無效的課程數據格式");
+        }
         setGetCourseData(result);
       } catch (error: any) {
         console.error("獲取課程數據失敗:", error);
@@ -86,18 +89,18 @@ const Product_Create_Formbysupadmin = () => {
     fetchProductData();
   }, []);
 
-const product_register_form_onSubmit = (
-  values: z.infer<typeof SupProduct_Create_Schema>
-) => {
-  setError("");
-  setSuccess("");
-  startTransition(() => {
-    SupcreateProduct_action(values).then((data) => {
-      setError(data?.error);
-      setSuccess(typeof data?.success === "string" ? data?.success : data?.success ? "商品創建成功" : undefined);
+  const product_register_form_onSubmit = (
+    values: z.infer<typeof SupProduct_Create_Schema>
+  ) => {
+    setError("");
+    setSuccess("");
+    startTransition(() => {
+      SupcreateProduct_action(values).then((data) => {
+        setError(data?.error);
+        setSuccess(typeof data?.success === "string" ? data?.success : data?.success ? "商品創建成功" : undefined);
+      });
     });
-  });
-};
+  };
 
   return (
     <Form {...product_register_form}>
@@ -105,10 +108,10 @@ const product_register_form_onSubmit = (
         onSubmit={product_register_form.handleSubmit(product_register_form_onSubmit)}
         className="space-y-6"
       >
-<FormError message={error} />
-    <FormSuccess
-      message={typeof success === "string" ? success : success ? "商品創建成功" : undefined}
-    />
+        <FormError message={error} />
+        <FormSuccess
+          message={typeof success === "string" ? success : success ? "商品創建成功" : undefined}
+        />
         <FormField
           control={product_register_form.control}
           name="name"
@@ -119,7 +122,7 @@ const product_register_form_onSubmit = (
               </FormLabel>
               <FormControl>
                 <Select
-                  disabled={isPending || isLoadingCourses}
+                  disabled={isPending || isLoadingCourses || GetCourseData.length === 0}
                   value={field.value}
                   onValueChange={(value) => {
                     field.onChange(value);
@@ -127,7 +130,15 @@ const product_register_form_onSubmit = (
                   }}
                 >
                   <SelectTrigger className="border-gray-300 focus:border-blue-600 focus:ring-blue-600 transition-colors duration-200">
-                    <SelectValue placeholder={isLoadingCourses ? "正在載入課程..." : "選擇課程"} />
+                    <SelectValue
+                      placeholder={
+                        isLoadingCourses
+                          ? "正在載入課程..."
+                          : GetCourseData.length === 0
+                          ? "無可用課程"
+                          : "選擇課程"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {GetCourseData.length > 0 ? (
@@ -137,7 +148,7 @@ const product_register_form_onSubmit = (
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="no-courses" disabled>
                         無可用課程
                       </SelectItem>
                     )}
@@ -227,7 +238,7 @@ const product_register_form_onSubmit = (
           )}
         />
         <Button
-          disabled={isPending}
+          disabled={isPending || isLoadingCourses || GetCourseData.length === 0}
           type="submit"
           className="w-full bg-blue-600 text-white hover:bg-blue-500 transition-colors duration-200"
         >

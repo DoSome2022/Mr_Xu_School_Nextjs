@@ -90,6 +90,7 @@ const EX_Pager_Create_Form = ({ SchoolId, data }: EX_Pager_Create_FormProps) => 
   };
 
   const ex_pager_create_form_onSubmit = (values: z.infer<typeof Ex_pager_Create_Schema>) => {
+    console.log("--  create ex_pager -- : ", values ,"-- End --")
     setError("");
     setSuccess("");
     startTransition(() => {

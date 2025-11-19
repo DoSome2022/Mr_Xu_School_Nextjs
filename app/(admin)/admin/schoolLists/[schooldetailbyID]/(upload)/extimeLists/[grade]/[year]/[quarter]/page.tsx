@@ -85,7 +85,7 @@ interface SchoolSubject {
 
 const fetcher = (url: string, init?: RequestInit): Promise<SchoolSubject[]> =>
   fetch(url, init).then((res) => res.json());
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
 
 const ExTimeLists_Grade_Year_Quarter_Subject = () => {
   const params = useParams<{
@@ -133,13 +133,15 @@ const ExTimeLists_Grade_Year_Quarter_Subject = () => {
   }
 
   // 過濾符合條件的科目
-  const filteredSubjects = data.filter(
-    (d) =>
-      d.grade === Number(GradeId) &&
-      d.year === YearId &&
-      d.quarter === Number(QuarterId)
-  );
+  // const filteredSubjects = data.filter(
+  //   (d) =>
+  //     d.grade === Number(GradeId) &&
+  //     d.year === YearId &&
+  //     d.quarter === Number(QuarterId)
+  // );
 
+console.log(" data :", data , " -- END -- ")
+  
   return (
     <div className="min-h-screen bg-gray-100 pt-20">
       {/* 麵包屑導航 */}
@@ -186,11 +188,11 @@ const ExTimeLists_Grade_Year_Quarter_Subject = () => {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h1 className="text-2xl font-bold text-gray-800 mb-6">考試時間表 - 科目</h1>
 
-          {filteredSubjects.length === 0 ? (
+          {data.length === 0 ? (
             <div className="text-gray-700 text-sm">暫無科目資料</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredSubjects.map((d) => (
+              {data.map((d) => (
                 <Link
                   key={d.school_subject}
                   href={`/admin/schoolLists/${SchoolId}/extimeLists/${GradeId}/${YearId}/${QuarterId}/${d.school_subject}`}

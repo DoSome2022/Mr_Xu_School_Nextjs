@@ -50,7 +50,7 @@ const ExPageLists_Gradebysupadmin = () => {
       if (!res.ok) throw new Error(res.statusText);
       return res.json();
     });
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR(
     `${apiUrl}/api/School_data/schoolgrades/`,
     fetcher,

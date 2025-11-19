@@ -1,95 +1,10 @@
-// "use client";
-
-// import { useParams } from 'next/navigation';
-// // import Link from "next/link";
-// import { useEffect, useState } from 'react';
-// import Image from 'next/image';
-
-// interface ExTimeListsByIdData {
-//   id: string;
-//   img: string;
-//   name: string;
-//   year: string;
-//   grade : number;
-//   quarter : number;
-// }
-
-// const ExTimeLists_Grade_Year_Quarter_subject_Lists_By_ID = () => {
-//     const params = useParams<{ studentid : string ; id:string}>();
-
-//     const StudentID = params?.studentid as string;
-//     const Id = params?.id as string;
-
-
-//     const [ GetStudentExTimeDetailByID , setGetStudentExTimeDetailByID ] = useState<ExTimeListsByIdData[]>([]);
-
-//     useEffect(()=>{
-//         if(Id){
-//             const getstudentextimedetailbyid = async (studentdataid: string) => {
-//                 try {
-//                     const res = await fetch(`/api/Parents_Student/Parents_Student_ExTime_by_id_Lists/${studentdataid}`);
-//                     if(!res.ok) {
-//                         throw new Error("斷線！");
-//                     }
-//                     const result = await res.json();
-//                     setGetStudentExTimeDetailByID(result);                    
-//                 } catch (error) {
-//                     console.error(error)
-//                 }
-//             };
-//             getstudentextimedetailbyid(Id)
-//         }
-//     },[Id])
-//     // 檢查是否為圖片格式的輔助函數
-//     const isImage = (url: string) => {
-//         return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-//       };
-    
-
-//     console.log(GetStudentExTimeDetailByID[0])
-
-//     return(
-//         <>
-//             <span> ExTimeLists_Grade_Year_Quarter_subject_Lists_By_ID </span>
-//             <br />
-// {GetStudentExTimeDetailByID.map((d)=>{
-//     return(
-//         <div key={d.id} className="my-2">
-//           {d.name}
-//           <br />
-//           {isImage(d.EX_Time[0]?.img) ? (
-//             <Image
-//               src={d.EX_Time[0]?.img}
-//               width={500}
-//               height={500}
-//               alt={d.name}
-//               style={{ objectFit: "contain" }}
-//             />
-//           ) : (
-//             <a href={`http://localhost:3000${d.EX_Time[0]?.img}`} target={`http://localhost:3000${d.EX_Time[0]?.img}`}  rel="noopener noreferrer">
-//               查看 PDF 文件
-//             </a>
-//           )}
-//         </div>
-//     )
-// })}
-//         </>
-//     )
-// }
-
-// export default ExTimeLists_Grade_Year_Quarter_subject_Lists_By_ID
-
 "use client";
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-
-// 定義 EX_Time 物件的介面
-interface ExTime {
-  img: string;
-  // 添加其他可能的字段，例如 id、createdAt 等
-}
+import Link from "next/link";
+import { toast } from "sonner";
 
 interface ExTimeListsByIdData {
   id: string;
@@ -97,38 +12,70 @@ interface ExTimeListsByIdData {
   year: string;
   grade: number;
   quarter: number;
-  EX_Time: ExTime[]; // 添加 EX_Time 陣列
+  school: string;
+  subject: string;
+  img: string; // 直接使用 img 欄位，匹配 API 回傳數據
 }
 
 const ExTimeLists_Grade_Year_Quarter_subject_Lists_By_ID = () => {
-  const params = useParams<{ studentid: string; id: string }>();
-
+  const params = useParams<{
+    parentId: string;
+    studentid: string;
+    school: string;
+    grade: string;
+    year: string;
+    quarter: string;
+    subject: string;
+    id: string;
+  }>();
+  const ParentID = params?.parentId as string;
   const StudentID = params?.studentid as string;
+  const SchoolName = params?.school as string;
+  const Grade = params?.grade as string;
+  const Year = params?.year as string;
+  const Quarter = params?.quarter as string;
+  const SubjectId = params?.subject ? decodeURIComponent(params.subject) : "";
   const Id = params?.id as string;
 
-  const [GetStudentExTimeDetailByID, setGetStudentExTimeDetailByID] = useState<
-    ExTimeListsByIdData[]
-  >([]);
+  // 驗證路由參數
+  if (!ParentID || !StudentID || !SchoolName || !Grade || !Year || !Quarter || !SubjectId || !Id) {
+    return (
+      <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+        錯誤：缺少必要路由參數
+      </div>
+    );
+  }
+
+  const [GetStudentExTimeDetailByID, setGetStudentExTimeDetailByID] = useState<ExTimeListsByIdData[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (Id) {
-      const getstudentextimedetailbyid = async (studentdataid: string) => {
+      const getstudentextimedetailbyid = async (id: string) => {
         try {
-          const res = await fetch(
-            `/api/Parents_Student/Parents_Student_ExTime_by_id_Lists/${studentdataid}`, {
-                cache: 'no-store',  // 強制不快取，確保每次請求新數據
-                headers: {
-                    'Cache-Control': 'no-cache',
-                },
-            }
-          );
+          const res = await fetch(`/api/Parents_Student/Parents_Student_ExTime_by_id_Lists/${id}`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          });
           if (!res.ok) {
-            throw new Error("無法連線至伺服器！");
+            throw new Error(`無法連線：${res.statusText}`);
           }
           const result = await res.json();
-          setGetStudentExTimeDetailByID(result);
+          if (!Array.isArray(result)) {
+            throw new Error("無效的資料格式");
+          }
+          // 確保 img 使用 HTTPS
+          const sanitizedResult = result.map((item: ExTimeListsByIdData) => ({
+            ...item,
+            img: item.img.replace(/^http:/, "https:"),
+          }));
+          setGetStudentExTimeDetailByID(sanitizedResult);
         } catch (error) {
-          console.error("獲取學生額外時間詳情失敗:", error);
+          console.error("獲取考試時間詳情失敗:", error);
+          setError("無法載入考試時間詳情，請稍後重試");
+          toast.error("無法載入考試時間詳情，請稍後重試");
         }
       };
       getstudentextimedetailbyid(Id);
@@ -140,49 +87,112 @@ const ExTimeLists_Grade_Year_Quarter_subject_Lists_By_ID = () => {
     return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
   };
 
-  // 處理空數據
-  if (GetStudentExTimeDetailByID.length === 0) {
-    return (
-      <>
-        <span>ExTimeLists_Grade_Year_Quarter_subject_Lists_By_ID</span>
-        <br />
-        <div>暫無資料</div>
-      </>
-    );
+  // 開發環境日誌
+  if (process.env.NODE_ENV === "development") {
+    console.log("params:", params);
+    console.log("GetStudentExTimeDetailByID:", GetStudentExTimeDetailByID, "-- END --");
   }
 
   return (
-    <>
-      <span>ExTimeLists_Grade_Year_Quarter_subject_Lists_By_ID</span>
-      <br />
-      {GetStudentExTimeDetailByID.map((d) => {
-        return (
-          <div key={d.id} className="my-2">
-            {d.name}
-            <br />
-            {d.EX_Time.length > 0 && d.EX_Time[0]?.img && isImage(d.EX_Time[0].img) ? (
-              <Image
-                src={d.EX_Time[0].img}
-                width={500}
-                height={500}
-                alt={d.name}
-                style={{ objectFit: "contain" }}
-              />
-            ) : d.EX_Time.length > 0 && d.EX_Time[0]?.img ? (
-              <a
-                href={d.EX_Time[0].img}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                查看 PDF 文件
-              </a>
-            ) : (
-              <span>無可用文件</span>
-            )}
-          </div>
-        );
-      })}
-    </>
+    <div className="bg-gray-800 min-h-screen">
+      {/* 麵包屑導航，採用 navbar 風格 */}
+      <nav className="flex items-center justify-between bg-gray-900 p-4 shadow-md">
+        <div className="flex flex-row gap-6">
+          <Link
+            href={`/parent/${ParentID}`}
+            prefetch={false} // 禁用預取以避免 404
+            className="text-white text-lg font-medium hover:text-blue-400 transition-colors duration-200"
+          >
+            苜頁
+          </Link>
+          <Link
+            href={`/parent/${ParentID}/profiles/${StudentID}`}
+            prefetch={false}
+            className="text-white text-lg font-medium hover:text-blue-400 transition-colors duration-200"
+          >
+            學生資料
+          </Link>
+          <Link
+            href={`/parent/${ParentID}/profiles/${StudentID}/upload/exTimeLists`}
+            prefetch={false}
+            className="text-white text-lg font-medium hover:text-blue-400 transition-colors duration-200"
+          >
+            考試時間列表
+          </Link>
+          <Link
+            href={`/parent/${ParentID}/profiles/${StudentID}/upload/exTimeLists/${SchoolName}/${Grade}/${Year}/${Quarter}/${encodeURIComponent(SubjectId)}`}
+            prefetch={false}
+            className="text-white text-lg font-medium hover:text-blue-400 transition-colors duration-200"
+          >
+            {SchoolName} {Year} {Grade} 第{Quarter}季 {SubjectId}
+          </Link>
+          <span className="text-white text-lg font-medium">考試時間詳情</span>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-6">
+        <h2 className="text-2xl font-semibold text-white mb-4">
+          考試時間詳情 - {SchoolName} {Year} {Grade} 第{Quarter}季 {SubjectId}
+        </h2>
+
+        <div className="bg-gray-700 p-6 rounded-lg shadow-md">
+          {error ? (
+            <div className="text-red-400 p-4 rounded-lg bg-red-900 bg-opacity-20">
+              {error}
+            </div>
+          ) : GetStudentExTimeDetailByID.length === 0 ? (
+            <div className="text-gray-300 p-4">無考試時間詳情資料</div>
+          ) : (
+            GetStudentExTimeDetailByID.map((d) => (
+              <div key={d.id} className="space-y-4">
+                <h3 className="text-xl font-medium text-white">{d.name}</h3>
+                <div className="text-gray-300 space-y-1">
+                  <p>學校：{d.school}</p>
+                  <p>學年：{d.year}</p>
+                  <p>年級：{d.grade}</p>
+                  <p>季度：第{d.quarter}季</p>
+                  <p>科目：{d.subject}</p>
+                </div>
+                {d.img ? (
+                  isImage(d.img) ? (
+                    <div className="relative w-full max-w-md">
+                      <Image
+                        src={d.img}
+                        width={500}
+                        height={500}
+                        alt={d.name}
+                        className="rounded-lg object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col space-y-2">
+                      <a
+                        href={d.img}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-white text-lg font-medium hover:text-blue-400 transition-colors duration-200"
+                      >
+                        查看 PDF 文件
+                      </a>
+                      <a
+                        href={d.img}
+                        download={d.name + ".pdf"}
+                        className="text-white text-lg font-medium bg-blue-600 hover:bg-blue-500 transition-colors duration-200 px-4 py-2 rounded-lg"
+                        onClick={() => toast.success("文件下載已啟動")}
+                      >
+                        下載 PDF 文件
+                      </a>
+                    </div>
+                  )
+                ) : (
+                  <span className="text-gray-300">無可用文件</span>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 

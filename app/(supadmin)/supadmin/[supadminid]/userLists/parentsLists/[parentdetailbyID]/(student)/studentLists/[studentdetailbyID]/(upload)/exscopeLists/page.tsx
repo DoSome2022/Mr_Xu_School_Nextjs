@@ -181,12 +181,12 @@ const ExScopebysupadmin = () => {
 
       <h2 className="text-2xl font-semibold text-blue-600 mb-4">考試範圍管理</h2>
 
-      <Link
+      {/* <Link
         className="text-blue-600 hover:text-blue-800 font-medium mb-4 inline-block"
         href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentId}/studentLists/${StudentID}/exscopeLists/upload`}
       >
         上傳考試範圍
-      </Link>
+      </Link> */}
 
       {isLoading && <div className="text-gray-600 p-4">載入中...</div>}
       {error && (

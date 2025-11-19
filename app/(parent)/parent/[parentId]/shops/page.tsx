@@ -63,7 +63,7 @@ import Link from "next/link";
 
 interface CourseProduct {
   id: string;
-  title: string;
+  name: string;
   description: string;
   price: number;
   real_price: number;
@@ -189,7 +189,7 @@ const ShopPage = () => {
       if (searchQuery) {
         filtered = filtered.filter(
           (product) =>
-            product.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             product.description?.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
@@ -324,7 +324,7 @@ const ShopPage = () => {
               className="bg-gray-800 shadow-lg rounded-lg p-4 hover:bg-gray-700 transition"
             >
               <Link href={`/parent/${userId}/shops/${product.id}`} onClick={handleProductClick}>
-                <h2 className="text-lg font-semibold text-white">{product.title}</h2>
+                <h2 className="text-lg font-semibold text-white">{product.name}</h2>
                 <p className="text-gray-400 text-sm">{product.description}</p>
                 <div className="mt-2">
                   {/* <p className="text-red-500 font-bold text-lg">

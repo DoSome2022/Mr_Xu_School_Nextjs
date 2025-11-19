@@ -33,7 +33,7 @@ interface SchoolData {
 
 const fetcher = (url: string, init?: RequestInit): Promise<StudentSchoolGrade[]> =>
   fetch(url, init).then((res) => res.json());
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
 
 const ExTimeLists = () => {
 

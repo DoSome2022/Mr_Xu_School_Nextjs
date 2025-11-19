@@ -730,6 +730,12 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 }
 
+
+model color {
+  id         String @id @default(cuid())
+  color_name String
+}
+
 enum UserRole {
   ADMIN
   SUPADMIN

@@ -125,12 +125,15 @@ const SchoolTimeTableLists_Gradebysupadmin = () => {
       return res.json();
     });
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
   const { data, error, isLoading } = useSWR(
     `${apiUrl}/api/School_data/schoolgrades?school=${encodeURIComponent(SchoolName)}`,
     fetcher,
     { revalidateOnFocus: false }
   );
+
+  console.log(" data :", data, "-- End -- ")
+
 
   // 錯誤處理
   if (error) {
@@ -158,6 +161,8 @@ const SchoolTimeTableLists_Gradebysupadmin = () => {
       </div>
     );
   }
+
+  console.log(" data :", data, "-- End -- ")
 
   return (
     <div className="container mx-auto px-4 py-6 bg-blue-50 min-h-screen">
@@ -198,6 +203,7 @@ const SchoolTimeTableLists_Gradebysupadmin = () => {
       <h2 className="text-2xl font-semibold text-blue-600 mb-4">{SchoolName} 年級列表</h2>
 
       {data.length === 0 && <div className="text-gray-600 p-4">無年級資料</div>}
+
 
       <div className="flex flex-col space-y-4">
         {data.map((grades) => (

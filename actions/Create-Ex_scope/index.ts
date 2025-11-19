@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { CreateSafeAction } from "@/lib/create-safe-action";
 import { Ex_scope_Create_Schema } from "./schema";
 import OSS from "ali-oss";
+import { revalidatePath } from "next/cache";
 
 // 定義環境變數的類型
 interface OSSConfig {
@@ -39,14 +40,26 @@ const getOSSConfig = (): OSSConfig => {
 };
 
 // 處理圖片/文件的函數
-const processUploadedFile = (fileData: string, originalFileName: string) => {
-  const base64Content = fileData.split(";base64,").pop();
-  if (!base64Content) {
-    throw new Error("Invalid file format");
+const processUploadedFile = (fileData: string) => {
+  // 從 Base64 字串中提取 MIME 類型和內容
+  const matches = fileData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+  if (!matches || matches.length !== 3) {
+    throw new Error("無效的文件格式");
   }
 
-  const fileExtension = originalFileName.split(".").pop()?.toLowerCase() || "";
-  if (!["jpg", "jpeg", "png", "pdf"].includes(fileExtension)) {
+  const mimeType = matches[1];
+  const base64Content = matches[2];
+
+  // 根據 MIME 類型映射副檔名
+  const mimeToExtension: { [key: string]: string } = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "application/pdf": "pdf",
+  };
+
+  // 提取 MIME 類型對應的副檔名
+  const fileExtension = mimeToExtension[mimeType];
+  if (!fileExtension) {
     throw new Error("僅支持 JPG、JPEG、PNG 或 PDF 格式");
   }
 
@@ -83,7 +96,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
       // 生成唯一的 OSS 對象名稱
       const timestamp = Date.now();
       const safeFileName = `${timestamp}-${name}-${school_name}-${subject}-${grade}-${quarter}`;
-      const { buffer, fileExtension } = processUploadedFile(img, `${safeFileName}."jpg"}`);
+      const { buffer, fileExtension } = processUploadedFile(img); // 動態獲取副檔名
       const objectKey = `Uploads/${safeFileName}.${fileExtension}`;
 
       // 上傳到 OSS
@@ -120,6 +133,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
   } catch (error) {
     console.error("創建考試範圍記錄失敗:", error);
     return { error: "無法創建考試範圍記錄，請檢查輸入數據或文件格式" };
+  } finally {
+    revalidatePath(`/admin/schoolLists/${school_ex_scope_id}/exscopeLists/`);
   }
 };
 

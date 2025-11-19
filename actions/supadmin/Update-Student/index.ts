@@ -16,6 +16,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     grade,
     student_id,
     student_parent_data_id,
+    studentId,
     pay = false,
     chine_ex_day,
     math_ex_day,
@@ -30,7 +31,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
   try {
     // 驗證學生是否存在
     const existingStudent = await db.student.findUnique({
-      where: { id: student_id },
+      where: { id: studentId },
     });
     if (!existingStudent) {
       return { error: "學生不存在" };
@@ -56,7 +57,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
     // 更新學生數據
     student_data = await db.student.update({
-      where: { id: student_id },
+      where: { id: studentId },
       data: {
         name,
         school,
@@ -78,7 +79,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
     }
 
     // 重新驗證相關頁面
-    revalidatePath(`/supadmin/${supadminId}/userLists/parentsLists/${student_parent_data_id}/profiles/${student_id}`);
+    revalidatePath(`/supadmin/${supadminId}/userLists/parentsLists/${student_parent_data_id}/profiles/${studentId}`);
 
     return { data: student_data, success: "學生資料更新成功" };
   } catch (error: any) {

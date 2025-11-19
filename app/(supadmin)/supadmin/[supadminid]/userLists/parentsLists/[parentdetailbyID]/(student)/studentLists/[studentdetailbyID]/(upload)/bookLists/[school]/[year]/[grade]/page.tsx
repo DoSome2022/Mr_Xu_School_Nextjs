@@ -8,8 +8,13 @@ interface StudentData {
   id: string;
   name: string;
   school: string;
-  grade: string;
+  grade: number; // 修正為 number
   year: string;
+  img: string;
+  student_booklist_id: string;
+  student_name: string;
+  createdAt: string; // 修正拼寫
+  updatedAt: string; // 修正拼寫
 }
 
 const Student_BookLists_School_Year_Grade_Listsbysupadmin = () => {
@@ -46,11 +51,11 @@ const Student_BookLists_School_Year_Grade_Listsbysupadmin = () => {
       try {
         setIsLoading(true);
         const res = await fetch(`/api/student/Student_Booklist_by_id_Lists/${studentId}`, {
-                cache: 'no-store',  // 強制不快取，確保每次請求新數據
-                headers: {
-                    'Cache-Control': 'no-cache',
-                },
-            });
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        });
         if (!res.ok) {
           throw new Error(`請求失敗：${res.statusText}`);
         }
@@ -75,11 +80,14 @@ const Student_BookLists_School_Year_Grade_Listsbysupadmin = () => {
   if (process.env.NODE_ENV === "development") {
     console.log("Params:", params);
     console.log("GetStudentBookLists:", GetStudentBookLists);
+    console.log("Filtered Books:", GetStudentBookLists.filter(
+      (d) => d.school === SchoolName && d.year === Year && d.grade === Number(Grade)
+    ));
   }
 
-  // 過濾書單
+  // 過濾書單，確保 grade 比較時轉為數字
   const filteredBooks = GetStudentBookLists.filter(
-    (d) => d.school === SchoolName && d.year === Year && d.grade === Grade
+    (d) => d.school === SchoolName && d.year === Year && d.grade === Number(Grade)
   );
 
   return (
@@ -142,43 +150,30 @@ const Student_BookLists_School_Year_Grade_Listsbysupadmin = () => {
           {error}
         </div>
       )}
-      {/* {!isLoading && !error && filteredBooks.length === 0 && (
-        <div className="text-gray-600 p-4">無書單資料</div>
-      )}
-
-      <div className="flex flex-col space-y-4">
-        {filteredBooks.map((d) => (
-          <Link
-            key={d.id}
-            className="text-blue-600 hover:text-blue-800 font-medium"
-            href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/bookLists/${SchoolName}/${Year}/${Grade}/${d.id}`}
-          >
-            名稱：{d.name}
-          </Link>
-        ))}
-      </div> */}
-          <div className="p-5 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-[#80A8BD] mb-6">書單列表</h2>
-      {filteredBooks.length > 0 ? (
-        <div className="space-y-4">
-          {filteredBooks.map((d) => (
-            <div
-              key={d.id}
-              className="border border-gray-200 rounded p-4 bg-white shadow-sm"
-            >
-              <Link
-                href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/bookLists/${SchoolName}/${Year}/${Grade}/${d.id}`}
-                className="block text-[#80A8BD] hover:text-cyan-200 font-medium transition-colors duration-300"
+      <div className="p-5 max-w-4xl mx-auto">
+        <h2 className="text-2xl font-bold text-[#80A8BD] mb-6">書單列表</h2>
+        {filteredBooks.length > 0 ? (
+          <div className="space-y-4">
+            {filteredBooks.map((d) => (
+              <div
+                key={d.id}
+                className="border border-gray-200 rounded p-4 bg-white shadow-sm"
               >
-                名稱: {d.name}
-              </Link>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500">無符合條件的書單資料</p>
-      )}
-    </div>
+                <Link
+                  href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/bookLists/${SchoolName}/${Year}/${Grade}/${d.id}`}
+                  className="block text-[#80A8BD] hover:text-cyan-200 font-medium transition-colors duration-300"
+                >
+                  名稱: {d.name}
+                </Link>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500">
+            無符合條件的書單資料（School: {SchoolName}, Year: {Year}, Grade: {Grade}）
+          </p>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,80 +1,3 @@
-// "use client";
-
-// import { useParams } from 'next/navigation';
-// import Link from "next/link";
-// import { useEffect, useState } from 'react';
-
-// interface StudentName {
-//     id:string;
-//     name:string;
-//     grade:string;
-//     year:string;
-//     quarter:string;
-//     subject:string;
-// }
-// const ScoreLists_Year_Quarter_Subject_ListbySupadmin = () => {
-//     const params = useParams<{parentdetailbyID : string ; studentdetailbyID : string ;  grade : string ; year: string; quarter:string; subject: string;supadminId: string;}>();
-//     const ParentID = params?.parentdetailbyID as string;
-//     const StudentID = params?.studentdetailbyID as string;
-//     const Grade = params?.grade as string;
-//     const Year = params?.year as string;
-//     const Quarter = params?.quarter as string;
-//     const Subject = params?.subject ? decodeURIComponent(params.subject) : '';
-//     const supadminId = params?.supadminId as string;
-
-
-//     const [ GetStudentScoreLists , setGetStudentScoreLists ] = useState<StudentName[]>([]);
-
-//     console.log("params : ", params )
-
-//     useEffect(()=>{
-//         if(StudentID){
-//             const getstudentscorelists = async (StudentID: string) => {
-//                 try {
-//                     const res = await fetch(`/api/student/Student_Score_by_id_Lists/${StudentID}`)
-//                     if(!res.ok) {
-//                         throw new Error("斷線！");
-//                     }
-//                     const result = await res.json();
-//                     setGetStudentScoreLists(result);                    
-//                 } catch (error) {
-//                     console.error(error)
-//                 }
-//             };
-//             getstudentscorelists(StudentID)
-//         }
-//     },[StudentID])
-
-
-//     console.log(GetStudentScoreLists[0])
-
-
-//     return(
-//         <>
-//             <span> ScoreLists_Year_Quarter_Subject_List </span>
-//             <br />
-//             {GetStudentScoreLists.map((d)=>{
-//                 if(d.grade == Grade && d.year == Year && d.quarter == Quarter && d.subject == Subject){
-//                 return(
-//                     <>
-//             <br />
-//                 <Link className="text-stone-950 hover:text-gray-700" 
-//                     href={`/supadmin/${supadminId}/userLists/parentsLists/${ParentID}/studentLists/${StudentID}/scoreLists/${Grade}/${Year}/${Quarter}/${Subject}/${d.id}`}
-//                 >
-//                     名稱: {d.name}
-//                 </Link>
-//             <br />
-//                     </>
-//                 )                    
-//                 }
-
-//             })}
-//         </>
-//     )
-// }
-
-// export default ScoreLists_Year_Quarter_Subject_ListbySupadmin
-
 "use client";
 
 import { useParams } from "next/navigation";
@@ -108,9 +31,10 @@ const quarterMapping: { [key: string]: string } = {
 interface StudentName {
   id: string;
   name: string;
-  grade: string;
+  img: string;
+  grade: number; // 改為 number
   year: string;
-  quarter: string;
+  quarter: number; // 改為 number
   subject: string;
 }
 
@@ -148,6 +72,19 @@ const ScoreLists_Year_Quarter_Subject_ListbySupadmin = () => {
     );
   }
 
+  // 將路由參數轉為數字
+  const parsedGrade = parseInt(Grade, 10);
+  const parsedQuarter = parseInt(Quarter, 10);
+
+  // 驗證轉換後的參數
+  if (isNaN(parsedGrade) || isNaN(parsedQuarter)) {
+    return (
+      <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+        錯誤：年級或季度格式無效
+      </div>
+    );
+  }
+
   // 驗證年級是否有效
   if (!gradeMapping[Grade]) {
     return (
@@ -168,33 +105,37 @@ const ScoreLists_Year_Quarter_Subject_ListbySupadmin = () => {
 
   const fetcher = <T,>(url: string, init?: RequestInit): Promise<T> =>
     fetch(url, {
-    ...init, // 保留傳入的 init 配置（若有）
-    cache: 'no-store', // 強制不快取，確保每次請求新數據
-    headers: {
-      ...init?.headers, // 合併傳入的 headers（若有）
-      'Cache-Control': 'no-cache', // 設置快取控制頭部
-    },
-  }).then((res) => {
+      ...init,
+      cache: "no-store",
+      headers: {
+        ...init?.headers,
+        "Cache-Control": "no-cache",
+      },
+    }).then((res) => {
       if (!res.ok) throw new Error(res.statusText);
       return res.json();
     });
 
-    // const apiUrl_DJANGO = process.env.NEXT_PUBLIC_API_URL_For_DJANGO || "http://127.0.0.1:8000";
-  const apiUrl_NEXTJS = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://127.0.0.1:3000";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL_For_NEXTJS || "http://127.0.0.1:3000";
 
   // 獲取成績資料
   const { data: scoreData, error: scoreError, isLoading: scoreLoading } = useSWR<StudentName[]>(
-    `${apiUrl_NEXTJS}/api/student/Student_Score_by_id_Lists/${StudentID}?grade=${encodeURIComponent(Grade)}&year=${encodeURIComponent(Year)}&quarter=${encodeURIComponent(Quarter)}&subject=${encodeURIComponent(Subject)}`,
+    `${apiUrl}/api/student/Student_Score_by_id_Lists/${StudentID}?grade=${encodeURIComponent(Grade)}&year=${encodeURIComponent(Year)}&quarter=${encodeURIComponent(Quarter)}&subject=${encodeURIComponent(Subject)}`,
     fetcher,
     { revalidateOnFocus: false }
   );
 
   // 獲取學生資料以顯示名稱
   const { data: studentData, error: studentError, isLoading: studentLoading } = useSWR<StudentData[]>(
-    `${apiUrl_NEXTJS}/api/student/Student_Lists_detail_data_by_id/${StudentID}`,
+    `${apiUrl}/api/student/Student_Lists_detail_data_by_id/${StudentID}`,
     fetcher,
     { revalidateOnFocus: false }
   );
+
+  if (process.env.NODE_ENV === "development") {
+    console.log("studentData :", studentData, "-- End --");
+    console.log("scoreData :", scoreData, "-- End --");
+  }
 
   // 錯誤處理
   if (scoreError || studentError) {
@@ -214,7 +155,16 @@ const ScoreLists_Year_Quarter_Subject_ListbySupadmin = () => {
   if (
     !scoreData ||
     !Array.isArray(scoreData) ||
-    !scoreData.every((item) => item.id && item.name && item.grade && item.year && item.quarter && item.subject)
+    !scoreData.every(
+      (item) =>
+        item.id &&
+        item.name &&
+        typeof item.grade === "number" &&
+        item.year &&
+        typeof item.quarter === "number" &&
+        item.subject &&
+        item.img
+    )
   ) {
     return (
       <div className="bg-red-50 text-red-600 p-4 rounded-lg">
@@ -239,8 +189,14 @@ const ScoreLists_Year_Quarter_Subject_ListbySupadmin = () => {
 
   // 過濾成績資料
   const filteredScores = scoreData.filter(
-    (d) => d.grade === Grade && d.year === Year && d.quarter === Quarter && d.subject === Subject
+    (d) => d.grade === parsedGrade && d.year === Year && d.quarter === parsedQuarter && d.subject === Subject
   );
+
+  // 將 HTTP 轉為 HTTPS（解決 Mixed Content）
+  const sanitizedScores = filteredScores.map((score) => ({
+    ...score,
+    img: score.img.replace(/^http:\/\//, "https://"),
+  }));
 
   return (
     <div className="container mx-auto px-4 py-6 bg-blue-50 min-h-screen">
@@ -303,10 +259,10 @@ const ScoreLists_Year_Quarter_Subject_ListbySupadmin = () => {
         {studentData[0].name} 的 {gradeMapping[Grade]} {Year} {quarterMapping[Quarter]} {Subject} 成績表列表
       </h2>
 
-      {filteredScores.length === 0 && <div className="text-gray-600 p-4">無成績表資料</div>}
+      {sanitizedScores.length === 0 && <div className="text-gray-600 p-4">無成績表資料</div>}
 
       <div className="flex flex-col space-y-4">
-        {filteredScores.map((score) => (
+        {sanitizedScores.map((score) => (
           <Link
             key={score.id}
             className="text-blue-600 hover:text-blue-800 font-medium"

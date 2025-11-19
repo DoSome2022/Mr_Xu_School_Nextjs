@@ -95,7 +95,7 @@ const ProductLists = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-[#e7915b]">商品列表</h1>
           <Link
-            href={`/supadmin/${supadminid}/productLists/createProduct`}
+            href={`/supadmin/${supadminid}/productLists/createproduct`}
             className="inline-block text-white bg-[#e7915b] px-4 py-2 rounded-md hover:bg-cyan-200 hover:text-gray-800 transition-colors duration-300"
           >
             建立商品

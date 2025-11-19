@@ -191,7 +191,8 @@ const AdminComponents = () => {
   console.log("GetClassRoom :", GetClassRoom, "--End--");
 
   return (
-    <div className="min-h-screen bg-[#80A8BD] pt-20">
+    <div className="min-h-screen bg-white pt-20">
+     
       <div className="max-w-7xl mx-auto px-4">
         <br />
         <h1 className="text-3xl font-bold text-white text-center mb-6">管理員面板</h1>
